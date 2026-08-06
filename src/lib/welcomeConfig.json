@@ -1,0 +1,34 @@
+{
+  "1526109131042459678": {
+    "enabled": true,
+    "channelId": "1533117154638041240",
+    "messageText": "Welcome {user} to **{server}**! We are glad to have you as member #{memberCount}!",
+    "autoRoleId": null,
+    "autoNickFormat": null,
+    "joinDmEnabled": true,
+    "joinDmText": "Welcome to **{server}**! Enjoy your stay!",
+    "canvasEnabled": true,
+    "canvasBgUrl": "https://cdn.discordapp.com/attachments/1526109209865883670/1534813514257006622/10a8c9ef405d78e22b9ef703559d0854.png?ex=6a757df9&is=6a742c79&hm=dec9ad248f72ec83683d2fb74b17be2444b26dcad248d3865bf304bfbda2c313",
+    "canvasTemplate": "sakura",
+    "textColor": null,
+    "accentColor": null,
+    "avatarShape": "rounded",
+    "customWatermark": "astrix"
+  },
+  "1361725951607832718": {
+    "enabled": false,
+    "channelId": "1524668347604795502",
+    "messageText": "hey",
+    "autoRoleId": null,
+    "autoNickFormat": null,
+    "joinDmEnabled": false,
+    "joinDmText": "Welcome to **{server}**! We are super excited to have you join our community! Make sure to read the rules and enjoy your time here.",
+    "canvasEnabled": true,
+    "canvasBgUrl": null,
+    "canvasTemplate": "sakura",
+    "textColor": null,
+    "accentColor": "#FF3131",
+    "avatarShape": "rounded",
+    "customWatermark": "ASTRIX"
+  }
+}

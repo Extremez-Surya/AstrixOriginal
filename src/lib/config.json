@@ -1,0 +1,26 @@
+{
+  "clientPrefix": "-",
+  "developerIds": ["1299394763933618239", "984409270344908872"],
+  "team": [
+    {
+      "id": "984409270344908872",
+      "role": "Owner & Lead Developer"
+    },
+    {
+      "id": "1299394763933618239",
+      "role": "Co-Founder & Artist"
+    },
+    {
+      "id": "1438384509769879582",
+      "role": "Bot Designer"
+    },
+    {
+      "id": "448478759172046859",
+      "role": "Community Partner"
+    },
+    {
+      "id": "1519247337049030757",
+      "role": "Adore Me Partner"
+    }
+  ]
+}

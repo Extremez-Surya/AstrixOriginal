@@ -1,0 +1,118 @@
+{
+  "1530099248555753542": {
+    "messageId": "1530099248555753542",
+    "channelId": "1529875161291952139",
+    "guildId": "1526109131042459678",
+    "prize": "nitro",
+    "winnersCount": 1,
+    "endTimestamp": 1784874471063,
+    "hostId": "1299394763933618239",
+    "entries": [
+      "1299394763933618239"
+    ],
+    "ended": true,
+    "paused": false,
+    "winners": [
+      "1299394763933618239"
+    ]
+  },
+  "1530100356670033930": {
+    "messageId": "1530100356670033930",
+    "channelId": "1529875161291952139",
+    "guildId": "1526109131042459678",
+    "prize": "nitro",
+    "winnersCount": 1,
+    "endTimestamp": 1784874735219,
+    "hostId": "1299394763933618239",
+    "entries": [],
+    "ended": true,
+    "paused": false,
+    "winners": []
+  },
+  "1530100784950415421": {
+    "messageId": "1530100784950415421",
+    "channelId": "1529875161291952139",
+    "guildId": "1526109131042459678",
+    "prize": "nitro",
+    "winnersCount": 1,
+    "endTimestamp": 1784874837382,
+    "hostId": "1299394763933618239",
+    "entries": [
+      "1299394763933618239"
+    ],
+    "ended": true,
+    "paused": false,
+    "winners": [
+      "1299394763933618239"
+    ]
+  },
+  "1530115536099344475": {
+    "messageId": "1530115536099344475",
+    "channelId": "1529875161291952139",
+    "guildId": "1526109131042459678",
+    "prize": "nitro",
+    "winnersCount": 1,
+    "endTimestamp": 1784878352722,
+    "hostId": "1299394763933618239",
+    "entries": [],
+    "ended": true,
+    "paused": false,
+    "winners": []
+  },
+  "1530119646986899617": {
+    "messageId": "1530119646986899617",
+    "channelId": "1529875161291952139",
+    "guildId": "1526109131042459678",
+    "prize": "nitro",
+    "winnersCount": 1,
+    "endTimestamp": 1784879333512,
+    "hostId": "1299394763933618239",
+    "entries": [],
+    "ended": true,
+    "paused": false,
+    "winners": []
+  },
+  "1530123879081574440": {
+    "messageId": "1530123879081574440",
+    "channelId": "1529875161291952139",
+    "guildId": "1526109131042459678",
+    "prize": "nitro",
+    "winnersCount": 1,
+    "endTimestamp": 1784880342628,
+    "hostId": "1299394763933618239",
+    "entries": [
+      "1299394763933618239"
+    ],
+    "ended": true,
+    "paused": false,
+    "winners": [
+      "1299394763933618239"
+    ]
+  },
+  "1530150376618201189": {
+    "messageId": "1530150376618201189",
+    "channelId": "1529875161291952139",
+    "guildId": "1526109131042459678",
+    "prize": "nitro",
+    "winnersCount": 1,
+    "endTimestamp": 1784886630464,
+    "hostId": "1299394763933618239",
+    "entries": [],
+    "ended": true,
+    "paused": false,
+    "winners": []
+  },
+  "1530177436908650527": {
+    "messageId": "1530177436908650527",
+    "channelId": "1529875161291952139",
+    "guildId": "1526109131042459678",
+    "prize": "nitro",
+    "winnersCount": 1,
+    "endTimestamp": 1784893062217,
+    "hostId": "1299394763933618239",
+    "entries": [],
+    "ended": true,
+    "paused": false,
+    "winners": []
+  }
+}

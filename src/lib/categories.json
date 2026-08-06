@@ -1,0 +1,70 @@
+{
+  "Information": {
+    "emoji": "<:list:1528313871889334382>",
+    "desc": "View bot network stats and user information."
+  },
+  "Moderation": {
+    "emoji": "<:rshield:1528681364340080713>",
+    "desc": "Server management and member enforcement commands."
+  },
+  "Security": {
+    "emoji": "🛡️",
+    "desc": "Anti-nuke, whitelist, nightmode, and verification controls."
+  },
+  "Automod": {
+    "emoji": "🤖",
+    "desc": "Automated moderation, spam detection, caps, link & invite filters."
+  },
+  "Giveaway": {
+    "emoji": "<a:tada2:1530099488398508073>",
+    "desc": "Host, manage, and automate server giveaways."
+  },
+  "Music": {
+    "emoji": "🎵",
+    "desc": "Play high quality music from YouTube, Spotify, SoundCloud & Apple Music."
+  },
+  "Filters": {
+    "emoji": "🎛️",
+    "desc": "Real-time audio DSP equalizer & sound filter controls."
+  },
+  "Utility": {
+    "emoji": "🔧",
+    "desc": "Essential server utilities, custom roles, autorole, QR, calculator & stickies."
+  },
+  "Fun": {
+    "emoji": "🎲",
+    "desc": "Fun commands, minigames, slots, blackjack, and counting."
+  },
+  "AI": {
+    "emoji": "🧠",
+    "desc": "Artificial intelligence tools, ChatGPT, image generation, and chat."
+  },
+  "Voice": {
+    "emoji": "🎙️",
+    "desc": "Voice channel management, Join-to-Create (J2C) & VC moderation."
+  },
+  "Leveling": {
+    "emoji": "📈",
+    "desc": "XP leveling system, ranks, leaderboards & role rewards."
+  },
+  "Logging": {
+    "emoji": "📜",
+    "desc": "Comprehensive server audit & event logging system."
+  },
+  "Ticket": {
+    "emoji": "🎟️",
+    "desc": "Support ticket creation, management, and panel system."
+  },
+  "Welcome": {
+    "emoji": "👋",
+    "desc": "Welcome messages, join DMs, auto-roles & leaves configuration."
+  },
+  "Owner": {
+    "emoji": "👑",
+    "desc": "Developer and bot owner administrative commands."
+  },
+  "Booster": {
+    "emoji": "🚀",
+    "desc": "Server booster rewards, vanity roles & custom perks."
+  }
+}

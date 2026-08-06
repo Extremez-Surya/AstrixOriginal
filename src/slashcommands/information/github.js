@@ -1,0 +1,169 @@
+const {
+  ApplicationCommandType,
+  ApplicationCommandOptionType,
+  ContainerBuilder,
+  TextDisplayBuilder,
+  SeparatorBuilder,
+  SeparatorSpacingSize,
+  MessageFlags,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  AttachmentBuilder,
+  MediaGalleryBuilder,
+  MediaGalleryItemBuilder,
+} = require("discord.js");
+
+module.exports = {
+  name: "github",
+  category: "Information",
+  description: "Fetch public profile statistics for any GitHub developer.",
+  type: ApplicationCommandType.ChatInput,
+  options: [
+    {
+      name: "username",
+      description: "GitHub username to inspect.",
+      type: ApplicationCommandOptionType.String,
+      required: true,
+    },
+  ],
+
+  botPermissions: ["SendMessages"],
+  userPermissions: ["SendMessages"],
+  devOnly: false,
+
+  async execute(client, interaction) {
+    await interaction.deferReply();
+    const username = interaction.options.getString("username");
+    let user = null;
+
+    try {
+      const res = await fetch(
+        `https://api.github.com/users/${encodeURIComponent(username)}`,
+        {
+          headers: {
+            "User-Agent": "AstrixBot/1.0",
+          },
+        },
+      );
+      if (res.status === 200) {
+        user = await res.json();
+      }
+    } catch (e) {}
+
+    if (!user) {
+      const container = new ContainerBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `### <a:red_star:1528688099436003419> Developer Not Found\n` +
+            `-# *No GitHub account found matching \`${username}\`.*`,
+        ),
+      );
+      return interaction
+        .editReply({
+          components: [container],
+          flags: MessageFlags.IsComponentsV2,
+        })
+        .catch(() => null);
+    }
+
+    const createdTs = Math.floor(new Date(user.created_at).getTime() / 1000);
+    const bioText = user.bio
+      ? user.bio.trim().replace(/\r?\n|\r/g, " ")
+      : "No public bio provided.";
+
+    const content = [
+      `### <:github:1530086917708713984> GitHub Profile ── ${user.name || user.login}`,
+      `-# *${bioText}*`,
+      "",
+      `> <:members:1528311049726591006> **Identity & Details**`,
+      `> - **Username:** \`@${user.login}\` ${user.hireable ? "• <:website:1528304906400960582> *Open for Hire*" : ""}`,
+      `> - **Account Type:** \`${user.type}\``,
+      `> - **Company:** \`${user.company ? user.company.trim() : "None"}\``,
+      `> - **Location:** \`${user.location ? user.location.trim() : "Not specified"}\``,
+      `> - **Joined GitHub:** <t:${createdTs}:D> (<t:${createdTs}:R>)`,
+      "",
+      `> <:stats:1528322466521546826> **Activity & Telemetry**`,
+      `> - **Public Repositories:** \`${user.public_repos.toLocaleString()}\``,
+      `> - **Public Gists:** \`${user.public_gists.toLocaleString()}\``,
+      `> - **Followers:** \`${user.followers.toLocaleString()}\` | **Following:** \`${user.following.toLocaleString()}\``,
+      user.twitter_username
+        ? `> - **Twitter/X:** [@${user.twitter_username}](https://twitter.com/${user.twitter_username})`
+        : null,
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    const files = [];
+    let mediaGallery;
+
+    if (user.avatar_url) {
+      try {
+        const avatarAttachment = new AttachmentBuilder(user.avatar_url, {
+          name: "github_avatar.png",
+        });
+        files.push(avatarAttachment);
+        mediaGallery = new MediaGalleryBuilder().addItems(
+          new MediaGalleryItemBuilder().setURL(
+            "attachment://github_avatar.png",
+          ),
+        );
+      } catch (e) {}
+    }
+
+    const actionRow = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setLabel("View Profile")
+        .setStyle(ButtonStyle.Link)
+        .setURL(user.html_url),
+      new ButtonBuilder()
+        .setLabel(`Repositories (${user.public_repos})`)
+        .setStyle(ButtonStyle.Link)
+        .setURL(`${user.html_url}?tab=repositories`),
+    );
+
+    if (user.blog) {
+      let blogUrl = user.blog.trim();
+      if (!blogUrl.startsWith("http://") && !blogUrl.startsWith("https://")) {
+        blogUrl = `https://${blogUrl}`;
+      }
+      try {
+        new URL(blogUrl);
+        actionRow.addComponents(
+          new ButtonBuilder()
+            .setLabel("Website")
+            .setStyle(ButtonStyle.Link)
+            .setURL(blogUrl),
+        );
+      } catch (e) {}
+    }
+
+    const container = new ContainerBuilder().addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(content),
+    );
+
+    if (mediaGallery) {
+      container.addMediaGalleryComponents(mediaGallery);
+    }
+
+    container
+      .addSeparatorComponents(
+        new SeparatorBuilder()
+          .setSpacing(SeparatorSpacingSize.Small)
+          .setDivider(true),
+      )
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `-# *Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE*`,
+        ),
+      )
+      .addActionRowComponents(actionRow);
+
+    return interaction
+      .editReply({
+        components: [container],
+        files: files,
+        flags: MessageFlags.IsComponentsV2,
+      })
+      .catch(() => null);
+  },
+};

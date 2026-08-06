@@ -1,0 +1,26 @@
+{
+  "984409270344908872": [
+    "owner",
+    "developer"
+  ],
+  "1438384509769879582": [
+    "designer"
+  ],
+  "448478759172046859": [
+    "partner"
+  ],
+  "1519247337049030757": [
+    "partner"
+  ],
+  "1299394763933618239": [
+    "owner",
+    "developer",
+    "designer",
+    "partner",
+    "supporter",
+    "vip",
+    "bug_hunter",
+    "staff",
+    "booster"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@discord-handler/bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@napi-rs/canvas": "^1.0.2",
+    "discord.js": "^14.25.1",
+    "glob": "^11.0.2",
+    "kazagumo": "^3.4.3",
+    "kazagumo-spotify": "^2.1.1",
+    "musicard": "^3.0.1",
+    "shoukaku": "^4.3.0"
+  }
+}
