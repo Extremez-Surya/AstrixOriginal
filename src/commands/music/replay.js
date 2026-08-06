@@ -6,7 +6,7 @@ const {
 
 /** @type {import('../../lib/types/index.ts').MessageCommand} */
 module.exports = {
-  alias: ["replay", "restart"],
+  alias: ["replay"],
   category: "Music",
   desc: "Replay the current playing track from the beginning.",
 

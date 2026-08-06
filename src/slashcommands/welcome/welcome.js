@@ -318,15 +318,24 @@ module.exports = {
         } catch (_) {}
       }
 
+      const mainContent =
+        `# 🌙 Welcome to ${interaction.guild.name}, <@${interaction.user.id}>!\n` +
+        `-# *We're glad you're here as member **#${interaction.guild.memberCount.toLocaleString()}**.*\n\n` +
+        `<:members:1528311049726591006> **Member Overview**\n` +
+        `> -# <:prefix:1528309903972892772> **Member:** <@${interaction.user.id}>\n` +
+        `> -# <:servers:1528311514065535007> **Username:** \`${interaction.user.username}\`\n` +
+        `> -# <:list:1528313871889334382> **Member Count:** \`#${interaction.guild.memberCount.toLocaleString()}\``;
+
+      const footerText = `-# Built with <a:Red_heart:1528312958541631578> by ASTRIXCODE™ • Test Triggered By ${interaction.user.tag}`;
+
       const container = new ContainerBuilder();
       if (mediaGallery) container.addMediaGalleryComponents(mediaGallery);
 
       container
         .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-        .addTextDisplayComponents(new TextDisplayBuilder().setContent(
-          `# <:astrix:1527205612205903973> [TEST] Welcome to ${interaction.guild.name}!\n` +
-          `> ${welcomeText}`
-        ));
+        .addTextDisplayComponents(new TextDisplayBuilder().setContent(mainContent))
+        .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
+        .addTextDisplayComponents(new TextDisplayBuilder().setContent(footerText));
 
       await channel.send({
         components: [container],
