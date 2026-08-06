@@ -199,14 +199,17 @@ module.exports = {
 
         const row = new ActionRowBuilder().addComponents(websiteButton, supportButton);
 
-        const mainContent =
+        let mainContent =
           `# 🌙 Welcome to ${member.guild.name}, <@${member.id}>!\n` +
           `-# *A new member has joined our community.*\n\n` +
           `<:members:1528311049726591006> **Member Overview**\n` +
           `> -# <:prefix:1528309903972892772> **Member:** <@${member.id}>\n` +
           `> -# <:servers:1528311514065535007> **Username:** \`${member.user.username}\`\n` +
-          `> -# <:list:1528313871889334382> **Member Count:** \`#${member.guild.memberCount.toLocaleString()}\`\n\n` +
-          `> -# <:clock:1528312173275906088> ${welcomeText}`;
+          `> -# <:list:1528313871889334382> **Member Count:** \`#${member.guild.memberCount.toLocaleString()}\``;
+
+        if (config.messageEnabled !== false && welcomeText) {
+          mainContent += `\n\n> -# <:clock:1528312173275906088> ${welcomeText}`;
+        }
 
         const footerText = `-# Built with <a:Red_heart:1528312958541631578> by ASTRIXCODE™ • User ID: \`${member.id}\``;
 

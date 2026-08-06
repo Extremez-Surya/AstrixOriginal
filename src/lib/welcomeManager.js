@@ -31,6 +31,7 @@ function getGuildWelcome(guildId) {
   return {
     enabled: guildData.enabled ?? false,
     channelId: guildData.channelId ?? null,
+    messageEnabled: guildData.messageEnabled ?? true,
     messageText:
       guildData.messageText ??
       "Welcome {user} to **{server}**! We are glad to have you as member #{memberCount}!",
@@ -148,6 +149,7 @@ function resetGuildWelcome(guildId) {
   const defaults = {
     enabled: false,
     channelId: null,
+    messageEnabled: true,
     messageText:
       "Welcome {user} to **{server}**! We are glad to have you as member #{memberCount}!",
     autoRoleId: null,

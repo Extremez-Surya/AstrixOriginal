@@ -219,11 +219,40 @@ module.exports = {
     // SUBCOMMAND: MESSAGE / MSG
     // -------------------------------------------------------------
     if (sub === "message" || sub === "msg") {
+      const arg1 = args[1]?.toLowerCase();
+
+      if (arg1 === "off" || arg1 === "disable" || arg1 === "false") {
+        welcomeManager.updateGuildWelcome(message.guild.id, { messageEnabled: false });
+        const container = new ContainerBuilder().addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `### ⚠️ Welcome Text Message Disabled\n` +
+            `-# *Text greeting messages are now **DISABLED**.*`
+          )
+        );
+        return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      }
+
+      if (arg1 === "on" || arg1 === "enable" || arg1 === "true") {
+        welcomeManager.updateGuildWelcome(message.guild.id, { messageEnabled: true });
+        const container = new ContainerBuilder().addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `### ✅ Welcome Text Message Enabled\n` +
+            `-# *Text greeting messages are now **ENABLED**.*`
+          )
+        );
+        return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      }
+
       const text = args.slice(1).join(" ");
       if (!text) {
-        return message.reply("❌ Please provide a message template! Example: `.welcome message Welcome {user} to {server}!`").catch(() => null);
+        const config = welcomeManager.getGuildWelcome(message.guild.id);
+        return message.reply(
+          `ℹ️ Welcome message status: **${config.messageEnabled ? "ENABLED" : "DISABLED"}**.\n` +
+          `Use \`.welcome message off\` / \`.welcome message on\` or \`.welcome message <template>\`.`
+        ).catch(() => null);
       }
-      welcomeManager.updateGuildWelcome(message.guild.id, { messageText: text });
+
+      welcomeManager.updateGuildWelcome(message.guild.id, { messageText: text, messageEnabled: true });
       const previewText = welcomeManager.formatWelcomeText(text, message.author, message.guild);
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
