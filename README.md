@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./src/assets/logo.png" alt="Astrix Banner" width="100%">
+  <img src="./src/assets/helpmenu.png" alt="Astrix Banner" width="100%">
 </p>
 
 <h1 align="center">🌌 ASTRIX</h1>

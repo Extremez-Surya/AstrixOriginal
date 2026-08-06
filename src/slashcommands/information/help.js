@@ -19,7 +19,8 @@ const allCategories = require("../../lib/categories.json");
 module.exports = {
   name: "help",
   category: "Information",
-  description: "Show all available commands, categories, or details for a specific command.",
+  description:
+    "Show all available commands, categories, or details for a specific command.",
   type: ApplicationCommandType.ChatInput,
   options: [
     {
@@ -37,31 +38,42 @@ module.exports = {
   async execute(client, interaction) {
     await interaction.deferReply().catch(() => null);
 
-    const commandQuery = interaction.options.getString("command")?.toLowerCase()?.trim();
+    const commandQuery = interaction.options
+      .getString("command")
+      ?.toLowerCase()
+      ?.trim();
 
     if (commandQuery) {
       const targetCmd =
         client.messageCommands.get(commandQuery) ||
-        client.messageCommands.find((c) => c.alias && c.alias.includes(commandQuery)) ||
+        client.messageCommands.find(
+          (c) => c.alias && c.alias.includes(commandQuery),
+        ) ||
         client.slashCommands.get(commandQuery);
 
       if (!targetCmd) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
             `### <a:red_star:1528688099436003419> Command Not Found\n` +
-            `-# *No command matching \`${commandQuery}\` was found in the database.*\n\n` +
-            `> - **Tip:** Run \`/help\` without arguments to explore all command categories.`
-          )
+              `-# *No command matching \`${commandQuery}\` was found in the database.*\n\n` +
+              `> - **Tip:** Run \`/help\` without arguments to explore all command categories.`,
+          ),
         );
-        return interaction.editReply({
-          components: [container],
-          flags: MessageFlags.IsComponentsV2,
-        }).catch(() => null);
+        return interaction
+          .editReply({
+            components: [container],
+            flags: MessageFlags.IsComponentsV2,
+          })
+          .catch(() => null);
       }
 
-      const primaryName = targetCmd.name || (targetCmd.alias ? targetCmd.alias[0] : commandQuery);
-      const aliasesList = targetCmd.alias ? targetCmd.alias.map((a) => `\`.${a}\``).join(", ") : `\`/${primaryName}\``;
-      const description = targetCmd.desc || targetCmd.description || "No description provided.";
+      const primaryName =
+        targetCmd.name || (targetCmd.alias ? targetCmd.alias[0] : commandQuery);
+      const aliasesList = targetCmd.alias
+        ? targetCmd.alias.map((a) => `\`.${a}\``).join(", ")
+        : `\`/${primaryName}\``;
+      const description =
+        targetCmd.desc || targetCmd.description || "No description provided.";
 
       const detailsContent = [
         `### <:astrix:1527205612205903973> Command Info ── \`.${primaryName}\``,
@@ -73,16 +85,24 @@ module.exports = {
       const footerText = `-# Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE`;
 
       const container = new ContainerBuilder()
-        .addTextDisplayComponents(new TextDisplayBuilder().setContent(detailsContent))
-        .addSeparatorComponents(
-          new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(detailsContent),
         )
-        .addTextDisplayComponents(new TextDisplayBuilder().setContent(footerText));
+        .addSeparatorComponents(
+          new SeparatorBuilder()
+            .setSpacing(SeparatorSpacingSize.Small)
+            .setDivider(true),
+        )
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(footerText),
+        );
 
-      return interaction.editReply({
-        components: [container],
-        flags: MessageFlags.IsComponentsV2,
-      }).catch(() => null);
+      return interaction
+        .editReply({
+          components: [container],
+          flags: MessageFlags.IsComponentsV2,
+        })
+        .catch(() => null);
     }
 
     if (client.application.commands.cache.size === 0) {
@@ -101,22 +121,25 @@ module.exports = {
           const cmdRef = registered.find((c) => c.name === cmd.name);
           if (cmdRef) {
             const subcommands = cmd.options?.filter(
-              (opt) => opt.type === 1 || opt.type === "Subcommand" || opt.type === "SUB_COMMAND"
+              (opt) =>
+                opt.type === 1 ||
+                opt.type === "Subcommand" ||
+                opt.type === "SUB_COMMAND",
             );
             if (subcommands && subcommands.length > 0) {
               subcommands.forEach((sub) => {
                 list.push(
-                  `</${cmd.name} ${sub.name}:${cmdRef.id}> ─ ${sub.description || "No description provided."}`
+                  `</${cmd.name} ${sub.name}:${cmdRef.id}> ─ ${sub.description || "No description provided."}`,
                 );
               });
             } else {
               list.push(
-                `</${cmd.name}:${cmdRef.id}> ─ ${cmd.description || "No description provided."}`
+                `</${cmd.name}:${cmdRef.id}> ─ ${cmd.description || "No description provided."}`,
               );
             }
           } else {
             list.push(
-              `\`/${cmd.name}\` ─ ${cmd.description || "No description provided."}`
+              `\`/${cmd.name}\` ─ ${cmd.description || "No description provided."}`,
             );
           }
         }
@@ -133,7 +156,10 @@ module.exports = {
           const cmdRef = registered.find((c) => c.name === cmd.name);
           if (cmdRef) {
             const subcommands = cmd.options?.filter(
-              (opt) => opt.type === 1 || opt.type === "Subcommand" || opt.type === "SUB_COMMAND"
+              (opt) =>
+                opt.type === 1 ||
+                opt.type === "Subcommand" ||
+                opt.type === "SUB_COMMAND",
             );
             if (subcommands && subcommands.length > 0) {
               subcommands.forEach((sub) => {
@@ -157,13 +183,13 @@ module.exports = {
       }
     }
 
-    const logoPath = path.join(__dirname, "../../assets/logo.png");
+    const logoPath = path.join(__dirname, "../../assets/helpmenu.png");
     const bannerAttachment = new AttachmentBuilder(logoPath, {
-      name: "logo.png",
+      name: "helpmenu.png",
     });
 
     const mediaItem = new MediaGalleryItemBuilder().setURL(
-      "attachment://logo.png",
+      "attachment://helpmenu.png",
     );
     const mediaGallery = new MediaGalleryBuilder().addItems(mediaItem);
 

@@ -111,7 +111,11 @@ function loadPresets() {
 
 function savePresets() {
   try {
-    fs.writeFileSync(PRESETS_FILE, JSON.stringify(guildPresets, null, 2), "utf-8");
+    fs.writeFileSync(
+      PRESETS_FILE,
+      JSON.stringify(guildPresets, null, 2),
+      "utf-8",
+    );
   } catch (err) {
     console.error("[PresetManager] Error saving presets JSON:", err);
   }
@@ -150,8 +154,12 @@ async function renderThemeCard(themeKey, data = {}) {
     const author = data.author || "Unknown Artist";
     let thumbnail = data.thumbnail;
 
-    if (!thumbnail || typeof thumbnail !== "string" || !thumbnail.startsWith("http")) {
-      thumbnail = path.join(__dirname, "../../assets/astrix_logo.png");
+    if (
+      !thumbnail ||
+      typeof thumbnail !== "string" ||
+      !thumbnail.startsWith("http")
+    ) {
+      thumbnail = path.join(__dirname, "../../assets/astrix_helpmenu.png");
     }
 
     const durationStr = formatMs(data.duration);
@@ -183,14 +191,14 @@ async function createPresetPayload(guildId, selectedKey = null) {
     `### 🎨 Server Musicard Theme Presets\n` +
       `> - **Current Saved Theme:** ${savedTheme.emoji} **${savedTheme.name}**\n` +
       `> - **Previewing Theme:** ${currentTheme.emoji} **${currentTheme.name}**\n` +
-      `-# *Select a theme from the menu below to preview its Canvas style, then click Save.*`
+      `-# *Select a theme from the menu below to preview its Canvas style, then click Save.*`,
   );
 
   const container = new ContainerBuilder().addTextDisplayComponents(header);
 
   let previewAttachment = null;
   try {
-    const logoPath = path.join(__dirname, "../../assets/astrix_logo.png");
+    const logoPath = path.join(__dirname, "../../assets/astrix_helpmenu.png");
     const sampleBuffer = await currentTheme.func({
       trackName: "AstrixCode is the Best",
       artistName: "Thank you For Using Me",
@@ -200,14 +208,16 @@ async function createPresetPayload(guildId, selectedKey = null) {
       progressBar: 35,
       volumeBar: 80,
     });
-    previewAttachment = new AttachmentBuilder(sampleBuffer, { name: "preset_preview.png" });
+    previewAttachment = new AttachmentBuilder(sampleBuffer, {
+      name: "preset_preview.png",
+    });
   } catch (err) {
     console.error("[PresetManager] Error rendering preview:", err);
   }
 
   if (previewAttachment) {
     const mediaGallery = new MediaGalleryBuilder().addItems(
-      new MediaGalleryItemBuilder().setURL("attachment://preset_preview.png")
+      new MediaGalleryItemBuilder().setURL("attachment://preset_preview.png"),
     );
     container.addMediaGalleryComponents(mediaGallery);
   }
@@ -227,7 +237,7 @@ async function createPresetPayload(guildId, selectedKey = null) {
           emoji: t.emoji,
           default: t.key === currentKey,
         };
-      })
+      }),
     );
 
   const rowDropdown = new ActionRowBuilder().addComponents(selectMenu);
@@ -245,7 +255,7 @@ async function createPresetPayload(guildId, selectedKey = null) {
       .setCustomId("music_preset_reset")
       .setLabel("Reset Default")
       .setEmoji("🔄")
-      .setStyle(ButtonStyle.Secondary)
+      .setStyle(ButtonStyle.Secondary),
   );
 
   container.addActionRowComponents(rowDropdown, rowButtons);

@@ -35,20 +35,23 @@ module.exports = {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
             `### <a:red_star:1528688099436003419> Command Not Found\n` +
-            `-# *No command or alias matching \`${args[0]}\` was found in the database.*\n\n` +
-            `> - **Tip:** Type \`.help\` without arguments to view all categories.`
-          )
+              `-# *No command or alias matching \`${args[0]}\` was found in the database.*\n\n` +
+              `> - **Tip:** Type \`.help\` without arguments to view all categories.`,
+          ),
         );
-        return message.reply({
-          components: [container],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { parse: [], repliedUser: false },
-        }).catch(() => null);
+        return message
+          .reply({
+            components: [container],
+            flags: MessageFlags.IsComponentsV2,
+            allowedMentions: { parse: [], repliedUser: false },
+          })
+          .catch(() => null);
       }
 
       const primaryName = targetCmd.alias[0];
       const aliasesList = targetCmd.alias.map((a) => `\`.${a}\``).join(", ");
-      const description = targetCmd.desc || targetCmd.description || "No description provided.";
+      const description =
+        targetCmd.desc || targetCmd.description || "No description provided.";
 
       const detailsContent = [
         `### <:astrix:1527205612205903973> Command Info ── \`.${primaryName}\``,
@@ -60,17 +63,25 @@ module.exports = {
       const footerText = `-# Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE`;
 
       const container = new ContainerBuilder()
-        .addTextDisplayComponents(new TextDisplayBuilder().setContent(detailsContent))
-        .addSeparatorComponents(
-          new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(detailsContent),
         )
-        .addTextDisplayComponents(new TextDisplayBuilder().setContent(footerText));
+        .addSeparatorComponents(
+          new SeparatorBuilder()
+            .setSpacing(SeparatorSpacingSize.Small)
+            .setDivider(true),
+        )
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(footerText),
+        );
 
-      return message.reply({
-        components: [container],
-        flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { parse: [], repliedUser: false },
-      }).catch(() => null);
+      return message
+        .reply({
+          components: [container],
+          flags: MessageFlags.IsComponentsV2,
+          allowedMentions: { parse: [], repliedUser: false },
+        })
+        .catch(() => null);
     }
 
     // Default: Show full categories overview
@@ -107,13 +118,13 @@ module.exports = {
       }
     }
 
-    const logoPath = path.join(__dirname, "../../assets/logo.png");
+    const logoPath = path.join(__dirname, "../../assets/helpmenu.png");
     const bannerAttachment = new AttachmentBuilder(logoPath, {
-      name: "logo.png",
+      name: "helpmenu.png",
     });
 
     const mediaItem = new MediaGalleryItemBuilder().setURL(
-      "attachment://logo.png",
+      "attachment://helpmenu.png",
     );
     const mediaGallery = new MediaGalleryBuilder().addItems(mediaItem);
 

@@ -41,8 +41,12 @@ async function generateMusicCard(player, track) {
     const duration = track.length || 0;
 
     let thumbnail = track.thumbnail || track.displayThumbnail?.() || null;
-    if (!thumbnail || typeof thumbnail !== "string" || !thumbnail.startsWith("http")) {
-      thumbnail = path.join(__dirname, "../assets/astrix_logo.png");
+    if (
+      !thumbnail ||
+      typeof thumbnail !== "string" ||
+      !thumbnail.startsWith("http")
+    ) {
+      thumbnail = path.join(__dirname, "../assets/astrix_helpmenu.png");
     }
 
     const imageBuffer = await renderThemeCard(themeKey, {
@@ -67,14 +71,22 @@ function createSafeOptionValue(prefix, rawString) {
   return full.length > 100 ? full.substring(0, 100) : full;
 }
 
-async function createNowPlayingComponentsPayload(client, player, track, forcePaused = null, hasCardAttachment = true) {
+async function createNowPlayingComponentsPayload(
+  client,
+  player,
+  track,
+  forcePaused = null,
+  hasCardAttachment = true,
+) {
   const isPaused = forcePaused !== null ? forcePaused : player.shoukaku.paused;
   const loopState = (player.loop || "none").toString().toLowerCase();
   const activeFilter = player.data?.get("activeFilter") || "Off";
 
   const requesterMention = track.requester?.username
     ? `${track.requester.username}`
-    : (track.requester?.id ? `<@${track.requester.id}>` : "Automated");
+    : track.requester?.id
+      ? `<@${track.requester.id}>`
+      : "Automated";
 
   const engineName = (track.sourceName || "YouTube").toUpperCase();
 
@@ -84,20 +96,20 @@ async function createNowPlayingComponentsPayload(client, player, track, forcePau
 
   if (hasCardAttachment) {
     const mediaGallery = new MediaGalleryBuilder().addItems(
-      new MediaGalleryItemBuilder().setURL("attachment://musicard.png")
+      new MediaGalleryItemBuilder().setURL("attachment://musicard.png"),
     );
     container.addMediaGalleryComponents(mediaGallery);
   }
 
   const footerDisplay = new TextDisplayBuilder().setContent(
-    `-# ⚙️ Engine: ${engineName} | Requested By ${requesterMention}`
+    `-# ⚙️ Engine: ${engineName} | Requested By ${requesterMention}`,
   );
   container.addTextDisplayComponents(footerDisplay);
 
   // 2. Fetch Actual Similar Songs for Suggested Songs Dropdown Menu
   // Build set of URIs / titles already in queue or playing so they disappear from suggestions
   const queuedUris = new Set(
-    (player.queue ? Array.from(player.queue) : []).map((t) => t.uri || t.title)
+    (player.queue ? Array.from(player.queue) : []).map((t) => t.uri || t.title),
   );
   if (track?.uri) queuedUris.add(track.uri);
   if (track?.title) queuedUris.add(track.title);
@@ -106,18 +118,27 @@ async function createNowPlayingComponentsPayload(client, player, track, forcePau
   try {
     const query = track.author || track.title;
     if (query && client.manager) {
-      const res = await client.manager.search(query, { engine: "youtube" }).catch(() => null);
+      const res = await client.manager
+        .search(query, { engine: "youtube" })
+        .catch(() => null);
       if (res && res.tracks && res.tracks.length > 0) {
         const uniqueTracks = res.tracks
           .filter((t) => !queuedUris.has(t.uri) && !queuedUris.has(t.title))
           .slice(0, 5);
 
         uniqueTracks.forEach((t) => {
-          const rawQuery = t.title ? `${t.title} ${t.author || ""}` : (t.author || "Music");
+          const rawQuery = t.title
+            ? `${t.title} ${t.author || ""}`
+            : t.author || "Music";
           suggestedOptions.push({
-            label: t.title.length > 45 ? t.title.substring(0, 42) + "..." : t.title,
+            label:
+              t.title.length > 45 ? t.title.substring(0, 42) + "..." : t.title,
             value: createSafeOptionValue("sugg_play_q_", rawQuery),
-            description: t.author ? (t.author.length > 45 ? t.author.substring(0, 42) + "..." : t.author) : "Suggested Track",
+            description: t.author
+              ? t.author.length > 45
+                ? t.author.substring(0, 42) + "..."
+                : t.author
+              : "Suggested Track",
             default: false,
           });
         });
@@ -145,7 +166,9 @@ async function createNowPlayingComponentsPayload(client, player, track, forcePau
     .setMaxValues(maxVals)
     .addOptions(suggestedOptions);
 
-  const rowSuggested = new ActionRowBuilder().addComponents(suggestedSelectMenu);
+  const rowSuggested = new ActionRowBuilder().addComponents(
+    suggestedSelectMenu,
+  );
 
   // 3. Dropdown 2: Filter Select Menu
   const filterOptions = Object.keys(DSP_FILTERS)
@@ -154,7 +177,8 @@ async function createNowPlayingComponentsPayload(client, player, track, forcePau
     .map((key) => ({
       label: DSP_FILTERS[key].name,
       value: key,
-      default: activeFilter.toLowerCase() === DSP_FILTERS[key].name.toLowerCase(),
+      default:
+        activeFilter.toLowerCase() === DSP_FILTERS[key].name.toLowerCase(),
     }));
 
   const filterSelectMenu = new StringSelectMenuBuilder()
@@ -169,7 +193,9 @@ async function createNowPlayingComponentsPayload(client, player, track, forcePau
     new ButtonBuilder()
       .setCustomId("music_loop")
       .setEmoji("🔂")
-      .setStyle(loopState !== "none" ? ButtonStyle.Success : ButtonStyle.Secondary),
+      .setStyle(
+        loopState !== "none" ? ButtonStyle.Success : ButtonStyle.Secondary,
+      ),
     new ButtonBuilder()
       .setCustomId("music_prev")
       .setEmoji("◀️")
@@ -185,7 +211,7 @@ async function createNowPlayingComponentsPayload(client, player, track, forcePau
     new ButtonBuilder()
       .setCustomId("music_like")
       .setEmoji("💖")
-      .setStyle(ButtonStyle.Secondary)
+      .setStyle(ButtonStyle.Secondary),
   );
 
   // 5. Row 2 Buttons: 🔀  🔉  ⏹️  🔊  🎵
@@ -209,7 +235,7 @@ async function createNowPlayingComponentsPayload(client, player, track, forcePau
     new ButtonBuilder()
       .setCustomId("music_queue")
       .setEmoji("🎵")
-      .setStyle(ButtonStyle.Secondary)
+      .setStyle(ButtonStyle.Secondary),
   );
 
   return [container, rowSuggested, rowFilter, row1, row2];
@@ -234,7 +260,13 @@ async function sendNowPlayingMessage(client, player, track) {
     }
 
     const cardAttachment = await generateMusicCard(player, track);
-    const components = await createNowPlayingComponentsPayload(client, player, track, null, Boolean(cardAttachment));
+    const components = await createNowPlayingComponentsPayload(
+      client,
+      player,
+      track,
+      null,
+      Boolean(cardAttachment),
+    );
 
     const payload = {
       components: components,
@@ -261,7 +293,13 @@ async function updateNowPlayingMessage(client, player, forcePaused = null) {
 
     const track = player.queue.current;
     const cardAttachment = await generateMusicCard(player, track);
-    const components = await createNowPlayingComponentsPayload(client, player, track, forcePaused, Boolean(cardAttachment));
+    const components = await createNowPlayingComponentsPayload(
+      client,
+      player,
+      track,
+      forcePaused,
+      Boolean(cardAttachment),
+    );
 
     const payload = {
       components: components,
@@ -310,13 +348,17 @@ function initMusicManager(client) {
       name: process.env.LAVALINK_NAME || "Jirayu Node",
       url: process.env.LAVALINK_HOST || "lavalink.jirayu.net:443",
       auth: process.env.LAVALINK_PASSWORD || "youshallnotpass",
-      secure: process.env.LAVALINK_SECURE ? process.env.LAVALINK_SECURE === "true" : true,
+      secure: process.env.LAVALINK_SECURE
+        ? process.env.LAVALINK_SECURE === "true"
+        : true,
     },
   ];
 
   const spotifyPlugin = new ShoukakuSpotify({
-    clientId: process.env.SPOTIFY_CLIENT_ID || "e7f09f0868f0473e9702df93f0b2f0a1",
-    clientSecret: process.env.SPOTIFY_CLIENT_SECRET || "c7b7f14b60a34b2298e29a3f23aef542",
+    clientId:
+      process.env.SPOTIFY_CLIENT_ID || "e7f09f0868f0473e9702df93f0b2f0a1",
+    clientSecret:
+      process.env.SPOTIFY_CLIENT_SECRET || "c7b7f14b60a34b2298e29a3f23aef542",
   });
 
   const kazagumo = new Kazagumo(
@@ -329,7 +371,7 @@ function initMusicManager(client) {
       },
     },
     new Connectors.DiscordJS(client),
-    nodes
+    nodes,
   );
 
   client.voiceHealthMonitor = new VoiceHealthMonitor(client);
@@ -349,7 +391,10 @@ function initMusicManager(client) {
   });
 
   kazagumo.shoukaku.on("error", (name, error) => {
-    logger.Error("Lavalink", `Node "${name}" error: ${error?.message || error}`);
+    logger.Error(
+      "Lavalink",
+      `Node "${name}" error: ${error?.message || error}`,
+    );
   });
 
   kazagumo.on("playerStart", async (player, track) => {
@@ -387,14 +432,20 @@ function initMusicManager(client) {
   });
 
   kazagumo.on("playerException", (player, data) => {
-    logger.Error("Lavalink", `Player Exception in guild ${player?.guildId}: ${data?.exception?.message || data}`);
+    logger.Error(
+      "Lavalink",
+      `Player Exception in guild ${player?.guildId}: ${data?.exception?.message || data}`,
+    );
     if (player && player.queue && player.queue.length > 0) {
       player.skip().catch(() => null);
     }
   });
 
   kazagumo.on("playerStuck", (player, data) => {
-    logger.Warn("Lavalink", `Player Stuck in guild ${player?.guildId} (threshold: ${data?.thresholdMs}ms)`);
+    logger.Warn(
+      "Lavalink",
+      `Player Stuck in guild ${player?.guildId} (threshold: ${data?.thresholdMs}ms)`,
+    );
     if (player && player.queue && player.queue.length > 0) {
       player.skip().catch(() => null);
     }
@@ -408,9 +459,15 @@ function getSearchEngine(query) {
   const str = query.trim().toLowerCase();
 
   if (str.includes("spotify.com") || str.startsWith("sp:")) return "spotify";
-  if (str.includes("soundcloud.com") || str.startsWith("sc:")) return "soundcloud";
-  if (str.includes("music.apple.com") || str.startsWith("am:")) return "applemusic";
-  if (str.includes("youtube.com") || str.includes("youtu.be") || str.startsWith("yt:"))
+  if (str.includes("soundcloud.com") || str.startsWith("sc:"))
+    return "soundcloud";
+  if (str.includes("music.apple.com") || str.startsWith("am:"))
+    return "applemusic";
+  if (
+    str.includes("youtube.com") ||
+    str.includes("youtu.be") ||
+    str.startsWith("yt:")
+  )
     return "youtube";
 
   return "youtube";

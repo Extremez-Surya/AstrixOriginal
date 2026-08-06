@@ -67,7 +67,7 @@ module.exports = {
       `> - **Riot ID:** \`${name}#${tag}\``,
       `> - **Username:** \`${name}\``,
       `> - **Tagline:** \`#${tag}\``,
-      `> - **Status:** \`Online / Ready <:online:1528327584520081519>\``,
+      `> - **Status:** \`Online / Ready\` <:online:1528327584520081519>`,
     ].join("\n");
 
     const files = [];
