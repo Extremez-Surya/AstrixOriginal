@@ -320,6 +320,12 @@ module.exports = {
     // -------------------------------------------------------------
     if (sub === "joindm") {
       const arg1 = args[1]?.toLowerCase();
+      if (arg1 === "test") {
+        const testCmd = client.messageCommands?.get("joindmtest") || require("./joindmtest");
+        if (testCmd) {
+          return testCmd.execute(client, message, args);
+        }
+      }
       if (arg1 === "on" || arg1 === "enable") {
         welcomeManager.updateGuildWelcome(message.guild.id, { joinDmEnabled: true });
         return message.reply("✅ Direct Message greetings on join have been **ENABLED**.").catch(() => null);
@@ -341,7 +347,7 @@ module.exports = {
     // SUBCOMMAND: TEST
     // -------------------------------------------------------------
     if (sub === "test") {
-      const welcometestCmd = client.commands.get("welcometest");
+      const welcometestCmd = client.messageCommands?.get("welcometest") || require("./welcometest");
       if (welcometestCmd) {
         return welcometestCmd.execute(client, message, args);
       }

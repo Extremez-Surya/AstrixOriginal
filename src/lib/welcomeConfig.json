@@ -2,6 +2,7 @@
   "1526109131042459678": {
     "enabled": true,
     "channelId": "1533117154638041240",
+    "messageEnabled": true,
     "messageText": "Welcome {user} to **{server}**! We are glad to have you as member #{memberCount}!",
     "autoRoleId": null,
     "autoNickFormat": null,

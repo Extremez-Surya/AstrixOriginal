@@ -12,6 +12,13 @@ module.exports = {
     const action = args[0]?.toLowerCase();
     const text = args.slice(1).join(" ");
 
+    if (action === "test") {
+      const testCmd = client.messageCommands.get("joindmtest");
+      if (testCmd) {
+        return testCmd.execute(client, message, args);
+      }
+    }
+
     if (action === "enable" || action === "on") {
       if (!text) return message.reply("Provide Join DM message content: `.joindm enable <text>`");
 
@@ -36,7 +43,7 @@ module.exports = {
       new TextDisplayBuilder().setContent(
         `### ✉️ Join DM Setup\n` +
         `-# *Send private welcome messages to new joins.*\n\n` +
-        `> - **Usage:** \`.joindm enable <text>\` | \`.joindm disable\``
+        `> - **Usage:** \`.joindm enable <text>\` | \`.joindm disable\` | \`.joindm test\``
       )
     );
     return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
