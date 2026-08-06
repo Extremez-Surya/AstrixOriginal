@@ -72,8 +72,6 @@ module.exports = {
     const row = new ActionRowBuilder().addComponents(websiteButton, supportButton);
 
     const mainContent =
-      `# 🌙 Welcome to ${message.guild.name}, <@${message.author.id}>!\n` +
-      `-# *We're glad you're here as member **#${message.guild.memberCount.toLocaleString()}**.*\n\n` +
       `<:members:1528311049726591006> **Member Overview**\n` +
       `> -# <:prefix:1528309903972892772> **Member:** <@${message.author.id}>\n` +
       `> -# <:servers:1528311514065535007> **Username:** \`${message.author.username}\`\n` +

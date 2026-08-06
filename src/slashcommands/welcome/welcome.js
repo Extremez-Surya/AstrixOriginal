@@ -319,8 +319,6 @@ module.exports = {
       }
 
       const mainContent =
-        `# 🌙 Welcome to ${interaction.guild.name}, <@${interaction.user.id}>!\n` +
-        `-# *We're glad you're here as member **#${interaction.guild.memberCount.toLocaleString()}**.*\n\n` +
         `<:members:1528311049726591006> **Member Overview**\n` +
         `> -# <:prefix:1528309903972892772> **Member:** <@${interaction.user.id}>\n` +
         `> -# <:servers:1528311514065535007> **Username:** \`${interaction.user.username}\`\n` +

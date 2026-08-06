@@ -110,8 +110,6 @@ module.exports = {
       const row = new ActionRowBuilder().addComponents(websiteButton, supportButton);
 
       const mainContent =
-        `# 🌙 Welcome to ${member.guild.name}, <@${member.id}>!\n` +
-        `-# *Thank you for joining our community.*\n\n` +
         `<:members:1528311049726591006> **Member Overview**\n` +
         `> -# <:prefix:1528309903972892772> **Member:** <@${member.id}>\n` +
         `> -# <:servers:1528311514065535007> **Username:** \`${member.user.username}\`\n` +
@@ -200,8 +198,6 @@ module.exports = {
         const row = new ActionRowBuilder().addComponents(websiteButton, supportButton);
 
         let mainContent =
-          `# 🌙 Welcome to ${member.guild.name}, <@${member.id}>!\n` +
-          `-# *A new member has joined our community.*\n\n` +
           `<:members:1528311049726591006> **Member Overview**\n` +
           `> -# <:prefix:1528309903972892772> **Member:** <@${member.id}>\n` +
           `> -# <:servers:1528311514065535007> **Username:** \`${member.user.username}\`\n` +
