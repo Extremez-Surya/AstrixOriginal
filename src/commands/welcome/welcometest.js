@@ -77,8 +77,7 @@ module.exports = {
       `<:members:1528311049726591006> **Member Overview**\n` +
       `> -# <:prefix:1528309903972892772> **Member:** <@${message.author.id}>\n` +
       `> -# <:servers:1528311514065535007> **Username:** \`${message.author.username}\`\n` +
-      `> -# <:list:1528313871889334382> **Member Count:** \`#${message.guild.memberCount.toLocaleString()}\`\n\n` +
-      `> -# <:clock:1528312173275906088> ${welcomeText}`;
+      `> -# <:list:1528313871889334382> **Member Count:** \`#${message.guild.memberCount.toLocaleString()}\``;
 
     const footerText = `-# Built with <a:Red_heart:1528312958541631578> by ASTRIXCODE™ • Test Triggered By ${message.author.tag}`;
 
