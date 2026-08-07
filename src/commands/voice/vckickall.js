@@ -17,19 +17,19 @@ function hasPerms(member, perm) {
 }
 
 module.exports = {
-  alias: ["vcdeafenall", "vdeafenall", "voicedeafenall"],
+  alias: ["vckickall", "vkickall", "vcdisconnectall", "voicedisconnectall"],
   category: "Voice",
-  desc: "Server deafen all human members connected to your voice channel.",
-  botPermissions: ["DeafenMembers"],
-  userPermissions: ["DeafenMembers"],
+  desc: "Disconnect all human members connected to your voice channel.",
+  botPermissions: ["MoveMembers"],
+  userPermissions: ["MoveMembers"],
   devOnly: false,
 
   async execute(client, message, args) {
     if (!message.guild) return;
 
-    if (!hasPerms(message.member, PermissionFlagsBits.DeafenMembers)) {
+    if (!hasPerms(message.member, PermissionFlagsBits.MoveMembers)) {
       const container = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(`❌ You need **Deafen Members** permission to use this command.`)
+        new TextDisplayBuilder().setContent(`❌ You need **Move Members** permission to use this command.`)
       );
       return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
     }
@@ -43,12 +43,12 @@ module.exports = {
     }
 
     const targets = Array.from(channel.members.values()).filter(
-      (m) => !m.user.bot && m.id !== message.author.id && !m.voice.serverDeaf
+      (m) => !m.user.bot && m.id !== message.author.id
     );
 
     if (targets.length === 0) {
       const container = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(`ℹ️ No eligible undeafened human members found in **${channel.name}**.`)
+        new TextDisplayBuilder().setContent(`ℹ️ No human members to disconnect in **${channel.name}**.`)
       );
       return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
     }
@@ -66,7 +66,7 @@ module.exports = {
         continue;
       }
       try {
-        await member.voice.setDeaf(true, `Mass deafened by ${message.author.tag}`);
+        await member.voice.disconnect(`Mass disconnected by ${message.author.tag}`);
         successCount++;
       } catch (_) {
         failCount++;
@@ -75,10 +75,10 @@ module.exports = {
 
     const container = new ContainerBuilder().addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
-        `### 🎧 Mass Voice Deafen Executed\n` +
-          `-# *Server deafened members in voice channel ${channel.name}.*\n\n` +
+        `### 🚪 Mass Voice Disconnect Executed\n` +
+          `-# *Disconnected members from voice channel ${channel.name}.*\n\n` +
           `> - **Voice Channel:** <#${channel.id}>\n` +
-          `> - **Members Deafened:** \`${successCount}\` member(s)\n` +
+          `> - **Members Disconnected:** \`${successCount}\` member(s)\n` +
           `> - **Skipped / Failed:** \`${failCount}\` member(s)\n` +
           `> - **Moderator:** <@${message.author.id}>`
       )

@@ -1,55 +1,75 @@
-const { ContainerBuilder, TextDisplayBuilder, MessageFlags, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
+const {
+  ContainerBuilder,
+  TextDisplayBuilder,
+  SeparatorBuilder,
+  SeparatorSpacingSize,
+  MessageFlags,
+} = require("discord.js");
+const ticketManager = require("../../lib/ticketManager");
 
 module.exports = {
-  alias: ["ticket", "tickets", "ticketpanel"],
+  alias: ["ticket", "tickethelp", "ticketstatus"],
   category: "Ticket",
-  desc: "Set up and manage private support ticket creation panels.",
-  botPermissions: ["ManageChannels", "ManageRoles"],
-  userPermissions: ["Administrator"],
+  desc: "Comprehensive Support Ticket Control Dashboard & Commands.",
+  botPermissions: ["ManageChannels", "SendMessages"],
+  userPermissions: [],
   devOnly: false,
 
   async execute(client, message, args) {
+    if (!message.guild) return;
+
     const sub = args[0]?.toLowerCase();
+    const config = ticketManager.getGuildTicketConfig(message.guild.id);
 
-    if (sub === "panel" || sub === "setup") {
-      const button = new ButtonBuilder()
-        .setCustomId("create_ticket_btn")
-        .setLabel("Create Ticket")
-        .setStyle(ButtonStyle.Primary)
-        .setEmoji("🎟️");
-
-      const row = new ActionRowBuilder().addComponents(button);
-
-      const container = new ContainerBuilder()
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### 🎟️ Support Ticket Center\n` +
-            `-# *Need assistance or wish to contact staff? Click below to open a private ticket channel.*\n\n` +
-            `> A staff member will respond to your channel shortly.`
-          )
-        )
-        .addActionRowComponents(row);
-
-      await message.channel.send({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
-      return message.reply({ content: "✅ Ticket panel deployed successfully.", ephemeral: true }).catch(() => null);
+    if (sub === "setup") {
+      const ticketSetupCmd = require("./ticketsetup");
+      return ticketSetupCmd.execute(client, message, args);
     }
 
-    if (sub === "close") {
+    if (sub === "status" || sub === "config") {
+      const activeTicketsCount = Object.values(config.tickets || {}).filter((t) => !t.closed).length;
+      const totalCount = config.ticketCount || 0;
+      const logsChan = config.logsChannelId ? `<#${config.logsChannelId}>` : "`Not Set`";
+      const supportRole = config.supportRoleId ? `<@&${config.supportRoleId}>` : "`Not Set`";
+      const categoryChan = config.parentCategoryId ? `<#${config.parentCategoryId}>` : "`Not Set`";
+      const blacklistCount = (config.blacklist || []).length;
+
       const container = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(`### 🎟️ Ticket Closed\n-# *This ticket channel will be archived.*`)
+        new TextDisplayBuilder().setContent(
+          `### 🎟️ Ticket System Configuration\n` +
+            `-# *Current ticket settings for ${message.guild.name}.*\n\n` +
+            `> - **Support Role:** ${supportRole}\n` +
+            `> - **Ticket Category:** ${categoryChan}\n` +
+            `> - **Logs Channel:** ${logsChan}\n` +
+            `> - **Total Cumulative Tickets:** \`${totalCount}\` ticket(s)\n` +
+            `> - **Active Open Tickets:** \`${activeTicketsCount}\` ticket(s)\n` +
+            `> - **Blacklisted Users/Roles:** \`${blacklistCount}\` entry(ies)`
+        )
       );
       return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
     }
 
-    const container = new ContainerBuilder().addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        `### 🎟️ Ticket System Setup\n` +
-        `-# *Support ticket system configuration.*\n\n` +
-        `> - **Usage:** \`.ticket panel\` - Deploy ticket creation button panel\n` +
-        `> - **Usage:** \`.ticket close\` - Close and delete active ticket channel\n` +
-        `> - **Usage:** \`.ticket add @user\` | \`.ticket remove @user\``
-      )
-    );
+    const mainContent =
+      `# 🎟️ Support Ticket Desk Dashboard\n` +
+      `-# *Manage support tickets, panels, transcripts, and staff assignments.*\n\n` +
+      `### 🛠️ Ticket Commands Guide\n` +
+      `> - \`.ticketsetup #channel\` / \`.ticketpanel\` — Dispatch interactive ticket panel\n` +
+      `> - \`.ticketopen [reason]\` — Open a support ticket via text command\n` +
+      `> - \`.ticketclose [reason]\` — Close ticket, generate HTML transcript & delete room\n` +
+      `> - \`.ticketclaim\` / \`.ticketunclaim\` — Claim or unclaim ticket for support staff\n` +
+      `> - \`.ticketadd @user\` / \`.ticketremove @user\` — Manage ticket room members\n` +
+      `> - \`.tickettranscript\` — Generate HTML transcript of current ticket\n` +
+      `> - \`.ticketrename <new-name>\` — Rename ticket channel\n` +
+      `> - \`.ticketblacklist @user\` — Blacklist/unblacklist user from opening tickets\n` +
+      `> - \`.ticket status\` — View active ticket system settings`;
+
+    const footerText = `-# ASTRIXCODE™ Ticket Engine • © 2026 ASTRIXCODE`;
+
+    const container = new ContainerBuilder()
+      .addTextDisplayComponents(new TextDisplayBuilder().setContent(mainContent))
+      .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
+      .addTextDisplayComponents(new TextDisplayBuilder().setContent(footerText));
+
     return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
   },
 };

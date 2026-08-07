@@ -1,0 +1,36 @@
+{
+  "1526109131042459678": {
+    "panels": [],
+    "tickets": {
+      "1535291772899557396": {
+        "ticketId": "0001",
+        "channelId": "1535291772899557396",
+        "userId": "1299394763933618239",
+        "categoryId": null,
+        "reason": "Report Bug / User: Category Select",
+        "closed": true,
+        "claimedBy": null,
+        "createdAt": 1786112375277,
+        "closedBy": "1299394763933618239",
+        "closedAt": 1786112389987
+      },
+      "1535293166373175349": {
+        "ticketId": "0002",
+        "channelId": "1535293166373175349",
+        "userId": "1299394763933618239",
+        "categoryId": "1535293013721485353",
+        "reason": "General Support: hey",
+        "closed": true,
+        "claimedBy": null,
+        "createdAt": 1786112707516,
+        "closedBy": "1299394763933618239",
+        "closedAt": 1786112718090
+      }
+    },
+    "ticketCount": 2,
+    "blacklist": [],
+    "logsChannelId": "1526109209865883670",
+    "supportRoleId": "1528365499174617148",
+    "parentCategoryId": "1535293013721485353"
+  }
+}

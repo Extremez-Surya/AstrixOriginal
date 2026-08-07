@@ -34,6 +34,26 @@ module.exports = {
     const handledWelcomeCanvas = await handleWelcomeCanvasInteraction(client, interaction);
     if (handledWelcomeCanvas) return;
 
+    // Handle Ticket Setup Wizard Interactions (Step-by-step dropdowns & customization modal)
+    const { handleTicketSetupWizard } = require("../lib/ticket/handleTicketSetupWizard");
+    const handledTicketWizard = await handleTicketSetupWizard(client, interaction);
+    if (handledTicketWizard) return;
+
+    // Handle Ticket System Interactions (Panels, Select Menus, Claim, Close, Transcripts, Modals)
+    const { handleTicketInteraction } = require("../lib/ticket/handleTicketInteraction");
+    const handledTicket = await handleTicketInteraction(client, interaction);
+    if (handledTicket) return;
+
+    // Handle J2C Voice Controller Interactions (Buttons & Modals)
+    const { handleJ2CControlInteraction } = require("../lib/j2c/handleJ2CControlInteraction");
+    const handledJ2CControl = await handleJ2CControlInteraction(client, interaction);
+    if (handledJ2CControl) return;
+
+    // Handle Voice System Interactions (Channel Member Directory Buttons)
+    const { handleVoiceInteraction } = require("../lib/voice/handleVoiceInteraction");
+    const handledVoice = await handleVoiceInteraction(client, interaction);
+    if (handledVoice) return;
+
     // Handle Music Interactions (Buttons & Select Menus)
     const handledMusic = await handleMusicInteraction(client, interaction);
     if (handledMusic) return;

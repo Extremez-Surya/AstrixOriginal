@@ -63,6 +63,10 @@
     "emoji": "<:leave:1528311514065535007>",
     "desc": "Member departure alerts, goodbye cards, multi-channel leave system & auto-delete configuration."
   },
+  "Join To Create": {
+    "emoji": "🔊",
+    "desc": "Join-to-Create (J2C) dynamic voice channel generators & in-voice control system."
+  },
   "Owner": {
     "emoji": "👑",
     "desc": "Developer and bot owner administrative commands."

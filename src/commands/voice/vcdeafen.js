@@ -1,23 +1,102 @@
-const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require("discord.js");
+const {
+  ContainerBuilder,
+  TextDisplayBuilder,
+  SeparatorBuilder,
+  SeparatorSpacingSize,
+  MessageFlags,
+  PermissionFlagsBits,
+} = require("discord.js");
+
+function hasPerms(member, perm) {
+  return (
+    member.id === member.guild.ownerId ||
+    member.permissions.has(perm) ||
+    member.permissions.has(PermissionFlagsBits.Administrator) ||
+    member.permissions.has(PermissionFlagsBits.ManageGuild)
+  );
+}
 
 module.exports = {
-  alias: ["vcdeafen", "vcdeaf", "voice-deaf"],
+  alias: ["vcdeafen", "vdeafen", "voicedeafen", "vcdeaf"],
   category: "Voice",
-  desc: "Deafen a member in a voice channel.",
+  desc: "Server deafen a member in a voice channel.",
   botPermissions: ["DeafenMembers"],
   userPermissions: ["DeafenMembers"],
   devOnly: false,
 
   async execute(client, message, args) {
-    const targetUser = message.mentions.users.first();
-    if (!targetUser) return message.reply("Mention user to voice deafen: `.vcdeaf @user`");
+    if (!message.guild) return;
 
-    const member = await message.guild.members.fetch(targetUser.id).catch(() => null);
-    if (member && member.voice.channel) await member.voice.setDeaf(true).catch(() => null);
+    if (!hasPerms(message.member, PermissionFlagsBits.DeafenMembers)) {
+      const container = new ContainerBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(`❌ You need **Deafen Members** permission to use this command.`)
+      );
+      return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    }
 
-    const container = new ContainerBuilder().addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(`### 🎧 Member Voice Deafened\n> - **User:** ${targetUser} (\`${targetUser.id}\`)`)
-    );
-    return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    let targetMember;
+    if (message.mentions.members.size > 0) {
+      targetMember = message.mentions.members.first();
+    } else if (args[0]) {
+      const cleanId = args[0].replace(/\D/g, "");
+      if (cleanId) targetMember = await message.guild.members.fetch(cleanId).catch(() => null);
+    }
+
+    if (!targetMember) {
+      const container = new ContainerBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(`❌ Please mention a valid member to server deafen.\n\n**Usage:** \`.vcdeafen @user\``)
+      );
+      return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    }
+
+    if (!targetMember.voice.channel) {
+      const container = new ContainerBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(`❌ **${targetMember.user.username}** is not connected to a voice channel.`)
+      );
+      return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    }
+
+    if (targetMember.voice.serverDeaf) {
+      const container = new ContainerBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(`❌ **${targetMember.user.username}** is already server deafened.`)
+      );
+      return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    }
+
+    if (targetMember.id === message.guild.ownerId && message.author.id !== message.guild.ownerId) {
+      const container = new ContainerBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(`❌ You cannot voice deafen the server owner.`)
+      );
+      return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    }
+
+    if (
+      message.author.id !== message.guild.ownerId &&
+      message.member.roles.highest.position <= targetMember.roles.highest.position
+    ) {
+      const container = new ContainerBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(`❌ You cannot voice deafen **${targetMember.user.username}** due to role hierarchy.`)
+      );
+      return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    }
+
+    try {
+      await targetMember.voice.setDeaf(true, `Server deafened by ${message.author.tag}`);
+      const container = new ContainerBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `### 🎧 Member Voice Deafened\n` +
+            `-# *Successfully server deafened member in voice.*\n\n` +
+            `> - **Target:** <@${targetMember.id}> (\`${targetMember.id}\`)\n` +
+            `> - **Voice Channel:** <#${targetMember.voice.channel.id}>\n` +
+            `> - **Moderator:** <@${message.author.id}>`
+        )
+      );
+      return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    } catch (err) {
+      const container = new ContainerBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(`❌ Failed to server deafen member. Bot lacks required permissions.`)
+      );
+      return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    }
   },
 };

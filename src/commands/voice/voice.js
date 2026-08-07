@@ -1,53 +1,73 @@
-const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require("discord.js");
+const {
+  ContainerBuilder,
+  TextDisplayBuilder,
+  SeparatorBuilder,
+  SeparatorSpacingSize,
+  MessageFlags,
+  PermissionFlagsBits,
+} = require("discord.js");
 
 module.exports = {
-  alias: ["voice", "vcmute", "vcunmute", "vckick", "vcdeaf", "vcundeaf"],
+  alias: ["voice", "vcmode", "vchelp"],
   category: "Voice",
-  desc: "Moderate members in voice channels (mute, deafen, disconnect, move).",
+  desc: "Comprehensive Voice Channel Moderation Dashboard & Control Engine.",
   botPermissions: ["MuteMembers", "DeafenMembers", "MoveMembers"],
   userPermissions: ["MuteMembers"],
   devOnly: false,
 
   async execute(client, message, args) {
-    const targetUser =
-      message.mentions.users.first() ||
-      (args[1] ? await client.users.fetch(args[1]).catch(() => null) : null);
+    if (!message.guild) return;
 
-    const action = args[0]?.toLowerCase();
+    const voiceChannels = message.guild.channels.cache.filter((c) => c.isVoiceBased());
+    const totalVCs = voiceChannels.size;
 
-    if (!targetUser) {
-      const container = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### 🎙️ Voice Moderation Panel\n` +
-          `-# *Manage connected voice channel members.*\n\n` +
-          `> - **Usage:** \`.voice mute @user\` | \`.voice unmute @user\`\n` +
-          `> - **Usage:** \`.voice deaf @user\` | \`.voice undeaf @user\`\n` +
-          `> - **Usage:** \`.voice disconnect @user\` | \`.voice move @user #VC\``
-        )
-      );
-      return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
-    }
+    let connectedMembers = 0;
+    let mutedCount = 0;
+    let deafenedCount = 0;
+    let streamingCount = 0;
 
-    const member = await message.guild.members.fetch(targetUser.id).catch(() => null);
-    if (!member || !member.voice.channel) {
-      return message.reply("Target member is not connected to a voice channel.");
-    }
+    voiceChannels.forEach((vc) => {
+      vc.members.forEach((m) => {
+        if (!m.user.bot) {
+          connectedMembers++;
+          if (m.voice.serverMute || m.voice.selfMute) mutedCount++;
+          if (m.voice.serverDeaf || m.voice.selfDeaf) deafenedCount++;
+          if (m.voice.streaming) streamingCount++;
+        }
+      });
+    });
 
-    if (action === "mute") {
-      await member.voice.setMute(true).catch(() => null);
-    } else if (action === "unmute") {
-      await member.voice.setMute(false).catch(() => null);
-    } else if (action === "disconnect" || action === "kick") {
-      await member.voice.disconnect().catch(() => null);
-    }
+    const userVC = message.member.voice.channel;
+    const userVCStatus = userVC ? `<#${userVC.id}> (\`${userVC.members.size} connected\`)` : "`Not Connected`";
 
-    const container = new ContainerBuilder().addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        `### 🎙️ Voice Action Executed\n` +
-        `-# *Voice state updated for ${targetUser.username}.*\n\n` +
-        `> - **Action:** \`${action || "updated"}\` | **User:** ${targetUser}`
-      )
-    );
+    const mainContent =
+      `# 🎙️ Voice Moderation Control Dashboard\n` +
+      `-# *Manage connected voice channels and members across ${message.guild.name}.*\n\n` +
+      `### 📊 Server Voice Statistics\n` +
+      `> - **Your Status:** ${userVCStatus}\n` +
+      `> - **Active Voice Channels:** \`${totalVCs}\` VC(s)\n` +
+      `> - **Total Connected Members:** \`${connectedMembers}\` member(s)\n` +
+      `> - **Muted / Deafened / Streaming:** \`${mutedCount}\` 🎙️ | \`${deafenedCount}\` 🎧 | \`${streamingCount}\` 📺\n\n` +
+      `### 🛠️ Quick Commands Guide\n` +
+      `> - \`.vcmute @user\` / \`.vcunmute @user\` — Server mute/unmute a member\n` +
+      `> - \`.vcdeafen @user\` / \`.vcundeafen @user\` — Server deafen/undeafen a member\n` +
+      `> - \`.vckick @user\` — Disconnect member from voice channel\n` +
+      `> - \`.vcmove @user #channel\` — Move member to target voice channel\n` +
+      `> - \`.vcpull @user\` — Pull member into your current voice channel\n` +
+      `> - \`.vcmuteall\` / \`.vcunmuteall\` — Mass mute/unmute all in your VC\n` +
+      `> - \`.vcdeafenall\` / \`.vcundeafenall\` — Mass deafen/undeafen all in your VC\n` +
+      `> - \`.vckickall\` — Disconnect all human members from your VC\n` +
+      `> - \`.vcmoveall #from #to\` — Mass move members between channels\n` +
+      `> - \`.vclist\` — Interactive channel member list with status badges\n` +
+      `> - \`.invc\` — Overview of active voice channels and connected counts`;
+
+    const footerText = `-# ASTRIXCODE™ Voice Moderation Engine • © 2026 ASTRIXCODE`;
+
+    const container = new ContainerBuilder()
+      .addTextDisplayComponents(new TextDisplayBuilder().setContent(mainContent))
+      .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
+      .addTextDisplayComponents(new TextDisplayBuilder().setContent(footerText));
+
     return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
   },
 };

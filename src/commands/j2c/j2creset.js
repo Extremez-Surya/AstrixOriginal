@@ -1,19 +1,20 @@
 const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require("discord.js");
+const j2cManager = require("../../lib/j2cManager");
 
 module.exports = {
-  alias: ["j2csetup", "jointocreatesetup"],
-  category: "Voice",
-  desc: "Set a voice channel as a Join-To-Create temp VC hub.",
+  alias: ["j2creset", "jointocreatereset"],
+  category: "Join To Create",
+  desc: "Reset and disable Join-To-Create temp VC generators for this server.",
   botPermissions: ["ManageChannels"],
   userPermissions: ["Administrator"],
   devOnly: false,
 
   async execute(client, message, args) {
-    const channel = message.mentions.channels.first();
-    if (!channel) return message.reply("Mention channel: `.j2csetup #VoiceChannel`");
+    if (!message.guild) return;
 
+    j2cManager.resetJ2C(message.guild.id);
     const container = new ContainerBuilder().addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(`### 🔊 J2C Hub Set\n> - **Generator Channel:** ${channel} (\`${channel.id}\`)`)
+      new TextDisplayBuilder().setContent(`✅ Join-To-Create system has been reset and disabled for this server.`)
     );
     return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
   },
