@@ -1,0 +1,29 @@
+{
+  "1526109131042459678": {
+    "enabled": true,
+    "channels": [
+      {
+        "content": null,
+        "color": null,
+        "image": null,
+        "author": null,
+        "authorIcon": null,
+        "title": "Goodbye!",
+        "description": "**{user.tag}** has left the server.",
+        "footer": null,
+        "footerIcon": null,
+        "thumbnail": null,
+        "selfDestruct": null,
+        "fields": null,
+        "buttons": null,
+        "canvasEnabled": true,
+        "canvasBgUrl": null,
+        "channelId": "1535228542160216124",
+        "canvasTemplate": "monochrome",
+        "avatarShape": "rounded"
+      }
+    ],
+    "leaveDmEnabled": false,
+    "leaveDmText": "Goodbye from **{server}**! We are sad to see you leave our community. You are always welcome back!"
+  }
+}

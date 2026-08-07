@@ -57,7 +57,11 @@
   },
   "Welcome": {
     "emoji": "👋",
-    "desc": "Welcome messages, join DMs, auto-roles & leaves configuration."
+    "desc": "Welcome messages, join DMs, auto-roles configuration."
+  },
+  "Goodbye": {
+    "emoji": "<:leave:1528311514065535007>",
+    "desc": "Member departure alerts, goodbye cards, multi-channel leave system & auto-delete configuration."
   },
   "Owner": {
     "emoji": "👑",

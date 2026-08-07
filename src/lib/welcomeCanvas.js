@@ -116,14 +116,10 @@ async function safeLoadImage(url) {
         "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
       },
     });
-    if (!response.ok) {
-      console.error(`[safeLoadImage] Failed to fetch image (${response.status}): ${cleanUrl}`);
-      return null;
-    }
+    if (!response.ok) return null;
     const arrayBuffer = await response.arrayBuffer();
     return await loadImage(Buffer.from(arrayBuffer));
   } catch (err) {
-    console.error(`[safeLoadImage] Error loading image from ${url}:`, err.message);
     return null;
   }
 }
@@ -324,7 +320,7 @@ async function generateWelcomeCard(member, options = {}) {
 }
 
 /**
- * Renders Crimson Goodbye Banner
+ * Renders Goodbye Canvas Banner with Template & Custom Options
  */
 async function generateGoodbyeCard(member, options = {}) {
   const width = 1100;
@@ -332,9 +328,18 @@ async function generateGoodbyeCard(member, options = {}) {
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext("2d");
 
+  const templateKey = options.canvasTemplate && CANVAS_TEMPLATES[options.canvasTemplate] ? options.canvasTemplate : "crimson";
+  const tmpl = CANVAS_TEMPLATES[templateKey] || CANVAS_TEMPLATES.crimson;
+
+  const activeAccent = options.accentColor || tmpl.accent;
+  const activeTextColor = options.textColor || tmpl.text;
+  const activeSubTextColor = tmpl.subText;
+  const avatarShape = options.avatarShape || "circle";
+
   let bgLoaded = false;
-  if (options.bgUrl) {
-    const customBg = await safeLoadImage(options.bgUrl);
+  if (options.canvasBgUrl || options.bgUrl) {
+    const bgToLoad = options.canvasBgUrl || options.bgUrl;
+    const customBg = await safeLoadImage(bgToLoad);
     if (customBg) {
       ctx.drawImage(customBg, 0, 0, width, height);
       bgLoaded = true;
@@ -343,14 +348,14 @@ async function generateGoodbyeCard(member, options = {}) {
 
   if (!bgLoaded) {
     const grad = ctx.createLinearGradient(0, 0, width, height);
-    grad.addColorStop(0, "#190812");
-    grad.addColorStop(0.5, "#2b0a1a");
-    grad.addColorStop(1, "#12050d");
+    grad.addColorStop(0, tmpl.gradient[0]);
+    grad.addColorStop(0.5, tmpl.gradient[1]);
+    grad.addColorStop(1, tmpl.gradient[2]);
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, width, height);
   }
 
-  // Black Opaque-to-Transparent Gradient Backdrop (Left Opaque Black -> Right Transparent)
+  // Black Opaque-to-Transparent Gradient Backdrop
   const fadeOverlay = ctx.createLinearGradient(0, 0, width, 0);
   fadeOverlay.addColorStop(0, "rgba(0, 0, 0, 0.92)");
   fadeOverlay.addColorStop(0.45, "rgba(0, 0, 0, 0.65)");
@@ -359,23 +364,35 @@ async function generateGoodbyeCard(member, options = {}) {
   ctx.fillStyle = fadeOverlay;
   ctx.fillRect(0, 0, width, height);
 
+  // Background Watermark
   const serverName = member.guild?.name || "Server";
   const cleanServerName = serverName.length > 22 ? serverName.slice(0, 22) + "..." : serverName;
+  const watermarkText = options.customWatermark || cleanServerName.toUpperCase();
 
   ctx.save();
-  ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
+  ctx.fillStyle = tmpl.watermark;
   ctx.font = "900 110px Sekuya, sans-serif";
-  ctx.fillText(cleanServerName.toUpperCase(), 250, 260);
+  ctx.fillText(watermarkText, 250, 260);
   ctx.restore();
 
+  // Glow Effects
   const glowGrad = ctx.createRadialGradient(850, 210, 20, 850, 210, 260);
-  glowGrad.addColorStop(0, "rgba(225, 29, 72, 0.35)");
+  glowGrad.addColorStop(0, hexToRgba(activeAccent, 0.35));
   glowGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
   ctx.fillStyle = glowGrad;
   ctx.beginPath();
   ctx.arc(850, 210, 260, 0, Math.PI * 2);
   ctx.fill();
 
+  const textGlow = ctx.createRadialGradient(250, 180, 20, 250, 180, 300);
+  textGlow.addColorStop(0, hexToRgba(activeAccent, 0.25));
+  textGlow.addColorStop(1, "rgba(0, 0, 0, 0)");
+  ctx.fillStyle = textGlow;
+  ctx.beginPath();
+  ctx.arc(250, 180, 300, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Top Left Server Badge
   const guildObj = member.guild || {};
   const guildIconUrl = typeof guildObj.iconURL === "function"
     ? guildObj.iconURL({ forceStatic: true, extension: "png", size: 128 })
@@ -393,34 +410,34 @@ async function generateGoodbyeCard(member, options = {}) {
 
     ctx.beginPath();
     ctx.arc(70, 52, 23, 0, Math.PI * 2);
-    ctx.strokeStyle = "#e11d48";
+    ctx.strokeStyle = activeAccent;
     ctx.lineWidth = 2;
     ctx.stroke();
   } else {
-    drawFallbackIcon(ctx, 70, 52, 22, "#e11d48");
+    drawFallbackIcon(ctx, 70, 52, 22, activeAccent);
   }
 
   ctx.fillStyle = "#ffffff";
   ctx.font = "bold 24px Dancing, cursive";
   ctx.fillText(cleanServerName, 105, 48);
 
-  ctx.fillStyle = "#fda4af";
+  ctx.fillStyle = activeSubTextColor;
   ctx.font = "18px Dancing, cursive";
   ctx.fillText("✦ Goodbye System", 105, 68);
 
-  ctx.fillStyle = "#e11d48";
+  ctx.fillStyle = activeAccent;
   ctx.fillRect(45, 100, 620, 3);
 
-  ctx.shadowColor = "#e11d48";
+  ctx.shadowColor = activeAccent;
   ctx.shadowBlur = 18;
-  ctx.fillStyle = "#e11d48";
+  ctx.fillStyle = activeTextColor;
   ctx.font = "900 72px Sekuya, sans-serif";
   ctx.fillText("GOODBYE", 45, 180);
   ctx.shadowBlur = 0;
 
   const userObj = member.user || member;
   const username = userObj.username || "member";
-  ctx.fillStyle = "#e11d48";
+  ctx.fillStyle = activeAccent;
   ctx.font = "bold 46px Dancing, cursive";
   const displayUser = `@${username.length > 18 ? username.slice(0, 18) + "..." : username}`;
   ctx.fillText(displayUser, 45, 235);
@@ -434,7 +451,7 @@ async function generateGoodbyeCard(member, options = {}) {
   const memberCount = guildObj.memberCount ? guildObj.memberCount.toLocaleString() : "1";
   ctx.fillText(`✦  Remaining members: #${memberCount}`, 45, 320);
 
-  ctx.fillStyle = "#e11d48";
+  ctx.fillStyle = activeAccent;
   ctx.fillRect(45, 345, 620, 2);
 
   const avatarUrl = typeof userObj.displayAvatarURL === "function"
@@ -444,23 +461,22 @@ async function generateGoodbyeCard(member, options = {}) {
   const userAvatarImg = await safeLoadImage(avatarUrl);
   if (userAvatarImg) {
     ctx.save();
-    ctx.beginPath();
-    ctx.arc(850, 210, 115, 0, Math.PI * 2);
-    ctx.closePath();
+    clipAvatarPath(ctx, 850, 210, 115, avatarShape);
     ctx.clip();
     ctx.drawImage(userAvatarImg, 735, 95, 230, 230);
     ctx.restore();
 
-    ctx.shadowColor = "#e11d48";
+    ctx.shadowColor = activeAccent;
     ctx.shadowBlur = 20;
-    ctx.beginPath();
-    ctx.arc(850, 210, 118, 0, Math.PI * 2);
-    ctx.strokeStyle = "#e11d48";
+    ctx.save();
+    clipAvatarPath(ctx, 850, 210, 115, avatarShape);
+    ctx.strokeStyle = activeAccent;
     ctx.lineWidth = 6;
     ctx.stroke();
+    ctx.restore();
     ctx.shadowBlur = 0;
   } else {
-    drawFallbackAvatar(ctx, 850, 210, 115, "#e11d48");
+    drawFallbackAvatar(ctx, 850, 210, 115, activeAccent);
   }
 
   return canvas.toBuffer("image/png");

@@ -19,6 +19,16 @@ module.exports = {
   once: false,
 
   async execute(client, interaction) {
+    // Handle Goodbye System Interactions (Buttons, Modals & Tests)
+    const { handleGoodbyeInteraction } = require("../lib/goodbye/handleGoodbyeInteraction");
+    const handledGoodbye = await handleGoodbyeInteraction(client, interaction);
+    if (handledGoodbye) return;
+
+    // Handle Goodbye Canvas Studio Interactions (Templates, Colors, Shapes, Modals)
+    const { handleGoodbyeCanvasInteraction } = require("../lib/goodbye/handleGoodbyeCanvasInteraction");
+    const handledGoodbyeCanvas = await handleGoodbyeCanvasInteraction(client, interaction);
+    if (handledGoodbyeCanvas) return;
+
     // Handle Welcome Canvas Studio Interactions (Templates, Colors, Shapes, Modals)
     const { handleWelcomeCanvasInteraction } = require("../lib/welcome/handleWelcomeCanvasInteraction");
     const handledWelcomeCanvas = await handleWelcomeCanvasInteraction(client, interaction);
