@@ -26,6 +26,11 @@ module.exports = {
     await sleep(1500);
     await AppSlashCommands(client);
     giveawayManager.init(client);
+    const nukeManager = require("../../lib/nukeManager");
+    nukeManager.restoreScheduledNukes(client);
+
+    const bumpReminderManager = require("../../lib/bumpReminderManager");
+    bumpReminderManager.restoreBumpTimers(client);
 
     const botTag = `${client.user.username}${client.user.discriminator === "0" ? "" : `#${client.user.discriminator}`}`;
     const servers = client.guilds.cache.size.toLocaleString();

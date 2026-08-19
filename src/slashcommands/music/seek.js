@@ -10,7 +10,7 @@ module.exports = {
       description: "Target position in seconds",
       type: ApplicationCommandOptionType.Integer,
       required: true,
-      min_value: 0,
+      minValue: 0,
     },
   ],
 

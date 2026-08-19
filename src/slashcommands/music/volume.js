@@ -11,8 +11,8 @@ module.exports = {
       description: "Volume percentage level (0-100)",
       type: ApplicationCommandOptionType.Integer,
       required: false,
-      min_value: 0,
-      max_value: 100,
+      minValue: 0,
+      maxValue: 100,
     },
   ],
 

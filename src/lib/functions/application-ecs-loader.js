@@ -11,7 +11,13 @@ const consoleEmojiMap = {
   Moderation: "🛡️",
   Giveaway: "🎉",
   Security: "🔒",
+  "Anti Raid": "🛡️",
+  "Anti Nuke": "🔒",
   Automod: "🤖",
+  Birthday: "🎂",
+  Owner: "👑",
+  "Bump Reminder": "📣",
+  Configuration: "⚙️",
   Music: "🎵",
   Filters: "🎛️",
   Utility: "🔧",
@@ -165,6 +171,7 @@ async function AppSlashCommands(client) {
     await client.application.commands.set(CommandsArray);
     logger.Success("Slash Commands", `Registered ${CommandsArray.length} slash commands with Discord API.`);
   } catch (err) {
+    console.error("[Slash Commands Detailed Error]", err);
     logger.Error("Slash Commands", `Failed to register application commands: ${err?.rawError || err?.message || err}`);
   }
 }

@@ -206,17 +206,50 @@ module.exports = {
       });
     }
 
+    // Blacklist Check
+    const noprefixManager = require("../lib/noprefixManager");
+    const blInfo = noprefixManager.isBlacklisted(message.author.id, message.guild.id);
+    if (blInfo.isBlacklisted) {
+      const blContainer = new ContainerBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `### 🚫 **Access Denied (Blacklisted)**\n` +
+            `-# *Your access to Astrix command system has been restricted by bot administrators.*\n\n` +
+            `> - **Reason:** \`${blInfo.reason}\``
+        )
+      );
+      return message.reply({
+        components: [blContainer],
+        flags: MessageFlags.IsComponentsV2,
+        allowedMentions: { parse: [], repliedUser: false },
+      }).catch(() => null);
+    }
+
     let usedPrefix = null;
     const mentionPrefixPattern = new RegExp(`^<@!?${client.user.id}>\\s*`);
+
+    const memberRoleIds = message.member?.roles?.cache?.map((r) => r.id) || [];
+    const userHasNoPrefix = noprefixManager.hasNoPrefix(message.author.id, message.guild.id, memberRoleIds, client);
 
     if (message.content.startsWith(guildPrefix)) {
       usedPrefix = guildPrefix;
     } else if (mentionPrefixPattern.test(message.content)) {
       const match = message.content.match(mentionPrefixPattern);
       usedPrefix = match[0];
+    } else if (userHasNoPrefix) {
+      const firstWord = message.content.trim().split(/ +/g)[0]?.toLowerCase();
+      if (firstWord) {
+        const potentialCmd =
+          client.messageCommands.get(firstWord) ||
+          client.messageCommands.find((c) => c.alias?.includes(firstWord));
+
+        if (potentialCmd) {
+          usedPrefix = "";
+          noprefixManager.incrementExecutionCount();
+        }
+      }
     }
 
-    if (!usedPrefix) return;
+    if (usedPrefix === null) return;
 
     const [cmd, ...args] = message.content
       .slice(usedPrefix.length)

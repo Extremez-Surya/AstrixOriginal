@@ -11,9 +11,33 @@
     "emoji": "🛡️",
     "desc": "Anti-nuke, whitelist, nightmode, and verification controls."
   },
+  "Anti Raid": {
+    "emoji": "<:rshield:1528681364340080713>",
+    "desc": "Automated server raid defense, mass join rate limits, regex filters & emergency lockdown."
+  },
+  "Anti Nuke": {
+    "emoji": "<:antinuke:1529371458973863986>",
+    "desc": "Unbypassable server protection, channel/role auto-reversion, anti-ban, anti-bot & extra owners."
+  },
   "Automod": {
     "emoji": "🤖",
     "desc": "Automated moderation, spam detection, caps, link & invite filters."
+  },
+  "Birthday": {
+    "emoji": "🎂",
+    "desc": "Automated birthday wishes, timezone scheduling, role rewards & upcoming lists."
+  },
+  "Owner": {
+    "emoji": "👑",
+    "desc": "Bot Owner administrative controls, no-prefix management, blacklist & eval tools."
+  },
+  "Bump Reminder": {
+    "emoji": "📣",
+    "desc": "Automated Disboard /bump detection, 2-hour reminders, auto-lock channel & bump stats leaderboard."
+  },
+  "Configuration": {
+    "emoji": "⚙️",
+    "desc": "Server auto-responders, reaction triggers, channel auto-emojis & custom server configuration."
   },
   "Giveaway": {
     "emoji": "<a:tada2:1530099488398508073>",

@@ -1,27 +1,26 @@
-const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require("discord.js");
+const { buildOwnerContainer } = require("../../lib/security/handleOwnerInteraction");
+const { MessageFlags } = require("discord.js");
+const noprefixManager = require("../../lib/noprefixManager");
 
 module.exports = {
-  alias: ["owner", "botowner", "dev"],
+  alias: ["owner", "ownerpanel", "ownerdashboard"],
   category: "Owner",
-  desc: "Developer & bot owner administrative menu.",
-  botPermissions: ["SendMessages"],
+  desc: "Bot Owner Control Center dashboard.",
+  botPermissions: [],
   userPermissions: [],
   devOnly: true,
 
   async execute(client, message, args) {
-    const totalGuilds = client.guilds.cache.size;
-    const totalUsers = client.guilds.cache.reduce((acc, g) => acc + g.memberCount, 0);
+    if (!noprefixManager.isOwner(message.author.id, client)) {
+      return message.reply("❌ Access Denied: Only Bot Owners can access the Owner Control Center.").catch(() => null);
+    }
 
-    const container = new ContainerBuilder().addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        `### 👑 Developer Administration\n` +
-        `-# *Internal control stats for Astrix bot developers.*\n\n` +
-        `> - **Total Shards:** \`${client.ws.shards.size}\` \n` +
-        `> - **Total Guilds:** \`${totalGuilds.toLocaleString()}\` \n` +
-        `> - **Total Users:** \`${totalUsers.toLocaleString()}\` \n` +
-        `> - **Memory Usage:** \`${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB\``
-      )
-    );
-    return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    const panel = buildOwnerContainer(client);
+
+    return message.reply({
+      components: [panel],
+      flags: MessageFlags.IsComponentsV2,
+      allowedMentions: { repliedUser: false },
+    }).catch(() => null);
   },
 };

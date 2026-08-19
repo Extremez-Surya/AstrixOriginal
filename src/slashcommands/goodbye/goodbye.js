@@ -41,8 +41,8 @@ module.exports = {
             name: "self_destruct",
             description: "Auto-delete duration in seconds (6-60)",
             type: 4, // INTEGER
-            min_value: 6,
-            max_value: 60,
+            minValue: 6,
+            maxValue: 60,
             required: false,
           },
         ],

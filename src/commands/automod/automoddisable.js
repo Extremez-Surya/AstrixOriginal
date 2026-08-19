@@ -1,17 +1,59 @@
-const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require("discord.js");
+const {
+  ContainerBuilder,
+  TextDisplayBuilder,
+  SeparatorBuilder,
+  SeparatorSpacingSize,
+  MessageFlags,
+  PermissionFlagsBits,
+} = require("discord.js");
+const automodManager = require("../../lib/automodManager");
+const EMOJIS = require("../../lib/emojis");
 
 module.exports = {
-  alias: ["automoddisable", "automod-off"],
+  alias: ["automoddisable", "amdisable"],
   category: "Automod",
-  desc: "Disable overall automated moderation filters.",
-  botPermissions: ["ManageMessages"],
-  userPermissions: ["Administrator"],
+  desc: "Shortcut to disable master AutoMod message protection.",
+  botPermissions: ["Administrator"],
+  userPermissions: ["ManageGuild"],
   devOnly: false,
 
   async execute(client, message, args) {
-    const container = new ContainerBuilder().addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(`### 🤖 Automod Disabled\n-# *Automated moderation deactivated.*`)
-    );
-    return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    if (!message.guild) return;
+
+    if (!message.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
+      const errorContainer = new ContainerBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `### ${EMOJIS.cross || "❌"} Access Denied\n` +
+            `-# You need **Manage Server** permission to disable AutoMod.`
+        )
+      );
+      return message.reply({
+        components: [errorContainer],
+        flags: MessageFlags.IsComponentsV2,
+        allowedMentions: { repliedUser: false },
+      }).catch(() => null);
+    }
+
+    automodManager.disableMaster(message.guild.id);
+
+    const container = new ContainerBuilder()
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `### ${EMOJIS.cross || "⚠️"} AutoMod Deactivated\n` +
+            `-# Master AutoMod message protection is now **DISABLED**.`
+        )
+      )
+      .addSeparatorComponents(
+        new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+      )
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(`-# Protection paused • ASTRIXCODE™ System`)
+      );
+
+    return message.reply({
+      components: [container],
+      flags: MessageFlags.IsComponentsV2,
+      allowedMentions: { repliedUser: false },
+    }).catch(() => null);
   },
 };

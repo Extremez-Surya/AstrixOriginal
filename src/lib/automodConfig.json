@@ -1,0 +1,211 @@
+{
+  "1526109131042459678": {
+    "enabled": false,
+    "logChannel": null,
+    "notifyUser": true,
+    "activePreset": "moderate",
+    "strikesEnabled": true,
+    "strikeExpiry": 24,
+    "strikeActions": {
+      "3": {
+        "action": "mute",
+        "duration": "10m"
+      },
+      "5": {
+        "action": "mute",
+        "duration": "1h"
+      },
+      "7": {
+        "action": "kick"
+      },
+      "10": {
+        "action": "ban"
+      }
+    },
+    "modules": {
+      "antiinvite": {
+        "enabled": false,
+        "punishments": [
+          "delete"
+        ],
+        "strikes": 1,
+        "threshold": 1,
+        "ignore": {
+          "channels": [],
+          "roles": []
+        }
+      },
+      "antilink": {
+        "enabled": false,
+        "punishments": [
+          "delete"
+        ],
+        "strikes": 1,
+        "threshold": 1,
+        "ignore": {
+          "channels": [],
+          "roles": []
+        }
+      },
+      "antispam": {
+        "enabled": false,
+        "punishments": [
+          "warn"
+        ],
+        "strikes": 1,
+        "threshold": 5,
+        "window": 5,
+        "ignore": {
+          "channels": [],
+          "roles": []
+        }
+      },
+      "anticaps": {
+        "enabled": false,
+        "punishments": [
+          "delete"
+        ],
+        "strikes": 0,
+        "threshold": 70,
+        "ignore": {
+          "channels": [],
+          "roles": []
+        }
+      },
+      "antimention": {
+        "enabled": false,
+        "punishments": [
+          "warn"
+        ],
+        "strikes": 2,
+        "threshold": 5,
+        "ignore": {
+          "channels": [],
+          "roles": []
+        }
+      },
+      "antiemoji": {
+        "enabled": false,
+        "punishments": [
+          "delete"
+        ],
+        "strikes": 0,
+        "threshold": 10,
+        "ignore": {
+          "channels": [],
+          "roles": []
+        }
+      },
+      "badwords": {
+        "enabled": false,
+        "punishments": [
+          "delete"
+        ],
+        "strikes": 1,
+        "threshold": 1,
+        "words": [],
+        "ignore": {
+          "channels": [],
+          "roles": []
+        }
+      },
+      "maxlines": {
+        "enabled": false,
+        "punishments": [
+          "delete"
+        ],
+        "strikes": 0,
+        "threshold": 15,
+        "ignore": {
+          "channels": [],
+          "roles": []
+        }
+      },
+      "antieveryone": {
+        "enabled": false,
+        "punishments": [
+          "delete"
+        ],
+        "strikes": 2,
+        "threshold": 5,
+        "usePercent": true,
+        "ignore": {
+          "channels": [],
+          "roles": []
+        }
+      },
+      "antirole": {
+        "enabled": false,
+        "punishments": [
+          "warn"
+        ],
+        "strikes": 2,
+        "threshold": 5,
+        "usePercent": true,
+        "ignore": {
+          "channels": [],
+          "roles": []
+        }
+      },
+      "antizalgo": {
+        "enabled": false,
+        "punishments": [
+          "delete"
+        ],
+        "strikes": 0,
+        "threshold": 1,
+        "ignore": {
+          "channels": [],
+          "roles": []
+        }
+      },
+      "antinewlines": {
+        "enabled": false,
+        "punishments": [
+          "delete"
+        ],
+        "strikes": 0,
+        "threshold": 5,
+        "ignore": {
+          "channels": [],
+          "roles": []
+        }
+      },
+      "anticopypasta": {
+        "enabled": false,
+        "punishments": [
+          "delete"
+        ],
+        "strikes": 2,
+        "threshold": 1,
+        "ignore": {
+          "channels": [],
+          "roles": []
+        }
+      },
+      "antiai": {
+        "enabled": false,
+        "punishments": [
+          "delete"
+        ],
+        "strikes": 1,
+        "threshold": 1,
+        "ignore": {
+          "channels": [],
+          "roles": []
+        }
+      }
+    },
+    "ignore": {
+      "channels": [],
+      "roles": [],
+      "users": []
+    },
+    "userStrikes": {},
+    "stats": {
+      "violationsIntercepted": 0,
+      "strikesIssued": 0,
+      "messagesDeleted": 0
+    }
+  }
+}

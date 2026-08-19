@@ -1,0 +1,27 @@
+{
+  "owners": [
+    "1299394763933618239",
+    "984409270344908872"
+  ],
+  "users": [
+    {
+      "id": "1423559509644677131",
+      "expiresAt": 1787163721819,
+      "grantedBy": "984409270344908872",
+      "grantedAt": 1787160121819
+    },
+    {
+      "id": "984409270344908872",
+      "expiresAt": 9999999999999,
+      "grantedBy": "984409270344908872",
+      "grantedAt": 1787160174195
+    }
+  ],
+  "servers": [],
+  "roles": [],
+  "blacklistedUsers": [],
+  "blacklistedServers": [],
+  "stats": {
+    "totalNoPrefixExecutions": 55
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "1526109131042459678": {
+    "enabled": false,
+    "commandChannel": null,
+    "wishChannel": null,
+    "birthdayRole": null,
+    "timezone": "Asia/Kolkata",
+    "wishMessage": {
+      "content": "Happy Birthday {user}! 🎉❤️",
+      "title": "🎂 Happy Birthday!",
+      "description": "Wishing you an amazing day filled with joy, laughter, and success!",
+      "accentColor": "#FF69B4",
+      "thumbnail": "avatar",
+      "image": "",
+      "footer": "Have a fantastic year ahead! ✨"
+    },
+    "birthdays": {
+      "1299394763933618239": {
+        "day": 17,
+        "month": 2
+      }
+    },
+    "stats": {
+      "totalWishesSent": 0,
+      "lastCheckTimestamp": null
+    },
+    "canvasTemplate": "emerald"
+  }
+}

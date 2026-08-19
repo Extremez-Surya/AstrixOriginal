@@ -159,7 +159,7 @@ async function renderThemeCard(themeKey, data = {}) {
       typeof thumbnail !== "string" ||
       !thumbnail.startsWith("http")
     ) {
-      thumbnail = path.join(__dirname, "../../assets/astrix_helpmenu.png");
+      thumbnail = path.join(__dirname, "../../assets/helpmenu.png");
     }
 
     const durationStr = formatMs(data.duration);
@@ -198,7 +198,7 @@ async function createPresetPayload(guildId, selectedKey = null) {
 
   let previewAttachment = null;
   try {
-    const logoPath = path.join(__dirname, "../../assets/astrix_helpmenu.png");
+    const logoPath = path.join(__dirname, "../../assets/helpmenu.png");
     const sampleBuffer = await currentTheme.func({
       trackName: "AstrixCode is the Best",
       artistName: "Thank you For Using Me",

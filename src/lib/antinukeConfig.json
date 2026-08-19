@@ -1,0 +1,28 @@
+{
+  "1526109131042459678": {
+    "enabled": false,
+    "logChannel": null,
+    "extraOwners": [],
+    "whitelist": [],
+    "punishment": "ban",
+    "threshold": 2,
+    "windowMs": 60000,
+    "autoRevert": false,
+    "modules": {
+      "channel": true,
+      "role": true,
+      "ban": true,
+      "kick": true,
+      "webhook": true,
+      "botAdd": true,
+      "guildUpdate": true,
+      "emoji": true,
+      "permissions": true
+    },
+    "stats": {
+      "nukesIntercepted": 0,
+      "reversionsExecuted": 0,
+      "lastNukeTimestamp": null
+    }
+  }
+}

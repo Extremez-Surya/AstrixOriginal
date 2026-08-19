@@ -19,6 +19,51 @@ module.exports = {
   once: false,
 
   async execute(client, interaction) {
+    // Handle Anti-Raid Interactions (Buttons, Control Panels & Confirmation Dialogs)
+    const { handleAntiRaidInteraction } = require("../lib/security/handleAntiRaidInteraction");
+    const handledAntiRaid = await handleAntiRaidInteraction(client, interaction);
+    if (handledAntiRaid) return;
+
+    // Handle Anti-Nuke Interactions (Dropdown Select Menus & Buttons)
+    const { handleAntiNukeInteraction } = require("../lib/security/handleAntiNukeInteraction");
+    const handledAntiNuke = await handleAntiNukeInteraction(client, interaction);
+    if (handledAntiNuke) return;
+
+    // Handle AutoMod Interactions (Dropdown Select Menus & Buttons)
+    const { handleAutomodInteraction } = require("../lib/security/handleAutomodInteraction");
+    const handledAutomod = await handleAutomodInteraction(client, interaction);
+    if (handledAutomod) return;
+
+    // Handle Birthday System Interactions (Dropdown Select Menus & Buttons)
+    const { handleBirthdayInteraction } = require("../lib/security/handleBirthdayInteraction");
+    const handledBirthday = await handleBirthdayInteraction(client, interaction);
+    if (handledBirthday) return;
+
+    // Handle Birthday Canvas Studio Interactions
+    const { handleBirthdayCanvasInteraction } = require("../lib/security/handleBirthdayCanvasInteraction");
+    const handledBirthdayCanvas = await handleBirthdayCanvasInteraction(client, interaction);
+    if (handledBirthdayCanvas) return;
+
+    // Handle Owner & NoPrefix System Interactions
+    const { handleOwnerInteraction } = require("../lib/security/handleOwnerInteraction");
+    const handledOwner = await handleOwnerInteraction(client, interaction);
+    if (handledOwner) return;
+
+    // Handle Nuke System Interactions (Dropdown Select Menus, Buttons & Modals)
+    const { handleNukeInteraction } = require("../lib/security/handleNukeInteraction");
+    const handledNuke = await handleNukeInteraction(client, interaction);
+    if (handledNuke) return;
+
+    // Handle Bump Reminder System Interactions (Dropdown Select Menus, Buttons & Modals)
+    const { handleBumpReminderInteraction } = require("../lib/security/handleBumpReminderInteraction");
+    const handledBumpReminder = await handleBumpReminderInteraction(client, interaction);
+    if (handledBumpReminder) return;
+
+    // Handle Configuration System Interactions (Dropdown Select Menus, Buttons & Modals)
+    const { handleConfigurationInteraction } = require("../lib/security/handleConfigurationInteraction");
+    const handledConfig = await handleConfigurationInteraction(client, interaction);
+    if (handledConfig) return;
+
     // Handle Goodbye System Interactions (Buttons, Modals & Tests)
     const { handleGoodbyeInteraction } = require("../lib/goodbye/handleGoodbyeInteraction");
     const handledGoodbye = await handleGoodbyeInteraction(client, interaction);

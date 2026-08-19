@@ -46,7 +46,7 @@ async function generateMusicCard(player, track) {
       typeof thumbnail !== "string" ||
       !thumbnail.startsWith("http")
     ) {
-      thumbnail = path.join(__dirname, "../assets/astrix_helpmenu.png");
+      thumbnail = path.join(__dirname, "../assets/helpmenu.png");
     }
 
     const imageBuffer = await renderThemeCard(themeKey, {

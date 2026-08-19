@@ -1,0 +1,51 @@
+{
+  "1526109131042459678": {
+    "enabled": false,
+    "raidState": false,
+    "strictMode": "EXTREME",
+    "logChannel": null,
+    "massjoin": {
+      "enabled": false,
+      "threshold": 5,
+      "windowMs": 10000,
+      "action": "kick",
+      "lockChannels": false,
+      "invalidateInvites": false
+    },
+    "avatar": {
+      "enabled": false,
+      "action": "kick"
+    },
+    "newaccounts": {
+      "enabled": false,
+      "threshold": 7,
+      "action": "kick"
+    },
+    "namefilter": {
+      "enabled": false,
+      "action": "ban",
+      "patterns": [
+        "discord\\.gg/",
+        "discord\\.com/invite",
+        "https?://",
+        "wizz",
+        "nuke",
+        "raid",
+        "hacked",
+        "crasher",
+        "salazar"
+      ]
+    },
+    "youngAccountSpike": {
+      "enabled": false,
+      "thresholdHours": 24,
+      "action": "ban"
+    },
+    "whitelist": [],
+    "stats": {
+      "blockedCount": 0,
+      "raidsDetected": 0,
+      "lastRaidTimestamp": null
+    }
+  }
+}
