@@ -143,7 +143,7 @@ async function AppSlashCommands(client) {
   const files = await loadFiles("src/slashcommands");
   await client.slashCommands.clear();
 
-  let CommandsArray = [];
+  const commandMap = new Map();
 
   for (const file of files) {
     const command = require(file);
@@ -160,8 +160,10 @@ async function AppSlashCommands(client) {
     client.slashCommands.set(command.name, command);
 
     const { others, execute, ...cmd } = command;
-    CommandsArray.push(cmd);
+    commandMap.set(command.name.toLowerCase(), cmd);
   }
+
+  let CommandsArray = Array.from(commandMap.values());
 
   if (CommandsArray.length > 100) {
     CommandsArray = CommandsArray.slice(0, 100);
