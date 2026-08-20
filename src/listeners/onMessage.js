@@ -259,7 +259,11 @@ module.exports = {
       client.messageCommands.get(cmd.toLowerCase()) ||
       client.messageCommands.find((c) => c.alias?.includes(cmd.toLowerCase()));
 
-    if (!Command) return;
+    if (!Command) {
+      const customRolesManager = require("../lib/customRolesManager");
+      await customRolesManager.executeAlias(client, message, cmd.toLowerCase(), args);
+      return;
+    }
 
     if (Command.devOnly && !client.developer.includes(message.author.id))
       return;

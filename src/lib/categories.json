@@ -98,5 +98,9 @@
   "Booster": {
     "emoji": "🚀",
     "desc": "Server booster rewards, vanity roles & custom perks."
+  },
+  "Custom Roles": {
+    "emoji": "🎭",
+    "desc": "Ultra-fast custom role shortcuts, alias toggles, required role security & role management."
   }
 }

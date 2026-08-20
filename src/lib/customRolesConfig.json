@@ -1,0 +1,17 @@
+{
+  "dangerousPermissions": [
+    "Administrator",
+    "ManageGuild",
+    "ManageRoles",
+    "KickMembers",
+    "BanMembers",
+    "ManageChannels",
+    "ManageWebhooks",
+    "ManageThreads",
+    "ManageEvents",
+    "MentionEveryone"
+  ],
+  "antiBypassWindowMs": 10000,
+  "maxBypassAttempts": 3,
+  "autoPunishTimeoutSeconds": 300
+}

@@ -19,6 +19,11 @@ module.exports = {
   once: false,
 
   async execute(client, interaction) {
+    // Handle Custom Roles Interactions (Dropdown Select Menus)
+    const { handleCustomRoleInteraction } = require("../lib/customroles/handleCustomRoleInteraction");
+    const handledCustomRole = await handleCustomRoleInteraction(client, interaction);
+    if (handledCustomRole) return;
+
     // Handle Anti-Raid Interactions (Buttons, Control Panels & Confirmation Dialogs)
     const { handleAntiRaidInteraction } = require("../lib/security/handleAntiRaidInteraction");
     const handledAntiRaid = await handleAntiRaidInteraction(client, interaction);
