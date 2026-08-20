@@ -1,3 +1,5 @@
+const fs = require("fs");
+const path = require("path");
 const {
   PermissionFlagsBits,
   ContainerBuilder,
@@ -10,11 +12,14 @@ const {
   ButtonStyle,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
-  RoleSelectMenuBuilder,
 } = require("discord.js");
 const EMOJIS = require("./emojis");
-const configManager = require("./configManager");
 const securityConfig = require("./customRolesConfig.json");
+
+const DATA_FILE = path.join(__dirname, "customRolesData.json");
+
+const configCache = new Map();
+let isInitialized = false;
 
 const bypassTracker = new Map();
 
@@ -45,32 +50,83 @@ const DANGEROUS_PERMS = [
   PermissionFlagsBits.MentionEveryone,
 ];
 
-function getMemoryCache(client) {
-  if (!client.customRolesCache) {
-    client.customRolesCache = new Map();
+function getDefaultGuildConfig() {
+  return {
+    aliases: {},
+    reqRole: null,
+    antiBypass: true,
+  };
+}
+
+function initCache() {
+  if (isInitialized) return;
+  try {
+    if (fs.existsSync(DATA_FILE)) {
+      const data = fs.readFileSync(DATA_FILE, "utf8");
+      const parsed = JSON.parse(data);
+      if (parsed.guilds) {
+        for (const [guildId, cfg] of Object.entries(parsed.guilds)) {
+          configCache.set(guildId, {
+            aliases: cfg.aliases || {},
+            reqRole: cfg.reqRole || null,
+            antiBypass: cfg.antiBypass !== false,
+          });
+        }
+      }
+    }
+  } catch (e) {
+    console.error("[CustomRolesManager] Cache init error:", e);
   }
-  return client.customRolesCache;
+  isInitialized = true;
+}
+
+function saveDiskAsync() {
+  setImmediate(() => {
+    try {
+      const obj = { guilds: {} };
+      for (const [guildId, cfg] of configCache.entries()) {
+        obj.guilds[guildId] = cfg;
+      }
+      fs.writeFileSync(DATA_FILE, JSON.stringify(obj, null, 2), "utf8");
+    } catch (e) {
+      console.error("[CustomRolesManager] Save disk error:", e);
+    }
+  });
 }
 
 function getGuildConfig(client, guildId) {
-  const cache = getMemoryCache(client);
-  if (cache.has(guildId)) {
-    return cache.get(guildId);
+  if (!isInitialized) initCache();
+  if (!guildId) return getDefaultGuildConfig();
+
+  // Also bind cache to client.customRolesCache for backwards compatibility
+  if (client && !client.customRolesCache) {
+    client.customRolesCache = configCache;
   }
 
-  const fullConfig = configManager.getGuildConfig(guildId);
-  const crConfig = fullConfig.custom_roles || { aliases: {}, reqRole: null, antiBypass: true };
-  cache.set(guildId, crConfig);
-  return crConfig;
+  const raw = configCache.get(guildId);
+  if (!raw) return getDefaultGuildConfig();
+
+  return {
+    aliases: raw.aliases ? { ...raw.aliases } : {},
+    reqRole: raw.reqRole || null,
+    antiBypass: raw.antiBypass !== false,
+  };
 }
 
 function updateGuildConfig(client, guildId, updateFn) {
-  const cache = getMemoryCache(client);
+  if (!isInitialized) initCache();
+  if (!guildId) return getDefaultGuildConfig();
+
   const current = getGuildConfig(client, guildId);
   const updated = updateFn({ ...current });
 
-  cache.set(guildId, updated);
-  configManager.updateGuildConfig(guildId, { custom_roles: updated });
+  configCache.set(guildId, updated);
+  if (client) {
+    if (!client.customRolesCache) client.customRolesCache = configCache;
+    else client.customRolesCache.set(guildId, updated);
+  }
+
+  saveDiskAsync();
   return updated;
 }
 
@@ -361,6 +417,8 @@ async function executeAlias(client, message, invokedAlias, args) {
 
   return true;
 }
+
+initCache();
 
 module.exports = {
   RESERVED_SUBCOMMANDS,
