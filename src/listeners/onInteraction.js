@@ -247,6 +247,8 @@ module.exports = {
           })
           .catch(() => null);
       }
+    }
+
     if (interaction.isAutocomplete()) {
       if (typeof Command.autocomplete === "function") {
         await Command.autocomplete(client, interaction).catch(() => null);

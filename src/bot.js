@@ -23,9 +23,16 @@ const client = new CustomClient({
   },
 });
 
-AppEvents(client);
+(async () => {
+  try {
+    await AppEvents(client);
+    client.start();
+  } catch (err) {
+    logger.Error(`Shard #${client.shard?.ids[0] ?? 0}`, "Fatal startup error", err);
+  }
+})();
+
 module.exports = client;
-client.start();
 
 process.on("uncaughtException", (err, origin) => {
   logger.Error(`Shard #${client.shard?.ids[0] ?? 0}`, "uncaughtException", err);
@@ -37,5 +44,12 @@ process.on("unhandledRejection", (reason) => {
     logger.Warn(`Shard #${client.shard?.ids[0] ?? 0}`, "Handled stale Lavalink player 404 rejection");
     return;
   }
+  if (errMsg.includes("Unexpected token") || errMsg.includes("JSON at position")) {
+    logger.Warn(`Shard #${client.shard?.ids[0] ?? 0}`, `Handled transient payload parse error: ${errMsg}`);
+    return;
+  }
   logger.Error(`Shard #${client.shard?.ids[0] ?? 0}`, `unhandledRejection: ${errMsg}`);
+  if (reason?.stack) {
+    console.error(reason.stack);
+  }
 });

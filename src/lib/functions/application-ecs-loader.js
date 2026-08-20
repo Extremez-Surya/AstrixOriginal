@@ -162,8 +162,17 @@ async function AppSlashCommands(client) {
     command.dmPermission ??= false;
     client.slashCommands.set(command.name, command);
 
-    const { others, execute, ...cmd } = command;
-    commandMap.set(command.name.toLowerCase(), cmd);
+    const cmdData = {
+      name: command.name,
+      description: command.description,
+      type: command.type,
+      options: command.options,
+      defaultMemberPermissions: command.defaultMemberPermissions,
+      dmPermission: command.dmPermission,
+      nsfw: command.nsfw,
+    };
+    Object.keys(cmdData).forEach((k) => cmdData[k] === undefined && delete cmdData[k]);
+    commandMap.set(command.name.toLowerCase(), cmdData);
   }
 
   let CommandsArray = Array.from(commandMap.values());

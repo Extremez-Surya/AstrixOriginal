@@ -16,10 +16,10 @@ const { Kazagumo, Plugins } = require("kazagumo");
 const { Connectors } = require("shoukaku");
 const ShoukakuSpotify = require("kazagumo-spotify");
 const path = require("path");
-const VoiceHealthMonitor = require("./music/voiceHealthMonitor.js");
-const { getGuildTheme, renderThemeCard } = require("./music/presetManager.js");
-const { DSP_FILTERS, attemptAutoplay } = require("./music/playerUtils.js");
-const { logger } = require("./functions/common.js");
+const VoiceHealthMonitor = require(path.join(__dirname, "music", "voiceHealthMonitor.js"));
+const { getGuildTheme, renderThemeCard } = require(path.join(__dirname, "music", "presetManager.js"));
+const { DSP_FILTERS, attemptAutoplay } = require(path.join(__dirname, "music", "playerUtils.js"));
+const { logger } = require(path.join(__dirname, "functions", "common.js"));
 
 function formatDuration(ms) {
   if (!ms || isNaN(ms) || ms === 0) return "Live Stream";
@@ -321,12 +321,6 @@ async function updateNowPlayingMessage(client, player, forcePaused = null) {
 function initMusicManager(client) {
   const nodes = [
     {
-      name: "TriniumHost (v4)",
-      url: "lavalink-v4.triniumhost.com:443",
-      auth: "free",
-      secure: true,
-    },
-    {
       name: "Serenetia Node (v4)",
       url: "lavalinkv4.serenetia.com:443",
       auth: "https://seretia.link/discord",
@@ -336,12 +330,6 @@ function initMusicManager(client) {
       name: "Millohost Node (v4)",
       url: "lava-v4.millohost.my.id:443",
       auth: "https://discord.gg/mjS5J2K3ep",
-      secure: true,
-    },
-    {
-      name: "Nodelink 1 (Trinium)",
-      url: "nodelink.triniumhost.com:443",
-      auth: "free",
       secure: true,
     },
     {
