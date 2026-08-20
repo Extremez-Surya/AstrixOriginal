@@ -98,7 +98,6 @@ function getGuildConfig(client, guildId) {
   if (!isInitialized) initCache();
   if (!guildId) return getDefaultGuildConfig();
 
-  // Also bind cache to client.customRolesCache for backwards compatibility
   if (client && !client.customRolesCache) {
     client.customRolesCache = configCache;
   }
@@ -130,16 +129,25 @@ function updateGuildConfig(client, guildId, updateFn) {
   return updated;
 }
 
-function findRole(guild, input, message = null) {
+async function findRole(guild, input, message = null) {
   if (message && message.mentions && message.mentions.roles && message.mentions.roles.size > 0) {
     return message.mentions.roles.first();
   }
 
   if (!input) return null;
 
+  // Check mention tag syntax <@&123456789>
+  const mentionMatch = input.match(/<@&?(\d+)>/);
+  if (mentionMatch) {
+    const roleId = mentionMatch[1];
+    const role = guild.roles.cache.get(roleId) || (await guild.roles.fetch(roleId).catch(() => null));
+    if (role) return role;
+  }
+
   const rawId = input.replace(/\D/g, "");
-  if (rawId && guild.roles.cache.has(rawId)) {
-    return guild.roles.cache.get(rawId);
+  if (rawId && rawId.length >= 17) {
+    const role = guild.roles.cache.get(rawId) || (await guild.roles.fetch(rawId).catch(() => null));
+    if (role) return role;
   }
 
   const clean = input.toLowerCase().replace(/^@/, "").trim();
@@ -298,17 +306,60 @@ async function executeAlias(client, message, invokedAlias, args) {
   }
 
   const roleId = crConfig.aliases[invokedAlias];
-  const role = message.guild.roles.cache.get(roleId);
+  let role = message.guild.roles.cache.get(roleId);
   if (!role) {
-    return false;
+    role = await message.guild.roles.fetch(roleId).catch(() => null);
   }
 
-  const targetInput = args[0];
-  if (!targetInput) {
+  if (!role) {
     const container = new ContainerBuilder().addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
-        `### ${EMOJIS.cross || "❌"} Target Missing\n` +
-          `-# *Usage: \`.${invokedAlias} <@user|userID>\`*`
+        `### ${EMOJIS.cross || "❌"} Role Not Found\n` +
+          `-# *The role assigned to shortcut \`.${invokedAlias}\` (ID: \`${roleId}\`) no longer exists on this server.*`
+      )
+    );
+    await message.reply({
+      components: [container],
+      flags: MessageFlags.IsComponentsV2,
+      allowedMentions: { parse: [], repliedUser: false },
+    }).catch(() => null);
+    return true;
+  }
+
+  let targetMember = null;
+
+  // 1. Check mentions
+  if (message.mentions.members && message.mentions.members.size > 0) {
+    targetMember = message.mentions.members.first();
+  } else if (message.mentions.users && message.mentions.users.size > 0) {
+    const firstUser = message.mentions.users.first();
+    targetMember = await message.guild.members.fetch(firstUser.id).catch(() => null);
+  }
+
+  // 2. Search args for member ID or username
+  if (!targetMember && args.length > 0) {
+    const fullInput = args.join(" ").trim();
+    const rawId = fullInput.replace(/\D/g, "");
+    if (rawId && rawId.length >= 17) {
+      targetMember = await message.guild.members.fetch(rawId).catch(() => null);
+    }
+
+    if (!targetMember) {
+      const cleanName = fullInput.toLowerCase().replace(/^@/, "").trim();
+      targetMember = message.guild.members.cache.find(
+        (m) =>
+          m.user.username.toLowerCase() === cleanName ||
+          m.displayName.toLowerCase() === cleanName ||
+          m.user.tag.toLowerCase() === cleanName
+      );
+    }
+  }
+
+  if (!targetMember) {
+    const container = new ContainerBuilder().addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        `### ${EMOJIS.cross || "❌"} Target Member Required\n` +
+          `-# *Usage: \`.${invokedAlias} <@user|userID|username>\`*`
       )
     );
     await message.reply({
@@ -335,33 +386,6 @@ async function executeAlias(client, message, invokedAlias, args) {
       new TextDisplayBuilder().setContent(
         `### ${EMOJIS.cross || "❌"} Security Violation & Permission Denied\n` +
           `-# *You need ${reqRoleStr} permission to trigger custom role shortcuts.*`
-      )
-    );
-    await message.reply({
-      components: [container],
-      flags: MessageFlags.IsComponentsV2,
-      allowedMentions: { parse: [], repliedUser: false },
-    }).catch(() => null);
-    return true;
-  }
-
-  let targetMember = null;
-  if (message.mentions.members && message.mentions.members.size > 0) {
-    targetMember = message.mentions.members.first();
-  } else {
-    const targetId = targetInput.replace(/\D/g, "");
-    if (targetId) {
-      try {
-        targetMember = await message.guild.members.fetch(targetId);
-      } catch {}
-    }
-  }
-
-  if (!targetMember) {
-    const container = new ContainerBuilder().addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        `### ${EMOJIS.cross || "❌"} Member Not Found\n` +
-          `-# *Could not resolve member \`${targetInput}\`.*`
       )
     );
     await message.reply({

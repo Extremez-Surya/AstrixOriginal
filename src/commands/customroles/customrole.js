@@ -124,7 +124,7 @@ module.exports = {
         });
       }
 
-      const role = customRolesManager.findRole(message.guild, input, message);
+      const role = await customRolesManager.findRole(message.guild, input, message);
       if (!role) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
@@ -243,7 +243,7 @@ module.exports = {
         });
       }
 
-      const role = customRolesManager.findRole(message.guild, roleInput, message);
+      const role = await customRolesManager.findRole(message.guild, roleInput, message);
       if (!role) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
