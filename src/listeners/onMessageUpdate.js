@@ -1,5 +1,6 @@
 const { Events } = require("discord.js");
 const loggingManager = require("../lib/loggingManager");
+const snipeManager = require("../lib/snipeManager");
 
 module.exports = {
   name: "onMessageUpdate",
@@ -9,6 +10,8 @@ module.exports = {
   async execute(client, oldMessage, newMessage) {
     if (!newMessage || !newMessage.guild || newMessage.author?.bot) return;
     if (oldMessage.content === newMessage.content) return;
+
+    snipeManager.addEditedMessage(oldMessage, newMessage);
 
     loggingManager.dispatchLog(
       client,

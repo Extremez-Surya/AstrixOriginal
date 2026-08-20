@@ -1,5 +1,6 @@
 const { Events } = require("discord.js");
 const loggingManager = require("../lib/loggingManager");
+const snipeManager = require("../lib/snipeManager");
 
 module.exports = {
   name: "onMessageDelete",
@@ -8,6 +9,8 @@ module.exports = {
 
   async execute(client, message) {
     if (!message || !message.guild || message.author?.bot) return;
+
+    snipeManager.addDeletedMessage(message);
 
     if (!client.snipes) {
       client.snipes = new Map();

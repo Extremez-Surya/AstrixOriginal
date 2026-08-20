@@ -102,5 +102,9 @@
   "General": {
     "emoji": "🌐",
     "desc": "General server utilities, announcements, server avatar & suggestion systems."
+  },
+  "Miscellaneous": {
+    "emoji": "🧩",
+    "desc": "Utility shortcuts, rich component builders, message & reaction snipes, and custom assets."
   }
 }

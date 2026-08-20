@@ -12,6 +12,8 @@ const {
   ComponentType,
   MediaGalleryBuilder,
   MediaGalleryItemBuilder,
+  ButtonBuilder,
+  ButtonStyle,
 } = require("discord.js");
 const path = require("path");
 const allCategories = require("../../lib/categories.json");
@@ -25,15 +27,48 @@ module.exports = {
   options: [
     {
       name: "command",
-      description: "Specific command to view details for.",
+      description: "Search for a specific command or keyword.",
       type: ApplicationCommandOptionType.String,
       required: false,
+      autocomplete: true,
     },
   ],
 
   botPermissions: ["SendMessages"],
   userPermissions: ["SendMessages"],
   devOnly: false,
+
+  async autocomplete(client, interaction) {
+    const focusedValue = interaction.options.getFocused()?.toLowerCase() || "";
+
+    const results = [];
+    const seen = new Set();
+
+    // Search message commands and slash commands
+    if (client.messageCommands) {
+      client.messageCommands.forEach((cmd) => {
+        const name = cmd.alias ? cmd.alias[0] : cmd.name;
+        if (!name || seen.has(name)) return;
+
+        const matchesName = name.toLowerCase().includes(focusedValue);
+        const matchesAlias = cmd.alias?.some((a) => a.toLowerCase().includes(focusedValue));
+        const matchesDesc = (cmd.desc || cmd.description || "").toLowerCase().includes(focusedValue);
+        const matchesCat = (cmd.category || "").toLowerCase().includes(focusedValue);
+
+        if (!focusedValue || matchesName || matchesAlias || matchesDesc || matchesCat) {
+          seen.add(name);
+          const cat = cmd.category || "General";
+          const desc = (cmd.desc || cmd.description || "Command").slice(0, 50);
+          results.push({
+            name: `.${name} (${cat}) ─ ${desc}`.slice(0, 100),
+            value: name,
+          });
+        }
+      });
+    }
+
+    await interaction.respond(results.slice(0, 25)).catch(() => null);
+  },
 
   async execute(client, interaction) {
     await interaction.deferReply().catch(() => null);
@@ -44,21 +79,44 @@ module.exports = {
       ?.trim();
 
     if (commandQuery) {
-      const targetCmd =
-        client.messageCommands.get(commandQuery) ||
-        client.messageCommands.find(
-          (c) => c.alias && c.alias.includes(commandQuery),
-        ) ||
-        client.slashCommands.get(commandQuery);
+      // 1. Exact Match
+      const exactCmd =
+        client.messageCommands?.get(commandQuery) ||
+        client.messageCommands?.find((c) => c.alias && c.alias.includes(commandQuery)) ||
+        client.slashCommands?.get(commandQuery);
 
-      if (!targetCmd) {
-        const container = new ContainerBuilder().addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Command Not Found\n` +
-              `-# *No command matching \`${commandQuery}\` was found in the database.*\n\n` +
-              `> - **Tip:** Run \`/help\` without arguments to explore all command categories.`,
-          ),
-        );
+      if (exactCmd) {
+        const primaryName =
+          exactCmd.name || (exactCmd.alias ? exactCmd.alias[0] : commandQuery);
+        const aliasesList = exactCmd.alias
+          ? exactCmd.alias.map((a) => `\`.${a}\``).join(", ")
+          : `\`/${primaryName}\``;
+        const description =
+          exactCmd.desc || exactCmd.description || "No description provided.";
+        const category = exactCmd.category || "General";
+
+        const detailsContent = [
+          `### <:astrix:1527205612205903973> Command Info ── \`.${primaryName}\``,
+          `-# *${description}*\n`,
+          `> -# 📁 **Category:** \`${category}\``,
+          `> -# <:prefix:1528309903972892772> **Aliases:** ${aliasesList}`,
+        ].join("\n");
+
+        const footerText = `-# Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE`;
+
+        const container = new ContainerBuilder()
+          .addTextDisplayComponents(
+            new TextDisplayBuilder().setContent(detailsContent),
+          )
+          .addSeparatorComponents(
+            new SeparatorBuilder()
+              .setSpacing(SeparatorSpacingSize.Small)
+              .setDivider(true),
+          )
+          .addTextDisplayComponents(
+            new TextDisplayBuilder().setContent(footerText),
+          );
+
         return interaction
           .editReply({
             components: [container],
@@ -67,39 +125,69 @@ module.exports = {
           .catch(() => null);
       }
 
-      const primaryName =
-        targetCmd.name || (targetCmd.alias ? targetCmd.alias[0] : commandQuery);
-      const aliasesList = targetCmd.alias
-        ? targetCmd.alias.map((a) => `\`.${a}\``).join(", ")
-        : `\`/${primaryName}\``;
-      const description =
-        targetCmd.desc || targetCmd.description || "No description provided.";
+      // 2. Keyword Search across all commands
+      const matches = [];
+      const seen = new Set();
 
-      const detailsContent = [
-        `### <:astrix:1527205612205903973> Command Info ── \`.${primaryName}\``,
-        `-# *${description}*`,
-        "",
-        `> -# <:prefix:1528309903972892772> **Aliases:** ${aliasesList}`,
-      ].join("\n");
+      if (client.messageCommands) {
+        client.messageCommands.forEach((cmd) => {
+          const name = cmd.alias ? cmd.alias[0] : cmd.name;
+          if (!name || seen.has(name)) return;
 
-      const footerText = `-# Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE`;
+          const matchesName = name.toLowerCase().includes(commandQuery);
+          const matchesAlias = cmd.alias?.some((a) => a.toLowerCase().includes(commandQuery));
+          const matchesDesc = (cmd.desc || cmd.description || "").toLowerCase().includes(commandQuery);
+          const matchesCat = (cmd.category || "").toLowerCase().includes(commandQuery);
 
-      const container = new ContainerBuilder()
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(detailsContent),
-        )
-        .addSeparatorComponents(
-          new SeparatorBuilder()
-            .setSpacing(SeparatorSpacingSize.Small)
-            .setDivider(true),
-        )
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(footerText),
-        );
+          if (matchesName || matchesAlias || matchesDesc || matchesCat) {
+            seen.add(name);
+            matches.push({
+              name,
+              category: cmd.category || "General",
+              desc: cmd.desc || cmd.description || "No description",
+            });
+          }
+        });
+      }
 
+      if (matches.length > 0) {
+        const matchLines = matches.slice(0, 15).map((m) => {
+          return `> - \`.${m.name}\` (\`${m.category}\`) ── ${m.desc}`;
+        });
+
+        const container = new ContainerBuilder()
+          .addTextDisplayComponents(
+            new TextDisplayBuilder().setContent(
+              `### 🔍 **Search Results for "${commandQuery}"**\n` +
+              `-# *Found ${matches.length} matching command(s):*\n\n` +
+              matchLines.join("\n") +
+              (matches.length > 15 ? `\n\n*...and ${matches.length - 15} more.*` : "") +
+              `\n\n-# *Tip: Type \`/help command:<name>\` to view details for a specific command.*`
+            )
+          )
+          .addSeparatorComponents(
+            new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+          )
+          .addTextDisplayComponents(
+            new TextDisplayBuilder().setContent(`-# Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE`)
+          );
+
+        return interaction.editReply({
+          components: [container],
+          flags: MessageFlags.IsComponentsV2,
+        });
+      }
+
+      const notFoundContainer = new ContainerBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `### <a:red_star:1528688099436003419> No Commands Found\n` +
+          `-# *No commands matching search query \`${commandQuery}\` were found.*\n\n` +
+          `> - **Tip:** Run \`/help\` without arguments to explore all categories.`,
+        ),
+      );
       return interaction
         .editReply({
-          components: [container],
+          components: [notFoundContainer],
           flags: MessageFlags.IsComponentsV2,
         })
         .catch(() => null);
@@ -110,38 +198,16 @@ module.exports = {
         await client.application.commands.fetch();
       } catch (e) {}
     }
-    const totalCommands = client.slashCommands.size;
+    const totalCommands = client.messageCommands?.size || client.slashCommands?.size || 0;
 
     const getCommandsForCategory = (categoryName) => {
       const list = [];
-      const registered = client.application.commands.cache;
-      client.slashCommands.forEach((cmd) => {
+      client.messageCommands?.forEach((cmd) => {
         const cat = cmd.category || "Miscellaneous";
         if (cat.toLowerCase() === categoryName.toLowerCase()) {
-          const cmdRef = registered.find((c) => c.name === cmd.name);
-          if (cmdRef) {
-            const subcommands = cmd.options?.filter(
-              (opt) =>
-                opt.type === 1 ||
-                opt.type === "Subcommand" ||
-                opt.type === "SUB_COMMAND",
-            );
-            if (subcommands && subcommands.length > 0) {
-              subcommands.forEach((sub) => {
-                list.push(
-                  `</${cmd.name} ${sub.name}:${cmdRef.id}> ─ ${sub.description || "No description provided."}`,
-                );
-              });
-            } else {
-              list.push(
-                `</${cmd.name}:${cmdRef.id}> ─ ${cmd.description || "No description provided."}`,
-              );
-            }
-          } else {
-            list.push(
-              `\`/${cmd.name}\` ─ ${cmd.description || "No description provided."}`,
-            );
-          }
+          list.push(
+            `\`.${cmd.alias[0]}\` - ${cmd.desc || "No description provided."}`,
+          );
         }
       });
       return [...new Set(list)];
@@ -149,28 +215,10 @@ module.exports = {
 
     const getAliasesForCategory = (categoryName) => {
       const list = [];
-      const registered = client.application.commands.cache;
-      client.slashCommands.forEach((cmd) => {
+      client.messageCommands?.forEach((cmd) => {
         const cat = cmd.category || "Miscellaneous";
         if (cat.toLowerCase() === categoryName.toLowerCase()) {
-          const cmdRef = registered.find((c) => c.name === cmd.name);
-          if (cmdRef) {
-            const subcommands = cmd.options?.filter(
-              (opt) =>
-                opt.type === 1 ||
-                opt.type === "Subcommand" ||
-                opt.type === "SUB_COMMAND",
-            );
-            if (subcommands && subcommands.length > 0) {
-              subcommands.forEach((sub) => {
-                list.push(`</${cmd.name} ${sub.name}:${cmdRef.id}>`);
-              });
-            } else {
-              list.push(`</${cmd.name}:${cmdRef.id}>`);
-            }
-          } else {
-            list.push(`\`/${cmd.name}\``);
-          }
+          list.push(`\`${cmd.alias[0]}\``);
         }
       });
       return [...new Set(list)];
@@ -193,26 +241,28 @@ module.exports = {
     );
     const mediaGallery = new MediaGalleryBuilder().addItems(mediaItem);
 
+    const menuOptions = [
+      {
+        label: "Home Overview",
+        value: "home",
+        description: "Return to the main category overview.",
+        emoji: "<:home:1528317590848540762>",
+      },
+      ...Object.keys(categories).map((cat) => {
+        const cmds = getCommandsForCategory(cat);
+        return {
+          label: cat,
+          value: cat.toLowerCase(),
+          description: `${cmds.length} command(s)`,
+          emoji: categories[cat].emoji,
+        };
+      }),
+    ].slice(0, 25);
+
     const selectMenu = new StringSelectMenuBuilder()
       .setCustomId("help_category_select")
       .setPlaceholder("Choose a category to explore...")
-      .addOptions([
-        {
-          label: "Home Overview",
-          value: "home",
-          description: "Return to the main category overview.",
-          emoji: "<:home:1528317590848540762>",
-        },
-        ...Object.keys(categories).map((cat) => {
-          const cmds = getCommandsForCategory(cat);
-          return {
-            label: cat,
-            value: cat.toLowerCase(),
-            description: `${cmds.length} command(s)`,
-            emoji: categories[cat].emoji,
-          };
-        }),
-      ]);
+      .addOptions(menuOptions);
 
     const row = new ActionRowBuilder().addComponents(selectMenu);
 
@@ -260,7 +310,8 @@ module.exports = {
         )
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            ` > **Prefix:** \`.\` | **Commands:** \`${totalCommands}\``,
+            ` > **Prefix:** \`.\` | **Commands:** \`${totalCommands}\`\n` +
+            ` > **Search:** Type \`/help command:<keyword>\` for instant search`,
           ),
         )
         .addSeparatorComponents(
@@ -306,7 +357,7 @@ module.exports = {
         const selectedCategoryName = Object.keys(categories).find(
           (c) => c.toLowerCase() === selectedValue,
         );
-        const categoryEmoji = categories[selectedCategoryName].emoji;
+        const categoryEmoji = categories[selectedCategoryName]?.emoji || "📁";
         const categoryAliases = getAliasesForCategory(selectedCategoryName);
 
         let commandsListText = "";
