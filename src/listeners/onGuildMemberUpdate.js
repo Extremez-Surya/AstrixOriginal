@@ -1,5 +1,6 @@
 const { Events } = require("discord.js");
 const loggingManager = require("../lib/loggingManager");
+const moderationManager = require("../lib/moderationManager");
 
 module.exports = {
   name: "onGuildMemberUpdate",
@@ -9,6 +10,12 @@ module.exports = {
   async execute(client, oldMember, newMember) {
     if (!newMember.guild) return;
     const guildId = newMember.guild.id;
+
+    // 0. Frozen Nickname Enforcement (Anti-Bypass Guard)
+    const frozenNick = moderationManager.getFrozenNickname(guildId, newMember.id);
+    if (frozenNick && newMember.nickname !== frozenNick) {
+      newMember.setNickname(frozenNick, "Enforcing frozen nickname (Anti-Bypass Guard)").catch(() => null);
+    }
 
     // 1. Nickname Change
     if (oldMember.nickname !== newMember.nickname) {

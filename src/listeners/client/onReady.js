@@ -32,6 +32,9 @@ module.exports = {
     const bumpReminderManager = require("../../lib/bumpReminderManager");
     bumpReminderManager.restoreBumpTimers(client);
 
+    const moderationManager = require("../../lib/moderationManager");
+    moderationManager.initTimers(client);
+
     const botTag = `${client.user.username}${client.user.discriminator === "0" ? "" : `#${client.user.discriminator}`}`;
     const servers = client.guilds.cache.size.toLocaleString();
     const users = client.guilds.cache.reduce((acc, g) => acc + g.memberCount, 0).toLocaleString();
