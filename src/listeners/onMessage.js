@@ -230,19 +230,33 @@ module.exports = {
     const memberRoleIds = message.member?.roles?.cache?.map((r) => r.id) || [];
     const userHasNoPrefix = noprefixManager.hasNoPrefix(message.author.id, message.guild.id, memberRoleIds, client);
 
+    const customRolesManager = require("../lib/customRolesManager");
+    const crConfig = customRolesManager.getGuildConfig(client, message.guild.id);
+    const crAliases = crConfig?.aliases ? Object.keys(crConfig.aliases) : [];
+
+    const contentTrimmed = message.content.trim();
+    const firstWordRaw = contentTrimmed.split(/ +/g)[0]?.toLowerCase() || "";
+    const firstWordClean = firstWordRaw.replace(/^[.\-!]+/, "");
+
     if (message.content.startsWith(guildPrefix)) {
       usedPrefix = guildPrefix;
     } else if (mentionPrefixPattern.test(message.content)) {
       const match = message.content.match(mentionPrefixPattern);
       usedPrefix = match[0];
+    } else if (message.content.startsWith(".")) {
+      const potentialAlias = contentTrimmed.slice(1).split(/ +/g)[0]?.toLowerCase();
+      if (potentialAlias && (crAliases.includes(potentialAlias) || client.messageCommands.get(potentialAlias) || client.messageCommands.find((c) => c.alias?.includes(potentialAlias)))) {
+        usedPrefix = ".";
+      }
     } else if (userHasNoPrefix) {
-      const firstWord = message.content.trim().split(/ +/g)[0]?.toLowerCase();
-      if (firstWord) {
+      if (firstWordRaw) {
         const potentialCmd =
-          client.messageCommands.get(firstWord) ||
-          client.messageCommands.find((c) => c.alias?.includes(firstWord));
+          client.messageCommands.get(firstWordRaw) ||
+          client.messageCommands.find((c) => c.alias?.includes(firstWordRaw));
 
-        if (potentialCmd) {
+        const isCrAlias = crAliases.includes(firstWordRaw) || crAliases.includes(firstWordClean);
+
+        if (potentialCmd || isCrAlias) {
           usedPrefix = "";
           noprefixManager.incrementExecutionCount();
         }
@@ -251,17 +265,17 @@ module.exports = {
 
     if (usedPrefix === null) return;
 
-    const [cmd, ...args] = message.content
+    const [cmdRaw, ...args] = message.content
       .slice(usedPrefix.length)
       .trim()
       .split(/ +/g);
+    const cmd = cmdRaw.toLowerCase();
     const Command =
-      client.messageCommands.get(cmd.toLowerCase()) ||
-      client.messageCommands.find((c) => c.alias?.includes(cmd.toLowerCase()));
+      client.messageCommands.get(cmd) ||
+      client.messageCommands.find((c) => c.alias?.includes(cmd));
 
     if (!Command) {
-      const customRolesManager = require("../lib/customRolesManager");
-      await customRolesManager.executeAlias(client, message, cmd.toLowerCase(), args);
+      await customRolesManager.executeAlias(client, message, cmd, args);
       return;
     }
 
