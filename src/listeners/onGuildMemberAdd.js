@@ -15,6 +15,7 @@ const {
 const path = require("path");
 const welcomeManager = require("../lib/welcomeManager");
 const welcomeCanvas = require("../lib/welcomeCanvas");
+const loggingManager = require("../lib/loggingManager");
 
 module.exports = {
   name: "onGuildMemberAdd",
@@ -23,6 +24,18 @@ module.exports = {
 
   async execute(client, member) {
     if (!member.guild) return;
+
+    // Logging: Member Join / Bot Add
+    loggingManager.dispatchLog(
+      client,
+      member.guild.id,
+      member.user.bot ? "botAdd" : "memberJoin",
+      {
+        target: member.user,
+        details: `Account Created: <t:${Math.floor(member.user.createdTimestamp / 1000)}:R> • Member Count: \`${member.guild.memberCount}\``,
+      },
+      { author: member.user, member }
+    ).catch(() => null);
 
     const config = welcomeManager.getGuildWelcome(member.guild.id);
     if (!config) return;

@@ -14,6 +14,7 @@ const {
 } = require("discord.js");
 const goodbyeManager = require("../lib/goodbyeManager");
 const welcomeCanvas = require("../lib/welcomeCanvas");
+const loggingManager = require("../lib/loggingManager");
 
 module.exports = {
   name: "onGuildMemberRemove",
@@ -22,6 +23,18 @@ module.exports = {
 
   async execute(client, member) {
     if (!member.guild) return;
+
+    // Logging: Member Leave
+    loggingManager.dispatchLog(
+      client,
+      member.guild.id,
+      "memberLeave",
+      {
+        target: member.user,
+        details: `Roles: \`${member.roles?.cache?.filter((r) => r.id !== member.guild.id).map((r) => r.name).join(", ") || "None"}\` • Member Count: \`${member.guild.memberCount}\``,
+      },
+      { author: member.user, member }
+    ).catch(() => null);
 
     const goodbyeConfig = goodbyeManager.getGuildGoodbye(member.guild.id);
     if (!goodbyeConfig) return;
