@@ -128,26 +128,28 @@ module.exports = {
     );
     const mediaGallery = new MediaGalleryBuilder().addItems(mediaItem);
 
+    const menuOptions = [
+      {
+        label: "Home Overview",
+        value: "home",
+        description: "Return to the main category overview.",
+        emoji: "<:home:1528317590848540762>",
+      },
+      ...Object.keys(categories).map((cat) => {
+        const cmds = getCommandsForCategory(cat);
+        return {
+          label: cat,
+          value: cat.toLowerCase(),
+          description: `${cmds.length} command(s)`,
+          emoji: categories[cat].emoji,
+        };
+      }),
+    ].slice(0, 25);
+
     const selectMenu = new StringSelectMenuBuilder()
       .setCustomId("help_category_select")
       .setPlaceholder("Choose a category to explore...")
-      .addOptions([
-        {
-          label: "Home Overview",
-          value: "home",
-          description: "Return to the main category overview.",
-          emoji: "<:home:1528317590848540762>",
-        },
-        ...Object.keys(categories).map((cat) => {
-          const cmds = getCommandsForCategory(cat);
-          return {
-            label: cat,
-            value: cat.toLowerCase(),
-            description: `${cmds.length} command(s)`,
-            emoji: categories[cat].emoji,
-          };
-        }),
-      ]);
+      .addOptions(menuOptions);
 
     const row = new ActionRowBuilder().addComponents(selectMenu);
 

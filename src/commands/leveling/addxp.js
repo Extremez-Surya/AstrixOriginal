@@ -3,23 +3,23 @@ const levelingManager = require("../../lib/levelingManager");
 const EMOJIS = require("../../lib/emojis");
 
 module.exports = {
-  alias: ["setlevel"],
+  alias: ["addxp", "givexp"],
   category: "Leveling",
-  desc: "Set a member's experience level manually.",
-  botPermissions: ["SendMessages", "ManageRoles"],
+  desc: "Grant bonus XP to a member.",
+  botPermissions: ["SendMessages"],
   userPermissions: ["ManageGuild"],
   devOnly: false,
 
   async execute(client, message, args) {
     const targetUser = message.mentions.users.first();
-    const newLevel = parseInt(args[1] || args[0], 10);
+    const amount = parseInt(args[1], 10);
 
-    if (!targetUser || isNaN(newLevel) || newLevel < 0) {
+    if (!targetUser || isNaN(amount) || amount <= 0) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### ⚙️ Level Management\n` +
-          `-# *Adjust member XP level manually.*\n\n` +
-          `> - **Usage:** \`.setlevel @user <level_number>\``
+          `### ➕ Add XP\n` +
+          `-# *Grant experience points to a target member.*\n\n` +
+          `> - **Usage:** \`.addxp @user <amount>\``
         )
       );
       return message
@@ -28,33 +28,25 @@ module.exports = {
     }
 
     const guildId = message.guild.id;
+    const config = levelingManager.getGuildLeveling(guildId);
     const memberData = levelingManager.getMemberData(guildId, targetUser.id);
 
-    // Calculate total cumulative XP for new level
-    let totalAccumulated = 0;
-    for (let l = 0; l < newLevel; l++) {
-      totalAccumulated += levelingManager.xpToNextLevel(l);
-    }
-
-    memberData.level = newLevel;
-    memberData.xp = 0;
-    memberData.totalXp = totalAccumulated;
-
+    const oldLevel = memberData.level;
+    const result = levelingManager.addXp(config, memberData, amount);
     levelingManager.setMemberData(guildId, targetUser.id, memberData);
 
-    // Apply role rewards
     const targetMember = await message.guild.members.fetch(targetUser.id).catch(() => null);
-    if (targetMember) {
+    if (result.leveledUp && targetMember) {
       await levelingManager.applyRewards(client, guildId, memberData, targetMember);
     }
 
     const container = new ContainerBuilder().addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
-        `### ${EMOJIS.success || "✅"} Member Level Updated\n` +
-        `-# *XP data modified and role rewards synchronized.*\n\n` +
-        `> - **Target User:** ${targetUser}\n` +
-        `> - **New Level:** \`${newLevel}\`\n` +
-        `> - **Total XP:** \`${totalAccumulated.toLocaleString()} XP\``
+        `### ${EMOJIS.success || "✅"} XP Granted\n` +
+        `-# *Member experience updated successfully.*\n\n` +
+        `> - **Target:** ${targetUser}\n` +
+        `> - **XP Added:** \`+${amount.toLocaleString()} XP\`\n` +
+        `> - **Current Level:** \`${memberData.level}\`${result.leveledUp ? ` *(Leveled up from ${oldLevel}!)*` : ""}`
       )
     );
 

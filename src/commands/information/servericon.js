@@ -12,7 +12,8 @@ const {
 } = require("discord.js");
 
 module.exports = {
-  alias: ["servericon"],
+  name: "servericon",
+  alias: ["servericon", "serveravatar", "guildicon", "sicon"],
   category: "Information",
   desc: "View the server's custom icon.",
 

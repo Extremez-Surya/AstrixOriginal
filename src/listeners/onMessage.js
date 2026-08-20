@@ -18,6 +18,8 @@ const afkManager = require("../lib/afkManager");
 const prefixManager = require("../lib/prefixManager");
 /** @type {import('../lib/types/index.ts').Event} */
 
+const levelingManager = require("../lib/levelingManager");
+
 module.exports = {
   name: "onMessage",
   event: Events.MessageCreate,
@@ -26,6 +28,9 @@ module.exports = {
   async execute(client, message) {
     if (!message.channel.isTextBased()) return;
     if (message.author.bot || !message.guild) return;
+
+    // Process Leveling XP
+    levelingManager.handleMessageXp(client, message).catch(() => null);
 
     const guildPrefix = prefixManager.getPrefix(message.guild.id);
 

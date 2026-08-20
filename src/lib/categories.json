@@ -91,10 +91,6 @@
     "emoji": "🔊",
     "desc": "Join-to-Create (J2C) dynamic voice channel generators & in-voice control system."
   },
-  "Owner": {
-    "emoji": "👑",
-    "desc": "Developer and bot owner administrative commands."
-  },
   "Booster": {
     "emoji": "🚀",
     "desc": "Server booster rewards, vanity roles & custom perks."
