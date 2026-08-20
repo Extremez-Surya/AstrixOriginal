@@ -5,12 +5,17 @@ const {
   SeparatorBuilder,
   SeparatorSpacingSize,
   MessageFlags,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
+  RoleSelectMenuBuilder,
 } = require("discord.js");
 const EMOJIS = require("./emojis");
 const configManager = require("./configManager");
 const securityConfig = require("./customRolesConfig.json");
 
-// In-memory bypass tracking map: userId:guildId -> { count, timestamp }
 const bypassTracker = new Map();
 
 const RESERVED_SUBCOMMANDS = [
@@ -53,7 +58,6 @@ function getGuildConfig(client, guildId) {
     return cache.get(guildId);
   }
 
-  // Load from configManager
   const fullConfig = configManager.getGuildConfig(guildId);
   const crConfig = fullConfig.custom_roles || { aliases: {}, reqRole: null, antiBypass: true };
   cache.set(guildId, crConfig);
@@ -68,6 +72,34 @@ function updateGuildConfig(client, guildId, updateFn) {
   cache.set(guildId, updated);
   configManager.updateGuildConfig(guildId, { custom_roles: updated });
   return updated;
+}
+
+function findRole(guild, input, message = null) {
+  if (message && message.mentions && message.mentions.roles && message.mentions.roles.size > 0) {
+    return message.mentions.roles.first();
+  }
+
+  if (!input) return null;
+
+  const rawId = input.replace(/\D/g, "");
+  if (rawId && guild.roles.cache.has(rawId)) {
+    return guild.roles.cache.get(rawId);
+  }
+
+  const clean = input.toLowerCase().replace(/^@/, "").trim();
+  if (!clean) return null;
+
+  // Exact name match
+  let role = guild.roles.cache.find((r) => r.name.toLowerCase() === clean);
+  if (role) return role;
+
+  // Starts with match
+  role = guild.roles.cache.find((r) => r.name.toLowerCase().startsWith(clean));
+  if (role) return role;
+
+  // Contains match
+  role = guild.roles.cache.find((r) => r.name.toLowerCase().includes(clean));
+  return role || null;
 }
 
 function hasCustomRolePermission(member, reqRoleId) {
@@ -110,10 +142,103 @@ function trackSecurityViolation(member) {
   return data.count >= securityConfig.maxBypassAttempts;
 }
 
+function buildDashboardContainer(guild, crConfig) {
+  const aliases = Object.entries(crConfig.aliases || {});
+  const reqStatus = crConfig.reqRole ? `<@&${crConfig.reqRole}>` : "`None` (Manage Roles)";
+
+  const container = new ContainerBuilder();
+  container.addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(
+      `# 🎭 Custom Roles Control Dashboard\n` +
+        `-# *Ultra-fast role shortcuts & interactive management for ${guild.name}.*\n\n` +
+        `### 📌 System Status & Security\n` +
+        `> - **Required Role:** ${reqStatus}\n` +
+        `> - **Active Aliases:** \`${aliases.length}\` configured\n` +
+        `> - **Anti-Bypass Guard:** \`ACTIVE 🛡️\``
+    )
+  );
+
+  container.addSeparatorComponents(
+    new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+  );
+
+  if (aliases.length === 0) {
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        `*No custom role aliases configured yet.*\n` +
+          `-# *Click **Add Shortcut** below or run \`.customrole add <alias> <role>\` to create one.*`
+      )
+    );
+  } else {
+    const listLines = aliases.map(
+      ([alias, roleId]) => `> -# **\` .${alias} \`** ➔ <@&${roleId}>`
+    );
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        `### 📋 Configured Role Aliases\n${listLines.join("\n")}`
+      )
+    );
+
+    const selectOptions = aliases.slice(0, 25).map(([alias, roleId]) => {
+      const role = guild.roles.cache.get(roleId);
+      return new StringSelectMenuOptionBuilder()
+        .setLabel(`Alias: .${alias}`)
+        .setValue(`cr_inspect_${alias}_${roleId}`)
+        .setDescription(`Role: ${role ? role.name : roleId}`)
+        .setEmoji("🎭");
+    });
+
+    const selectMenu = new StringSelectMenuBuilder()
+      .setCustomId("customrole_alias_select")
+      .setPlaceholder("🔍 Select an alias to inspect or test...")
+      .addOptions(selectOptions);
+
+    container.addActionRowComponents(new ActionRowBuilder().addComponents(selectMenu));
+  }
+
+  // Interactive Buttons Row
+  const btnRemove = new ButtonBuilder()
+    .setCustomId("cr_btn_remove_menu")
+    .setLabel("Remove Alias")
+    .setEmoji("🗑️")
+    .setStyle(ButtonStyle.Danger)
+    .setDisabled(aliases.length === 0);
+
+  const btnReqRole = new ButtonBuilder()
+    .setCustomId("cr_btn_reqrole_menu")
+    .setLabel("ReqRole Config")
+    .setEmoji("🔒")
+    .setStyle(ButtonStyle.Primary);
+
+  const btnRefresh = new ButtonBuilder()
+    .setCustomId("cr_btn_refresh")
+    .setLabel("Refresh")
+    .setEmoji("🔄")
+    .setStyle(ButtonStyle.Secondary);
+
+  const buttonRow = new ActionRowBuilder().addComponents(
+    btnRemove,
+    btnReqRole,
+    btnRefresh
+  );
+  container.addActionRowComponents(buttonRow);
+
+  container.addSeparatorComponents(
+    new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+  );
+  container.addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(
+      `-# *ASTRIXCODE™ High-Speed Engine • Response Time < 0.1s*`
+    )
+  );
+
+  return container;
+}
+
 async function executeAlias(client, message, invokedAlias, args) {
   const crConfig = getGuildConfig(client, message.guild.id);
   if (!crConfig.aliases || !crConfig.aliases[invokedAlias]) {
-    return false; // Not a custom role alias
+    return false;
   }
 
   const roleId = crConfig.aliases[invokedAlias];
@@ -122,7 +247,6 @@ async function executeAlias(client, message, invokedAlias, args) {
     return false;
   }
 
-  // Target input check
   const targetInput = args[0];
   if (!targetInput) {
     const container = new ContainerBuilder().addTextDisplayComponents(
@@ -139,11 +263,9 @@ async function executeAlias(client, message, invokedAlias, args) {
     return true;
   }
 
-  // Permission Check
   if (!hasCustomRolePermission(message.member, crConfig.reqRole)) {
     const isSuspicious = trackSecurityViolation(message.member);
     if (isSuspicious && crConfig.antiBypass !== false) {
-      // Apply 5-min security timeout to bad actors trying to spam unauthorized role grants
       if (message.member.moderatable) {
         await message.member.timeout(
           securityConfig.autoPunishTimeoutSeconds * 1000,
@@ -156,7 +278,7 @@ async function executeAlias(client, message, invokedAlias, args) {
     const container = new ContainerBuilder().addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
         `### ${EMOJIS.cross || "❌"} Security Violation & Permission Denied\n` +
-          `-# *You need ${reqRoleStr} permission to toggle custom roles.*`
+          `-# *You need ${reqRoleStr} permission to trigger custom role shortcuts.*`
       )
     );
     await message.reply({
@@ -167,19 +289,23 @@ async function executeAlias(client, message, invokedAlias, args) {
     return true;
   }
 
-  const targetId = targetInput.replace(/\D/g, "");
-  if (!targetId) return true;
-
   let targetMember = null;
-  try {
-    targetMember = await message.guild.members.fetch(targetId);
-  } catch {}
+  if (message.mentions.members && message.mentions.members.size > 0) {
+    targetMember = message.mentions.members.first();
+  } else {
+    const targetId = targetInput.replace(/\D/g, "");
+    if (targetId) {
+      try {
+        targetMember = await message.guild.members.fetch(targetId);
+      } catch {}
+    }
+  }
 
   if (!targetMember) {
     const container = new ContainerBuilder().addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
         `### ${EMOJIS.cross || "❌"} Member Not Found\n` +
-          `-# *Could not resolve member with ID \`${targetId}\`.*`
+          `-# *Could not resolve member \`${targetInput}\`.*`
       )
     );
     await message.reply({
@@ -190,7 +316,6 @@ async function executeAlias(client, message, invokedAlias, args) {
     return true;
   }
 
-  // Hierarchy Safety Check
   const me = message.guild.members.me;
   if (role.position >= me.roles.highest.position) {
     const container = new ContainerBuilder().addTextDisplayComponents(
@@ -207,7 +332,6 @@ async function executeAlias(client, message, invokedAlias, args) {
     return true;
   }
 
-  // Execute Role Toggle
   const hasRole = targetMember.roles.cache.has(role.id);
   const container = new ContainerBuilder();
 
@@ -242,7 +366,9 @@ module.exports = {
   RESERVED_SUBCOMMANDS,
   getGuildConfig,
   updateGuildConfig,
+  findRole,
   hasCustomRolePermission,
   checkDangerousPermissions,
+  buildDashboardContainer,
   executeAlias,
 };

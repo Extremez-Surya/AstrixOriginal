@@ -1,84 +1,11 @@
 const {
   ContainerBuilder,
   TextDisplayBuilder,
-  SeparatorBuilder,
-  SeparatorSpacingSize,
   MessageFlags,
   PermissionFlagsBits,
-  ActionRowBuilder,
-  StringSelectMenuBuilder,
-  StringSelectMenuOptionBuilder,
 } = require("discord.js");
 const EMOJIS = require("../../lib/emojis");
 const customRolesManager = require("../../lib/customRolesManager");
-
-function buildCustomRoleViewContainer(guild, crConfig) {
-  const aliases = Object.entries(crConfig.aliases || {});
-  const reqStatus = crConfig.reqRole ? `<@&${crConfig.reqRole}>` : "`None` (Manage Roles)";
-
-  const container = new ContainerBuilder();
-  container.addTextDisplayComponents(
-    new TextDisplayBuilder().setContent(
-      `# 🎭 Custom Roles Control Dashboard\n` +
-        `-# *Configure ultra-fast role shortcuts & alias triggers for ${guild.name}.*\n\n` +
-        `### 📌 Status & Security\n` +
-        `> - **Required Role:** ${reqStatus}\n` +
-        `> - **Active Aliases:** \`${aliases.length}\` configured\n` +
-        `> - **Anti-Bypass Protection:** \`ACTIVE 🛡️\``
-    )
-  );
-
-  container.addSeparatorComponents(
-    new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-  );
-
-  if (aliases.length === 0) {
-    container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        `*No custom role aliases configured yet.*\n` +
-          `-# *Use \`.customrole add <alias> <role>\` to create your first shortcut.*`
-      )
-    );
-  } else {
-    const listLines = aliases.map(
-      ([alias, roleId]) => `> -# **\` .${alias} \`** ➔ <@&${roleId}> (\`ID: ${roleId}\`)`
-    );
-    container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        `### 📋 Configured Role Aliases\n${listLines.join("\n")}`
-      )
-    );
-
-    // Interactive Dropdown Select Menu for Alias Inspection
-    const selectOptions = aliases.slice(0, 25).map(([alias, roleId]) => {
-      const role = guild.roles.cache.get(roleId);
-      return new StringSelectMenuOptionBuilder()
-        .setLabel(`Alias: .${alias}`)
-        .setValue(`cr_inspect_${alias}_${roleId}`)
-        .setDescription(`Role: ${role ? role.name : roleId}`)
-        .setEmoji("🎭");
-    });
-
-    const selectMenu = new StringSelectMenuBuilder()
-      .setCustomId("customrole_alias_select")
-      .setPlaceholder("🔍 Select an alias to inspect or test...")
-      .addOptions(selectOptions);
-
-    const actionRow = new ActionRowBuilder().addComponents(selectMenu);
-    container.addActionRowComponents(actionRow);
-  }
-
-  container.addSeparatorComponents(
-    new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-  );
-  container.addTextDisplayComponents(
-    new TextDisplayBuilder().setContent(
-      `-# *ASTRIXCODE™ High-Speed Engine • Response Time < 0.1s*`
-    )
-  );
-
-  return container;
-}
 
 module.exports = {
   alias: ["customrole", "crole", "cr", "customroles"],
@@ -127,7 +54,7 @@ module.exports = {
         });
       }
 
-      const container = buildCustomRoleViewContainer(message.guild, crConfig);
+      const container = customRolesManager.buildDashboardContainer(message.guild, crConfig);
       return message.reply({
         components: [container],
         flags: MessageFlags.IsComponentsV2,
@@ -165,7 +92,7 @@ module.exports = {
               `**Logic Rules:**\n` +
               `> • **When ReqRole is set:** Members require \`Admin\` OR \`Manage Server\` OR \`ReqRole\` to invoke aliases.\n` +
               `> • **When ReqRole is disabled:** Members require \`Admin\` OR \`Manage Server\` OR \`Manage Roles\`.\n\n` +
-              `-# *Use \`.customrole reqrole <@role|off>\` to change.*`
+              `-# *Use \`.customrole reqrole <role|off>\` to change.*`
           )
         );
         return message.reply({
@@ -197,14 +124,12 @@ module.exports = {
         });
       }
 
-      const role =
-        message.mentions.roles.first() ||
-        message.guild.roles.cache.get(input.replace(/\D/g, ""));
+      const role = customRolesManager.findRole(message.guild, input, message);
       if (!role) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
             `### ${EMOJIS.cross || "❌"} Invalid Role\n` +
-              `-# *Please mention a valid server role or provide a role ID.*`
+              `-# *Could not find role matching \`${input}\`. Please mention a role, provide a role ID, or type role name.*`
           )
         );
         return message.reply({
@@ -294,7 +219,7 @@ module.exports = {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
             `### ${EMOJIS.cross || "❌"} Invalid Usage\n` +
-              `-# *Syntax: \`.customrole add <alias> <@role|roleID>\`*`
+              `-# *Syntax: \`.customrole add <alias> <roleName|@role|roleID>\`*`
           )
         );
         return message.reply({
@@ -318,14 +243,12 @@ module.exports = {
         });
       }
 
-      const role =
-        message.mentions.roles.first() ||
-        message.guild.roles.cache.get(roleInput.replace(/\D/g, ""));
+      const role = customRolesManager.findRole(message.guild, roleInput, message);
       if (!role) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
             `### ${EMOJIS.cross || "❌"} Invalid Role\n` +
-              `-# *Please mention a valid server role or provide a role ID.*`
+              `-# *Could not find role matching \`${roleInput}\`. Please mention a role, provide a role ID, or type role name.*`
           )
         );
         return message.reply({
