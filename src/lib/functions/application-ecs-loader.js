@@ -32,6 +32,7 @@ const consoleEmojiMap = {
   Booster: "🚀",
   "Join To Create": "🔊",
   "Custom Roles": "🎭",
+  General: "🌐",
 };
 
 const stripAnsi = (str) => str.replace(/\x1b\[[0-9;]*m/g, "");

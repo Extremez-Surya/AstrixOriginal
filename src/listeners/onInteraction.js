@@ -24,6 +24,11 @@ module.exports = {
     const handledCustomRole = await handleCustomRoleInteraction(client, interaction);
     if (handledCustomRole) return;
 
+    // Handle Suggestion System Interactions (Upvote & Downvote Buttons)
+    const suggestionManager = require("../lib/suggestionManager");
+    const handledSuggestion = await suggestionManager.handleSuggestionInteraction(client, interaction);
+    if (handledSuggestion) return;
+
     // Handle Anti-Raid Interactions (Buttons, Control Panels & Confirmation Dialogs)
     const { handleAntiRaidInteraction } = require("../lib/security/handleAntiRaidInteraction");
     const handledAntiRaid = await handleAntiRaidInteraction(client, interaction);

@@ -102,5 +102,9 @@
   "Custom Roles": {
     "emoji": "🎭",
     "desc": "Ultra-fast custom role shortcuts, alias toggles, required role security & role management."
+  },
+  "General": {
+    "emoji": "🌐",
+    "desc": "General server utilities, announcements, server avatar & suggestion systems."
   }
 }
