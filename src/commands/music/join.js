@@ -17,12 +17,42 @@ module.exports = {
   devOnly: false,
 
   async execute(client, message, args) {
-    const voiceChannel = message.member?.voice?.channel;
-    if (!voiceChannel) {
+    let targetChannel = message.member?.voice?.channel;
+
+    if (args.length > 0) {
+      const channelMention = message.mentions.channels.first();
+      if (channelMention && channelMention.isVoiceBased?.()) {
+        targetChannel = channelMention;
+      } else {
+        const rawId = args[0].replace(/[<#>]/g, "");
+        const fetched = message.guild?.channels?.cache?.get(rawId);
+        if (fetched && fetched.isVoiceBased?.()) {
+          targetChannel = fetched;
+        }
+      }
+    }
+
+    if (!targetChannel) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
           `### <a:red_star:1528688099436003419> Voice Channel Required\n` +
-            `-# *You must be connected to a voice channel for the bot to join.*`,
+            `-# *You must be in a voice channel or specify a valid voice channel to join.*`,
+        ),
+      );
+      return message.reply({
+        components: [container],
+        flags: MessageFlags.IsComponentsV2,
+        allowedMentions: { parse: [], repliedUser: false },
+      });
+    }
+
+    const botMember = message.guild.members.me;
+    const botPermissions = targetChannel.permissionsFor(botMember);
+    if (!botPermissions?.has("Connect") || !botPermissions?.has("Speak")) {
+      const container = new ContainerBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `### <a:red_star:1528688099436003419> Missing Permissions\n` +
+            `-# *I do not have Connect and Speak permissions in <#${targetChannel.id}>.*`,
         ),
       );
       return message.reply({
@@ -35,11 +65,11 @@ module.exports = {
     let player = client.manager.players.get(message.guild.id);
 
     if (player) {
-      if (player.voiceId === voiceChannel.id) {
+      if (player.voiceId === targetChannel.id) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
             `### 🔊 Already Connected\n` +
-              `-# *I am already connected to your voice channel (<#${voiceChannel.id}>).*`,
+              `-# *I am already connected to <#${targetChannel.id}>.*`,
           ),
         );
         return message.reply({
@@ -49,11 +79,11 @@ module.exports = {
         });
       }
 
-      player.setVoiceChannel(voiceChannel.id);
+      player.setVoiceChannel(targetChannel.id);
     } else {
       player = await client.manager.createPlayer({
         guildId: message.guild.id,
-        voiceId: voiceChannel.id,
+        voiceId: targetChannel.id,
         textId: message.channel.id,
         deaf: true,
       });
@@ -63,7 +93,7 @@ module.exports = {
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
           `### 🔊 Joined Voice Channel\n` +
-            `> - **Channel:** <#${voiceChannel.id}>\n` +
+            `> - **Channel:** <#${targetChannel.id}>\n` +
             `-# *Ready to receive track requests.*`,
         ),
       )

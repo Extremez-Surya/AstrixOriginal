@@ -17,6 +17,9 @@ module.exports = {
       }
     }
 
+    const starboardManager = require("../lib/starboardManager");
+    starboardManager.handleReactionRemove(client, reaction, user).catch(() => null);
+
     snipeManager.addRemovedReaction(reaction, user);
   },
 };

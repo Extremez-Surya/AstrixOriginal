@@ -11,7 +11,7 @@ const {
 } = require("discord.js");
 
 module.exports = {
-  alias: ["enlarge", "e", "jumbo"],
+  alias: ["enlarge", "jumbo", "bigemoji"],
   category: "Moderation",
   desc: "Enlarge a custom emoji or sticker to high resolution.",
 

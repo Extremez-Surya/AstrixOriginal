@@ -60,7 +60,7 @@ function buildErrorNotice(title, description) {
 }
 
 module.exports = {
-  alias: ["antiraid", "ar"],
+  alias: ["antiraid", "raiddefense", "raidguard"],
   category: "Anti Raid",
   desc: "Configure Anti-Raid defense modules, mass join limits, name filters, emergency raid mode & whitelists.",
   botPermissions: ["Administrator"],

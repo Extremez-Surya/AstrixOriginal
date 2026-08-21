@@ -6,7 +6,7 @@ const {
 
 /** @type {import('../../lib/types/index.ts').MessageCommand} */
 module.exports = {
-  alias: ["stop", "disconnect", "dc"],
+  alias: ["stop", "stopplay", "halt"],
   category: "Music",
   desc: "Stop playback, clear queue, and leave voice channel.",
 

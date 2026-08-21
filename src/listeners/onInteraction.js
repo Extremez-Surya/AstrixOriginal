@@ -74,6 +74,11 @@ module.exports = {
     const handledConfig = await handleConfigurationInteraction(client, interaction);
     if (handledConfig) return;
 
+    // Handle Starboard System Interactions (Dropdown Select Menus, Buttons & Modals)
+    const { handleStarboardInteraction } = require("../lib/starboardManager");
+    const handledStarboard = await handleStarboardInteraction(client, interaction);
+    if (handledStarboard) return;
+
     // Handle Goodbye System Interactions (Buttons, Modals & Tests)
     const { handleGoodbyeInteraction } = require("../lib/goodbye/handleGoodbyeInteraction");
     const handledGoodbye = await handleGoodbyeInteraction(client, interaction);

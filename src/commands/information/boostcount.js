@@ -7,7 +7,7 @@ const {
 } = require("discord.js");
 
 module.exports = {
-  alias: ["boostcount", "boosts", "serverboosts", "boosters"],
+  alias: ["boostcount", "boosts", "serverboosts"],
   category: "Information",
   desc: "View the server's premium boost level and statistics.",
 

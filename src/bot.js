@@ -15,6 +15,7 @@ const client = new CustomClient({
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildPresences,
     GatewayIntentBits.GuildVoiceStates,
+    GatewayIntentBits.GuildMessageReactions,
   ],
   failIfNotExists: false,
   allowedMentions: {

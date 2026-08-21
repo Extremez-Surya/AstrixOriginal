@@ -1,7 +1,7 @@
 const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require("discord.js");
 
 module.exports = {
-  alias: ["whitelist", "wl", "unwhitelist", "unwl"],
+  alias: ["whitelist", "wl"],
   category: "Security",
   desc: "Add or remove users from the server Anti-Nuke whitelist.",
   botPermissions: ["Administrator"],

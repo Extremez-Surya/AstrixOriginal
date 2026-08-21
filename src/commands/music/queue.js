@@ -42,6 +42,10 @@ module.exports = {
 
     const currentTrack = player.queue.current;
     const tracks = player.queue.slice(0, 10);
+    const totalTracks = (currentTrack ? 1 : 0) + player.queue.length;
+    const totalDurationMs =
+      (currentTrack?.length || 0) +
+      player.queue.reduce((acc, t) => acc + (t.length || 0), 0);
 
     let text = `### 📜 Music Queue • ${message.guild.name}\n`;
     if (currentTrack) {
@@ -67,7 +71,12 @@ module.exports = {
 
     const container = new ContainerBuilder()
       .addTextDisplayComponents(new TextDisplayBuilder().setContent(text))
-      .addSeparatorComponents(new SeparatorBuilder());
+      .addSeparatorComponents(new SeparatorBuilder())
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `📊 **Total:** \`${totalTracks}\` track${totalTracks === 1 ? "" : "s"} (${formatTime(totalDurationMs)}) • **Loop:** \`${player.loop || "none"}\` • **24/7:** \`${player.data?.get("is247") ? "Enabled" : "Disabled"}\``,
+        ),
+      );
 
     return message.reply({
       components: [container],

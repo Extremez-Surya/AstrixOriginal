@@ -287,6 +287,30 @@ module.exports = {
     if (Command.devOnly && !client.developer.includes(message.author.id))
       return;
 
+    const serverManager = require("../lib/serverManager");
+    const cmdName = Command.alias?.[0] || cmd;
+    const catName = Command.category;
+    if (
+      cmdName !== "disable" &&
+      cmdName !== "enable" &&
+      serverManager.isCommandDisabled(message.guild.id, message.channel.id, cmdName, catName)
+    ) {
+      if (serverManager.getDisableNotice(message.guild.id)) {
+        const disContainer = new ContainerBuilder().addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `### 🚫 Command Disabled\n` +
+              `-# *The command \`${cmd}\` is disabled in this channel or server.*`,
+          ),
+        );
+        return message.reply({
+          components: [disContainer],
+          flags: MessageFlags.IsComponentsV2,
+          allowedMentions: { parse: [], repliedUser: false },
+        }).catch(() => null);
+      }
+      return;
+    }
+
     if (Command.userPermissions && Command.userPermissions.length !== 0) {
       if (!message.member.permissions.has(Command.userPermissions)) {
         const perms = Array.isArray(Command.userPermissions) ? Command.userPermissions.join(", ") : Command.userPermissions;

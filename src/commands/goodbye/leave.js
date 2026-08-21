@@ -1,7 +1,7 @@
 const goodbyeCommand = require("./goodbye");
 
 module.exports = {
-  alias: ["leave", "leaveconfig", "farewellconfig"],
+  alias: ["leaveconfig", "farewellconfig"],
   category: "Goodbye",
   desc: "Manage server leave greetings & departure system configuration.",
   botPermissions: ["SendMessages"],

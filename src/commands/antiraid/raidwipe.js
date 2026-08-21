@@ -40,7 +40,7 @@ function buildNotice(title, description, isError = true) {
 }
 
 module.exports = {
-  alias: ["raidwipe", "rw"],
+  alias: ["raidwipe", "antiraidwipe"],
   category: "Anti Raid",
   desc: "Purge raiders who joined within a recent time window.",
   botPermissions: ["BanMembers", "KickMembers"],

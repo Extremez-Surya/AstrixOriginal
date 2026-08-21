@@ -7,7 +7,7 @@ const EMOJIS = require("../../lib/emojis");
 const customRolesManager = require("../../lib/customRolesManager");
 
 module.exports = {
-  alias: ["rremove", "roleremove", "revokerole"],
+  alias: ["rremove", "revokerole", "takerole"],
   category: "Custom Roles",
   description: "Directly revoke a role from a target member.",
   usage: ".rremove <@user> <@role>",

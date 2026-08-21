@@ -1,4 +1,12 @@
 {
+  "Starboard": {
+    "emoji": "⭐",
+    "desc": "Highlight and showcase server-favorite messages in a designated starboard channel."
+  },
+  "Server": {
+    "emoji": "🏛️",
+    "desc": "Server customization, bot branding, per-channel command toggles & server configurations."
+  },
   "Information": {
     "emoji": "<:list:1528313871889334382>",
     "desc": "View bot network stats and user information."

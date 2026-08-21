@@ -17,6 +17,9 @@ module.exports = {
       }
     }
 
+    const starboardManager = require("../lib/starboardManager");
+    starboardManager.handleReactionAdd(client, reaction, user).catch(() => null);
+
     snipeManager.addReactionHistoryEntry(
       reaction.message.id,
       user,

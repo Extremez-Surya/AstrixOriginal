@@ -1,0 +1,23 @@
+{
+  "guilds": {
+    "1526109131042459678": {
+      "enabled": false,
+      "channelId": null,
+      "emojis": [
+        {
+          "emoji": "⭐",
+          "threshold": 3
+        }
+      ],
+      "selfStar": false,
+      "color": "#FFD700",
+      "timestamp": true,
+      "jumpUrl": true,
+      "attachments": true,
+      "ignoredChannels": [],
+      "ignoredRoles": [],
+      "ignoredMembers": [],
+      "starredMessages": []
+    }
+  }
+}

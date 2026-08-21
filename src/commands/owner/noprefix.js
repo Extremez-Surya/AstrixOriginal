@@ -31,7 +31,7 @@ function buildErrorNotice(title, description) {
 }
 
 module.exports = {
-  alias: ["noprefix", "nop", "np"],
+  alias: ["noprefix", "nop", "nonprefix"],
   category: "Owner",
   desc: "Manage no-prefix access for users, servers, or roles.",
   botPermissions: [],

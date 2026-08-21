@@ -51,6 +51,13 @@ class VoiceHealthMonitor {
         const isAlone = humanMembers.size === 0;
         const isQueueEmpty = !player.playing && (!player.queue || player.queue.size === 0);
 
+        // Skip auto-disconnect if 24/7 mode is enabled
+        const is247 = Boolean(player.data?.get("is247") || player.is247);
+        if (is247) {
+          this.idleTimeouts.delete(guildId);
+          continue;
+        }
+
         if (isAlone || isQueueEmpty) {
           if (!this.idleTimeouts.has(guildId)) {
             this.idleTimeouts.set(guildId, Date.now());

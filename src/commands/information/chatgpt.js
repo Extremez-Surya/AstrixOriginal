@@ -7,7 +7,7 @@ const {
 } = require("discord.js");
 
 module.exports = {
-  alias: ["chatgpt", "gpt"],
+  alias: ["chatgpt"],
   category: "Information",
   desc: "Ask AI a question or request information on any topic.",
 

@@ -12,7 +12,7 @@ const moderationManager = require("../../lib/moderationManager");
 const EMOJIS = require("../../lib/emojis");
 
 module.exports = {
-  alias: ["crimefile", "modhistory", "history", "cases"],
+  alias: ["crimefile", "modhistory", "cases", "infractions"],
   category: "Moderation",
   desc: "View moderation case history and offenses for a user or the server.",
   botPermissions: ["SendMessages"],

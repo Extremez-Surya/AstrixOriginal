@@ -1,0 +1,89 @@
+{
+  "guilds": {
+    "1526109131042459678": {
+      "enabled": true,
+      "lookback": 14,
+      "tracking": {
+        "messages": true,
+        "voice": true,
+        "joins": true
+      },
+      "users": {
+        "1299394763933618239": {
+          "messages": 24,
+          "voiceMinutes": 0,
+          "lastActive": 1787329624289,
+          "invites": {
+            "regular": 0,
+            "leaves": 0,
+            "fake": 0,
+            "bonus": 100
+          }
+        }
+      },
+      "channels": {
+        "1539688827013046313": {
+          "messages": 24,
+          "voiceMinutes": 0
+        }
+      },
+      "daily": {
+        "2026-08-21": {
+          "messages": 24,
+          "voiceMinutes": 0,
+          "joins": 0,
+          "leaves": 0
+        }
+      },
+      "invites": {}
+    },
+    "1538824975610286183": {
+      "enabled": true,
+      "lookback": 14,
+      "tracking": {
+        "messages": true,
+        "voice": true,
+        "joins": true
+      },
+      "users": {
+        "1423559509644677131": {
+          "messages": 11,
+          "voiceMinutes": 0,
+          "lastActive": 1787329805156,
+          "invites": {
+            "regular": 0,
+            "leaves": 0,
+            "fake": 0,
+            "bonus": 0
+          }
+        },
+        "984409270344908872": {
+          "messages": 3,
+          "voiceMinutes": 0,
+          "lastActive": 1787329697672,
+          "invites": {
+            "regular": 0,
+            "leaves": 0,
+            "fake": 0,
+            "bonus": 0
+          }
+        }
+      },
+      "channels": {
+        "1540009762379534346": {
+          "messages": 14,
+          "voiceMinutes": 0
+        }
+      },
+      "daily": {
+        "2026-08-21": {
+          "messages": 14,
+          "voiceMinutes": 0,
+          "joins": 0,
+          "leaves": 0
+        }
+      },
+      "invites": {}
+    }
+  }
+}

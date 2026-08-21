@@ -1,11 +1,11 @@
 {
   "1526109131042459678": {
-    "hubChannelId": "1535287501139222668",
-    "categoryChannelId": "1535287496848707614",
+    "hubChannelId": "1540388562078269474",
+    "categoryChannelId": "1540388557263347852",
     "nameTemplate": "{user}",
     "userLimit": 0,
     "tempChannels": {},
-    "interfaceTextChannelId": "1535287498706649120",
-    "interfaceMessageId": "1535287503198621706"
+    "interfaceTextChannelId": "1540388560115466253",
+    "interfaceMessageId": "1540388564490256474"
   }
 }

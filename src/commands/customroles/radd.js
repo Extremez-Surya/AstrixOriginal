@@ -8,7 +8,7 @@ const EMOJIS = require("../../lib/emojis");
 const customRolesManager = require("../../lib/customRolesManager");
 
 module.exports = {
-  alias: ["radd", "roleadd", "grantrole"],
+  alias: ["radd", "grantrole", "giverole"],
   category: "Custom Roles",
   description: "Directly assign a role to a target member.",
   usage: ".radd <@user> <@role>",

@@ -1,7 +1,7 @@
 const { ContainerBuilder, TextDisplayBuilder, MessageFlags, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 
 module.exports = {
-  alias: ["verify", "verification", "verifypanel"],
+  alias: ["verify", "verification"],
   category: "Security",
   desc: "Configure server verification panel and verified role assignment.",
   botPermissions: ["ManageRoles", "SendMessages"],

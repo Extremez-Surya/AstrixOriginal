@@ -11,7 +11,7 @@ const {
 const config = require("../../lib/config.json");
 
 module.exports = {
-  alias: ["stats"],
+  alias: ["stats", "botstats"],
   category: "Information",
   desc: "View the bot's interactive statistics and system metrics.",
 

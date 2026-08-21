@@ -11,7 +11,7 @@ const snipeManager = require("../../lib/snipeManager");
 const EMOJIS = require("../../lib/emojis");
 
 module.exports = {
-  alias: ["snipe", "s"],
+  alias: ["snipe", "sn"],
   category: "Miscellaneous",
   desc: "Inspect recently deleted messages in the current channel.",
   botPermissions: ["SendMessages"],

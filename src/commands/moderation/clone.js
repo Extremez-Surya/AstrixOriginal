@@ -8,7 +8,7 @@ const {
 const { confirmAction } = require("../../utils/confirm.js");
 
 module.exports = {
-  alias: ["clone", "nuke"],
+  alias: ["clone", "channelclone"],
   category: "Moderation",
   desc: "Clone the current channel with exact permissions and settings, deleting the old one.",
 
