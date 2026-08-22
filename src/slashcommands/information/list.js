@@ -187,13 +187,13 @@ module.exports = {
       const tabTitle = titles[tab] || "Guild List";
 
       const content = [
-        `### <:list:1528313871889334382> ${tabTitle} ── ${guild.name}`,
+        `### <:list:1539875411780042802> ${tabTitle} ── ${guild.name}`,
         `-# *Explore detailed server rosters, statistics, and member categories.*`,
         "",
         listContent,
         "",
-        `> <:stats:1528322466521546826> **Category:** \`${tabTitle}\` | **Total Items:** \`${totalItems}\``,
-        `> <:list:1528313871889334382> **Page:** \`${activePage + 1} of ${totalPages}\``,
+        `> <:stats:1539875420256866314> **Category:** \`${tabTitle}\` | **Total Items:** \`${totalItems}\``,
+        `> <:list:1539875411780042802> **Page:** \`${activePage + 1} of ${totalPages}\``,
       ].join("\n");
 
       const selectMenu = new StringSelectMenuBuilder()
@@ -226,7 +226,7 @@ module.exports = {
         .addTextDisplayComponents(new TextDisplayBuilder().setContent(content))
         .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
         .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(`-# *<:astrix:1527205612205903973> Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE*`)
+          new TextDisplayBuilder().setContent(`-# *<:astrix:1539875362945900574> Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE*`)
         )
         .addActionRowComponents(selectRow)
         .addActionRowComponents(paginationRow);

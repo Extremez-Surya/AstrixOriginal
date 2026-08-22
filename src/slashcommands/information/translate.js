@@ -78,11 +78,11 @@ const LANGUAGE_MAP = {
 };
 
 function getLangInfo(code) {
-  if (!code) return { name: "Auto", flag: "<:website:1528304906400960582>" };
+  if (!code) return { name: "Auto", flag: "<:website:1539875380159184977>" };
   const lower = code.toLowerCase();
   const info = LANGUAGE_MAP[lower];
   if (info) return { name: info.name, flag: info.flag };
-  return { name: code.toUpperCase(), flag: "<:website:1528304906400960582>" };
+  return { name: code.toUpperCase(), flag: "<:website:1539875380159184977>" };
 }
 
 module.exports = {
@@ -152,7 +152,7 @@ module.exports = {
     );
 
     const content = [
-      `### <:website:1528304906400960582> ${srcInfo.flag} ${srcInfo.name} → ${targetInfo.flag} ${targetInfo.name}`,
+      `### <:website:1539875380159184977> ${srcInfo.flag} ${srcInfo.name} → ${targetInfo.flag} ${targetInfo.name}`,
       "",
       `> **Original:** ${textToTranslate}`,
       `> **Translation:** ${translated}`,

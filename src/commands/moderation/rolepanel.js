@@ -41,7 +41,7 @@ module.exports = {
     if (!role) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Role Specified Required\n` +
+          `### <:red_star:1539875482680696834> Role Specified Required\n` +
           `-# *Please mention a role or provide a valid role ID / name.*\n\n` +
           `> - **Usage:** \`.rolepanel <@role | role_name | role_id>\``
         )
@@ -56,7 +56,7 @@ module.exports = {
     if (role.position >= guild.members.me.roles.highest.position) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Hierarchy Check Failed\n` +
+          `### <:red_star:1539875482680696834> Hierarchy Check Failed\n` +
           `-# *I cannot manage this role because it is higher than or equal to my highest role.*`
         )
       );

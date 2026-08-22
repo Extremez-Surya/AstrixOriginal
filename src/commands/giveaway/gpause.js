@@ -20,7 +20,7 @@ module.exports = {
     if (!messageId) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Missing Message ID\n` +
+          `### <:red_star:1539875482680696834> Missing Message ID\n` +
             `-# *Usage: \`.gpause <message_id>\`*`,
         ),
       );
@@ -33,7 +33,7 @@ module.exports = {
     if (!res) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Unable to Pause\n` +
+          `### <:red_star:1539875482680696834> Unable to Pause\n` +
             `-# *Giveaway matching ID \`${messageId}\` was not found, is already paused, or has ended.*`,
         ),
       );

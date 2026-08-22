@@ -23,7 +23,7 @@ module.exports = {
     if (!targetUser) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Target User Required\n` +
+          `### <:red_star:1539875482680696834> Target User Required\n` +
             `-# *Please mention a user or provide a valid user ID to warn.*\n\n` +
             `> - **Usage:** \`.warn @user [reason]\``,
         ),
@@ -43,7 +43,7 @@ module.exports = {
     if (!member) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Member Not Found\n` +
+          `### <:red_star:1539875482680696834> Member Not Found\n` +
             `-# *This user is not currently in this server.*`,
         ),
       );
@@ -77,7 +77,7 @@ module.exports = {
         const dmContainer = new ContainerBuilder()
           .addTextDisplayComponents(
             new TextDisplayBuilder().setContent(
-              `### <:Warn_red:1528691439658078290> Disciplinary Notification: ${message.guild.name}\n` +
+              `### <:Warn_red:1539875499147399218> Disciplinary Notification: ${message.guild.name}\n` +
                 `-# *You have received a formal warning in the server.*\n\n` +
                 `> **Reason:** ${reason}\n` +
                 `> **Moderator:** <@${message.author.id}>\n` +

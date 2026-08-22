@@ -23,7 +23,7 @@ module.exports = {
     if (!args[0] && message.stickers.size === 0) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Missing Target Emoji/Sticker\n` +
+          `### <:red_star:1539875482680696834> Missing Target Emoji/Sticker\n` +
             `-# *Please specify a custom emoji or send/attach a sticker.*`,
         ),
       );
@@ -51,7 +51,7 @@ module.exports = {
     if (!imageUrl) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Invalid Custom Emoji\n` +
+          `### <:red_star:1539875482680696834> Invalid Custom Emoji\n` +
             `-# *Only custom server emojis and stickers can be enlarged.*`,
         ),
       );
@@ -75,7 +75,7 @@ module.exports = {
         )
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <:astrix:1527205612205903973> ${title}\n` +
+            `### <:astrix:1539875362945900574> ${title}\n` +
               `-# *High-resolution render of custom asset.*`,
           ),
         );
@@ -84,7 +84,7 @@ module.exports = {
     } catch (e) {
       container.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <:astrix:1527205612205903973> ${title}\n` +
+          `### <:astrix:1539875362945900574> ${title}\n` +
             `-# *Direct Link:* ${imageUrl}`,
         ),
       );

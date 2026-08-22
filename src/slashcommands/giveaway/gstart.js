@@ -53,7 +53,7 @@ module.exports = {
     if (!durationMs || durationMs < 5000) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Invalid Duration\n` +
+          `### <:red_star:1539875482680696834> Invalid Duration\n` +
             `-# *Please specify a valid duration string equal to or greater than 5s (e.g. \`10m\`, \`2h\`, \`1d\`).*`,
         ),
       );
@@ -67,13 +67,13 @@ module.exports = {
     const endUnix = Math.floor(endTimestamp / 1000);
 
     const content = [
-      `### <a:tada2:1530099488398508073> GIVEAWAY ── ${prize}`,
+      `### <:tada2:1539875614440554597> GIVEAWAY ── ${prize}`,
       `-# *Click the button below to enter the giveaway!*`,
       "",
-      `> <a:red_yellow_gift:1530099989181759488> **Prize:** **${prize}**`,
-      `> <a:Trophy:1530099764887289956> **Winner(s):** \`${winnersInput}\``,
-      `> <:members:1528311049726591006> **Host:** ${interaction.user}`,
-      `> <:clock:1528312173275906088> **Ends:** <t:${endUnix}:R> (<t:${endUnix}:f>)`,
+      `> <:red_yellow_gift:1539875626364698735> **Prize:** **${prize}**`,
+      `> <:Trophy:1539875620270641185> **Winner(s):** \`${winnersInput}\``,
+      `> <:members:1539875392532512808> **Host:** ${interaction.user}`,
+      `> <:clock:1539875400975388713> **Ends:** <t:${endUnix}:R> (<t:${endUnix}:f>)`,
     ].join("\n");
 
     const tempContainer = new ContainerBuilder()
@@ -107,7 +107,7 @@ module.exports = {
       new ButtonBuilder()
         .setCustomId(`giveaway_entry_${giveawayMsg.id}`)
         .setLabel("Enter")
-        .setEmoji("<a:tada2:1530099488398508073>")
+        .setEmoji("<:tada2:1539875614440554597>")
         .setStyle(ButtonStyle.Primary),
     );
 
@@ -150,7 +150,7 @@ module.exports = {
 
     const confirmContainer = new ContainerBuilder().addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
-        `### <a:tada2:1530099488398508073> Giveaway Created Successfully\n` +
+        `### <:tada2:1539875614440554597> Giveaway Created Successfully\n` +
           `-# *Giveaway started in <#${interaction.channel.id}> for **${prize}**.*`,
       ),
     );

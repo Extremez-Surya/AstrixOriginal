@@ -32,7 +32,7 @@ module.exports = {
     if (!res) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Unable to Unpause\n` +
+          `### <:red_star:1539875482680696834> Unable to Unpause\n` +
             `-# *Giveaway matching ID \`${messageId}\` was not found, is not paused, or has ended.*`,
         ),
       );
@@ -48,7 +48,7 @@ module.exports = {
       new TextDisplayBuilder().setContent(
         `### ▶️ Giveaway Resumed Successfully\n` +
           `-# *Resumed countdown timer for **${res.prize}** (\`${messageId}\`).*\n\n` +
-          `> <:clock:1528312173275906088> **New End Time:** <t:${endUnix}:R>`,
+          `> <:clock:1539875400975388713> **New End Time:** <t:${endUnix}:R>`,
       ),
     );
 

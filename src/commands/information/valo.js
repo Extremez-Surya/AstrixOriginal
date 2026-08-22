@@ -44,7 +44,7 @@ module.exports = {
     if (!args[0] || !args[0].includes("#")) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Missing Riot Tagline\n` +
+          `### <:red_star:1539875482680696834> Missing Riot Tagline\n` +
             `-# *Usage: \`.valo <name#tag>\` (e.g. \`.valo Vinay#0101\`).*`,
         ),
       );
@@ -60,14 +60,14 @@ module.exports = {
     const dakUrl = `https://dak.gg/valorant/profile/${encodeURIComponent(name)}-${encodeURIComponent(tag)}`;
 
     const content = [
-      `### <a:Valorant:1530085629432430722> Valorant Agent Profile ── ${name}#${tag}`,
+      `### <:Valorant:1539875536547876894> Valorant Agent Profile ── ${name}#${tag}`,
       `-# *Riot Games Agent Inspection & Competitive Telemetry.*`,
       "",
-      `> <:members:1528311049726591006> **Riot Account Identity**`,
+      `> <:members:1539875392532512808> **Riot Account Identity**`,
       `> - **Riot ID:** \`${name}#${tag}\``,
       `> - **Username:** \`${name}\``,
       `> - **Tagline:** \`#${tag}\``,
-      `> - **Status:** \`Online / Ready\` <:online:1528327584520081519>`,
+      `> - **Status:** \`Online / Ready\` <:online:1539875424144859239>`,
     ].join("\n");
 
     const files = [];

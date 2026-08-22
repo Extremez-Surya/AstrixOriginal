@@ -24,7 +24,7 @@ module.exports = {
     if (!isOwner && !isAdmin && !isDev) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Permission Denied\n` +
+          `### <:red_star:1539875482680696834> Permission Denied\n` +
             `-# *You need Administrator permission or be the Server Owner to change the bot's server bio.*`,
         ),
       );
@@ -66,7 +66,7 @@ module.exports = {
       if (bio.length > 190) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Bio Too Long\n` +
+            `### <:red_star:1539875482680696834> Bio Too Long\n` +
               `-# *Server bio must be 190 characters or less (currently ${bio.length} characters).*`,
           ),
         );
@@ -106,7 +106,7 @@ module.exports = {
       console.error("[BotServerBio] Error:", err);
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Bio Update Notice\n` +
+          `### <:red_star:1539875482680696834> Bio Update Notice\n` +
             `-# *Could not update server bio: ${err.message || "Discord API error."}*`,
         ),
       );

@@ -25,7 +25,7 @@ module.exports = {
     if (!args[0]) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Missing Username\n` +
+          `### <:red_star:1539875482680696834> Missing Username\n` +
             `-# *Please specify a GitHub username (e.g. \`.github octocat\`).*`,
         ),
       );
@@ -54,7 +54,7 @@ module.exports = {
     if (!user) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Developer Not Found\n` +
+          `### <:red_star:1539875482680696834> Developer Not Found\n` +
             `-# *No GitHub account found matching \`${username}\`.*`,
         ),
       );
@@ -69,17 +69,17 @@ module.exports = {
       : "No public bio provided.";
 
     const content = [
-      `### <:github:1530086917708713984> GitHub Profile ── ${user.name || user.login}`,
+      `### <:github:1539875546651955220> GitHub Profile ── ${user.name || user.login}`,
       `-# *${bioText}*`,
       "",
-      `> <:members:1528311049726591006> **Identity & Details**`,
-      `> - **Username:** \`@${user.login}\` ${user.hireable ? "• <:website:1528304906400960582> *Open for Hire*" : ""}`,
+      `> <:members:1539875392532512808> **Identity & Details**`,
+      `> - **Username:** \`@${user.login}\` ${user.hireable ? "• <:website:1539875380159184977> *Open for Hire*" : ""}`,
       `> - **Account Type:** \`${user.type}\``,
       `> - **Company:** \`${user.company ? user.company.trim() : "None"}\``,
       `> - **Location:** \`${user.location ? user.location.trim() : "Not specified"}\``,
       `> - **Joined GitHub:** <t:${createdTs}:D> (<t:${createdTs}:R>)`,
       "",
-      `> <:stats:1528322466521546826> **Activity & Telemetry**`,
+      `> <:stats:1539875420256866314> **Activity & Telemetry**`,
       `> - **Public Repositories:** \`${user.public_repos.toLocaleString()}\``,
       `> - **Public Gists:** \`${user.public_gists.toLocaleString()}\``,
       `> - **Followers:** \`${user.followers.toLocaleString()}\` | **Following:** \`${user.following.toLocaleString()}\``,

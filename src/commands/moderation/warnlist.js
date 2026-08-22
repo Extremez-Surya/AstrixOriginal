@@ -27,7 +27,7 @@ module.exports = {
     if (!member) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Member Not Found\n` +
+          `### <:red_star:1539875482680696834> Member Not Found\n` +
             `-# *This user is not currently in this server.*`,
         ),
       );
@@ -44,7 +44,7 @@ module.exports = {
     if (warns.length === 0) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <:online:1528327584520081519> Clean Disciplinary Record\n` +
+          `### <:online:1539875424144859239> Clean Disciplinary Record\n` +
             `-# *<@${targetUser.id}> (${targetUser.username}) has no warning history.*`,
         ),
       );
@@ -63,7 +63,7 @@ module.exports = {
     });
 
     const content = [
-      `### <:rshield:1528681364340080713> Warnings History: ${targetUser.username}`,
+      `### <:rshield:1539875466939338773> Warnings History: ${targetUser.username}`,
       `-# *Persistent disciplinary logs mapped to this member.*`,
       "",
       listLines.join("\n\n"),
@@ -78,7 +78,7 @@ module.exports = {
       )
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `-# *<:astrix:1527205612205903973> Warning Records • Powered by ASTRIXCODE™ • © 2026*`,
+          `-# *<:astrix:1539875362945900574> Warning Records • Powered by ASTRIXCODE™ • © 2026*`,
         ),
       );
 

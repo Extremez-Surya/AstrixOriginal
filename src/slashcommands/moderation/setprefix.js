@@ -34,7 +34,7 @@ module.exports = {
     if (newPrefix.length > 5) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Prefix Too Long\n` +
+          `### <:red_star:1539875482680696834> Prefix Too Long\n` +
             `-# *Command prefix must be 5 characters or less.*`,
         ),
       );
@@ -48,7 +48,7 @@ module.exports = {
     const container = new ContainerBuilder()
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <:astrix:1527205612205903973> Server Prefix Updated\n` +
+          `### <:astrix:1539875362945900574> Server Prefix Updated\n` +
             `-# *Successfully set server command prefix to \`${newPrefix}\` for **${interaction.guild.name}**.*\n\n` +
             `> - **New Command Prefix:** \`${newPrefix}\`\n` +
             `> - **Example Usage:** \`${newPrefix}help\``,

@@ -15,7 +15,7 @@ module.exports = {
 
     const container = new ContainerBuilder().addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
-        `### <a:red_star:1528688099436003419> Welcome Module Activated\n` +
+        `### <:red_star:1539875482680696834> Welcome Module Activated\n` +
         `-# *Greetings for new member joins are now ENABLED.*\n\n` +
         `> - **Welcome Channel:** ${channelMention}\n` +
         `> - **Tip:** Use \`.welcometest\` to send a live test greeting!`

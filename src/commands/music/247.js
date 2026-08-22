@@ -26,7 +26,7 @@ module.exports = {
     if (!voiceChannel) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Voice Channel Required\n` +
+          `### <:red_star:1539875482680696834> Voice Channel Required\n` +
             `-# *You must be connected to a voice channel to configure 24/7 mode.*`,
         ),
       );
@@ -46,7 +46,7 @@ module.exports = {
       if (!botPermissions?.has("Connect") || !botPermissions?.has("Speak")) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Missing Permissions\n` +
+            `### <:red_star:1539875482680696834> Missing Permissions\n` +
               `-# *I do not have Connect and Speak permissions in <#${voiceChannel.id}>.*`,
           ),
         );
@@ -67,7 +67,7 @@ module.exports = {
     } else if (player.voiceId !== voiceChannel.id) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Channel Mismatch\n` +
+          `### <:red_star:1539875482680696834> Channel Mismatch\n` +
             `-# *You must be in <#${player.voiceId}> to modify 24/7 settings.*`,
         ),
       );

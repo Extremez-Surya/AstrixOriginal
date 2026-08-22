@@ -95,7 +95,7 @@ async function handleMusicInteraction(client, interaction) {
   if (!player) {
     const errorContainer = new ContainerBuilder().addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
-        `### <a:red_star:1528688099436003419> No Audio Player\n` +
+        `### <:red_star:1539875482680696834> No Audio Player\n` +
           `-# *There is no active music player running in this server.*`
       )
     );
@@ -111,7 +111,7 @@ async function handleMusicInteraction(client, interaction) {
   if (!memberVoiceChannel || memberVoiceChannel.id !== player.voiceId) {
     const errorContainer = new ContainerBuilder().addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
-        `### <a:red_star:1528688099436003419> Voice Channel Required\n` +
+        `### <:red_star:1539875482680696834> Voice Channel Required\n` +
           `-# *You must be in <#${player.voiceId}> to use the music controller.*`
       )
     );
@@ -396,7 +396,7 @@ async function handleMusicInteraction(client, interaction) {
           .catch(async () => {
             const failContainer = new ContainerBuilder().addTextDisplayComponents(
               new TextDisplayBuilder().setContent(
-                `### <a:red_star:1528688099436003419> DMs Closed\n` +
+                `### <:red_star:1539875482680696834> DMs Closed\n` +
                   `-# *Could not send track details. Please enable direct messages from server members.*`
               )
             );
@@ -414,7 +414,7 @@ async function handleMusicInteraction(client, interaction) {
       client.manager.players.delete(interaction.guildId);
       const errorContainer = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Audio Session Expired\n` +
+          `### <:red_star:1539875482680696834> Audio Session Expired\n` +
             `-# *The music session expired. Please use \`.play\` to start playing music again.*`
         )
       );

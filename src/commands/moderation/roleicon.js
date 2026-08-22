@@ -23,7 +23,7 @@ module.exports = {
     if (!roleArg) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Missing Arguments\n` +
+          `### <:red_star:1539875482680696834> Missing Arguments\n` +
             `-# *Usage: \`.roleicon <@role | role_id> <emoji | image_url | reset>\`*`,
         ),
       );
@@ -39,7 +39,7 @@ module.exports = {
     if (!role) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Role Not Found\n` +
+          `### <:red_star:1539875482680696834> Role Not Found\n` +
             `-# *Could not find specified role in this server.*`,
         ),
       );
@@ -51,7 +51,7 @@ module.exports = {
     if (role.position >= message.guild.members.me.roles.highest.position) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Hierarchy Check Failed\n` +
+          `### <:red_star:1539875482680696834> Hierarchy Check Failed\n` +
             `-# *I cannot modify this role because it is higher than or equal to my highest role.*`,
         ),
       );
@@ -66,7 +66,7 @@ module.exports = {
         const container = new ContainerBuilder()
           .addTextDisplayComponents(
             new TextDisplayBuilder().setContent(
-              `### <:astrix:1527205612205903973> Role Icon Reset\n` +
+              `### <:astrix:1539875362945900574> Role Icon Reset\n` +
                 `-# *Successfully removed custom icon from <@&${role.id}>.*`,
             ),
           )
@@ -98,7 +98,7 @@ module.exports = {
       const container = new ContainerBuilder()
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <:astrix:1527205612205903973> Role Icon Updated\n` +
+            `### <:astrix:1539875362945900574> Role Icon Updated\n` +
               `-# *Successfully set role icon for <@&${role.id}>.*`,
           ),
         )
@@ -119,7 +119,7 @@ module.exports = {
     } catch (err) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Failed to Update Role Icon\n` +
+          `### <:red_star:1539875482680696834> Failed to Update Role Icon\n` +
             `-# *${err.message || "An error occurred (Server requires Level 2 Boost for role icons)."}*`,
         ),
       );

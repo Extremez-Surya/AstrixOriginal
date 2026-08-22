@@ -22,7 +22,7 @@ module.exports = {
     if (!name) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Missing Role Name\n` +
+          `### <:red_star:1539875482680696834> Missing Role Name\n` +
             `-# *Usage: \`.rolecreate <role_name> [hex_color]\` (e.g. \`.rolecreate Moderator #ff0000\`)*`,
         ),
       );
@@ -41,7 +41,7 @@ module.exports = {
       const container = new ContainerBuilder()
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <:astrix:1527205612205903973> Role Created Successfully\n` +
+            `### <:astrix:1539875362945900574> Role Created Successfully\n` +
               `-# *Successfully created new server role.* \n\n` +
               `> - **Role Name:** <@&${role.id}> (${role.name})\n` +
               `> - **Role ID:** \`${role.id}\`\n` +
@@ -65,7 +65,7 @@ module.exports = {
     } catch (err) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Failed to Create Role\n` +
+          `### <:red_star:1539875482680696834> Failed to Create Role\n` +
             `-# *${err.message || "An error occurred while creating the role."}*`,
         ),
       );

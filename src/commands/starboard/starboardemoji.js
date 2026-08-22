@@ -25,7 +25,7 @@ module.exports = {
     if (!isPermitted) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Permission Denied\n` +
+          `### <:red_star:1539875482680696834> Permission Denied\n` +
             `-# *You need the Manage Server permission to configure Starboard emojis.*`,
         ),
       );
@@ -80,7 +80,7 @@ module.exports = {
       if (!emojiInput) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Missing Emoji\n` +
+            `### <:red_star:1539875482680696834> Missing Emoji\n` +
               `-# *Please specify the emoji to add (e.g. \`.sbemoji add ⭐ 3\`).*`,
           ),
         );
@@ -132,7 +132,7 @@ module.exports = {
       if (!emojiInput) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Missing Emoji\n` +
+            `### <:red_star:1539875482680696834> Missing Emoji\n` +
               `-# *Please specify the emoji to remove.*`,
           ),
         );
@@ -149,7 +149,7 @@ module.exports = {
       if (config.emojis.length === before) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Not Found\n` +
+            `### <:red_star:1539875482680696834> Not Found\n` +
               `-# *Emoji ${emojiInput} was not in the starboard emoji list.*`,
           ),
         );

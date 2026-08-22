@@ -19,7 +19,7 @@ module.exports = {
   async execute(client, message, args) {
     const sent = await message.reply({
       content:
-        "***<a:Loading:1527203308824039494> Initializing diagnostic matrix...***",
+        "***<:Loading:1539875355140030535> Initializing diagnostic matrix...***",
       fetchReply: true,
     });
 
@@ -105,7 +105,7 @@ module.exports = {
       )
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `-# *<:astrix:1527205612205903973> Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE. All rights reserved.*`,
+          `-# *<:astrix:1539875362945900574> Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE. All rights reserved.*`,
         ),
       );
 

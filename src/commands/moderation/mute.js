@@ -21,7 +21,7 @@ module.exports = {
     if (!targetUser) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Target User Required\n` +
+          `### <:red_star:1539875482680696834> Target User Required\n` +
           `-# *Please mention a user or provide a valid user ID to mute.*\n\n` +
           `> - **Usage:** \`.mute @user [reason]\``
         )
@@ -39,7 +39,7 @@ module.exports = {
     if (!member) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Member Not Found\n` +
+          `### <:red_star:1539875482680696834> Member Not Found\n` +
           `-# *This user is not currently in this server.*`
         )
       );
@@ -56,7 +56,7 @@ module.exports = {
     ) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Hierarchy Check Failed\n` +
+          `### <:red_star:1539875482680696834> Hierarchy Check Failed\n` +
           `-# *I cannot mute this member (their highest role is higher than or equal to mine).*`
         )
       );
@@ -74,7 +74,7 @@ module.exports = {
     } catch (err) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Mute Role Error\n` +
+          `### <:red_star:1539875482680696834> Mute Role Error\n` +
           `-# *The 'Muted' role does not exist, and I could not create it. Ensure my role is high enough and I have Manage Roles permission.*`
         )
       );
@@ -88,7 +88,7 @@ module.exports = {
     if (member.roles.cache.has(muteRole.id)) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Member Already Muted\n` +
+          `### <:red_star:1539875482680696834> Member Already Muted\n` +
           `-# *<@${targetUser.id}> is already muted.*`
         )
       );

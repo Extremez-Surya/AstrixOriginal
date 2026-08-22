@@ -63,7 +63,7 @@ function logAntiraidActionAsync(guild, config, title, description) {
         )
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `-# Built with <a:Red_heart:1528312958541631578> by ASTRIXCODE™ • Ultra-Fast Sub-0.1s Defense`
+            `-# Built with <:Red_heart:1539875406671388683> by ASTRIXCODE™ • Ultra-Fast Sub-0.1s Defense`
           )
         );
 

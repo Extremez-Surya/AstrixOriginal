@@ -50,7 +50,7 @@ module.exports = {
     }
 
     const content = [
-      `### <:chatgpt:1530087438024704070> ChatGPT AI Assistant`,
+      `### <:chatgpt:1539875550460387350> ChatGPT AI Assistant`,
       `-# *Prompt: "${query.substring(0, 100)}${query.length > 100 ? "..." : ""}"*`,
       "",
       `> ${replyText}`,

@@ -38,13 +38,13 @@ module.exports = {
     const mediaGallery = new MediaGalleryBuilder().addItems(mediaItem);
 
     const inviteButton = new ButtonBuilder()
-      .setEmoji("<:invite:1527681405319123054>")
+      .setEmoji("<:invite:1539875370248052736>")
       .setLabel("Invite")
       .setStyle(ButtonStyle.Link)
       .setURL(inviteUrl);
 
     const supportButton = new ButtonBuilder()
-      .setEmoji("<:discord:1527683374523744367>")
+      .setEmoji("<:discord:1539875375981797596>")
       .setLabel("Support")
       .setStyle(ButtonStyle.Link)
       .setURL("https://discord.gg/FR9pXG2Mwb");
@@ -54,7 +54,7 @@ module.exports = {
       supportButton,
     );
 
-    const description = `### <:invite:1527681405319123054> Invite Astrix to your server.`;
+    const description = `### <:invite:1539875370248052736> Invite Astrix to your server.`;
 
     const container = new ContainerBuilder()
       .addMediaGalleryComponents(mediaGallery)

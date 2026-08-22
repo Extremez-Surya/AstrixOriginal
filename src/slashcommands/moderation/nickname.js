@@ -40,7 +40,7 @@ module.exports = {
     if (!member) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Member Not Found\n` +
+          `### <:red_star:1539875482680696834> Member Not Found\n` +
           `-# *This user is not currently in this server.*`
         )
       );
@@ -54,7 +54,7 @@ module.exports = {
     if (!isSelf && !member.manageable) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Cannot Manage Nickname\n` +
+          `### <:red_star:1539875482680696834> Cannot Manage Nickname\n` +
           `-# *I cannot manage this member's nickname (they might have a higher role or permissions than the bot).*`
         )
       );

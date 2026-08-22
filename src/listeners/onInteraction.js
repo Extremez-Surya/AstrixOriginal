@@ -216,7 +216,7 @@ module.exports = {
           const updatedButton = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
               .setCustomId(`giveaway_entry_${messageId}`)
-              .setEmoji("<a:tada2:1530099488398508073>")
+              .setEmoji("<:tada2:1539875614440554597>")
               .setLabel(`Enter (${res.totalEntries} Entries)`)
               .setStyle(ButtonStyle.Primary),
           );
@@ -243,7 +243,7 @@ module.exports = {
       if (res.entered) {
         return interaction
           .reply({
-            content: `<a:tada2:1530099488398508073> You have successfully **entered** the giveaway! (Total entries: \`${res.totalEntries}\`)`,
+            content: `<:tada2:1539875614440554597> You have successfully **entered** the giveaway! (Total entries: \`${res.totalEntries}\`)`,
             flags: MessageFlags.Ephemeral,
           })
           .catch(() => null);

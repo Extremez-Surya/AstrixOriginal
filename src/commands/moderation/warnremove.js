@@ -23,7 +23,7 @@ module.exports = {
     if (!targetUser) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Target User Required\n` +
+          `### <:red_star:1539875482680696834> Target User Required\n` +
             `-# *Please mention a user or provide a valid user ID.*\n\n` +
             `> - **Usage:** \`.warnremove @user <index>\``,
         ),
@@ -43,7 +43,7 @@ module.exports = {
     if (!member) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Member Not Found\n` +
+          `### <:red_star:1539875482680696834> Member Not Found\n` +
             `-# *This user is not currently in this server.*`,
         ),
       );
@@ -60,7 +60,7 @@ module.exports = {
     if (isNaN(indexArg) || indexArg < 1) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Invalid Warning Index\n` +
+          `### <:red_star:1539875482680696834> Invalid Warning Index\n` +
             `-# *Please specify a valid warning index number (e.g. 1, 2, 3...) to remove.*`,
         ),
       );
@@ -77,7 +77,7 @@ module.exports = {
     if (warns.length === 0) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> No Warnings Found\n` +
+          `### <:red_star:1539875482680696834> No Warnings Found\n` +
             `-# *This user has no warnings logged.*`,
         ),
       );
@@ -93,7 +93,7 @@ module.exports = {
     if (indexArg > warns.length) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Warning Index Out of Range\n` +
+          `### <:red_star:1539875482680696834> Warning Index Out of Range\n` +
             `-# *This user only has \`${warns.length}\` warnings. Please provide an index between \`1\` and \`${warns.length}\`.*`,
         ),
       );
@@ -123,7 +123,7 @@ module.exports = {
         const dmContainer = new ContainerBuilder()
           .addTextDisplayComponents(
             new TextDisplayBuilder().setContent(
-              `### <:rshield:1528681364340080713> Disciplinary Update: ${message.guild.name}\n` +
+              `### <:rshield:1539875466939338773> Disciplinary Update: ${message.guild.name}\n` +
                 `-# *One of your warnings has been removed.*\n\n` +
                 `> **Removed Warning:** \`#${indexArg}\`\n` +
                 `> **Original Reason:** ${targetWarn.reason}\n` +

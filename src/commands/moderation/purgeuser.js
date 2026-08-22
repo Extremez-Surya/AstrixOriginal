@@ -20,7 +20,7 @@ module.exports = {
     if (!targetUser) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Target User Required\n` +
+          `### <:red_star:1539875482680696834> Target User Required\n` +
           `-# *Please mention a user or provide a valid user ID to purge their messages.*\n\n` +
           `> - **Usage:** \`.purgeuser @user [amount]\``
         )

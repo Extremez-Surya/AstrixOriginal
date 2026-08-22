@@ -72,10 +72,10 @@ module.exports = {
             : displayedMembers || "None";
 
         content = [
-          `### <:list:1528313871889334382> Role Information: ${role.name}`,
+          `### <:list:1539875411780042802> Role Information: ${role.name}`,
           `-# *General statistics, color settings, and membership list.*`,
           "",
-          `> <:list:1528313871889334382> **About**`,
+          `> <:list:1539875411780042802> **About**`,
           `> - **Name:** \`${role.name}\``,
           `> - **ID:** \`${role.id}\``,
           `> - **Mention:** ${role}`,
@@ -83,11 +83,11 @@ module.exports = {
           `> - **Position:** \`${role.position}\` (out of \`${totalRoles}\`)`,
           `> - **Created:** <t:${Math.floor(role.createdTimestamp / 1000)}:f> (<t:${Math.floor(role.createdTimestamp / 1000)}:R>)`,
           "",
-          `> <:members:1528311049726591006> **Membership**`,
+          `> <:members:1539875392532512808> **Membership**`,
           `> - **Total Members:** \`${memberCount.toLocaleString()}\``,
           `> - **Members List:** ${membersText}`,
           "",
-          `> <:RedGear:1528691918727282760> **Settings**`,
+          `> <:RedGear:1539875503039578193> **Settings**`,
           `> - **Hoisted:** \`${role.hoist ? "Yes" : "No"}\``,
           `> - **Mentionable:** \`${role.mentionable ? "Yes" : "No"}\``,
           `> - **Managed:** \`${role.managed ? "Yes" : "No"}\``,
@@ -112,22 +112,22 @@ module.exports = {
         const hasConnect = flags.has("Connect");
 
         content = [
-          `### <:rshield:1528681364340080713> Role Permissions: ${role.name}`,
+          `### <:rshield:1539875466939338773> Role Permissions: ${role.name}`,
           `-# *Complete access rules and server permissions mapped for this role.*`,
           "",
-          `> <a:badge:1528417015918891090> **Administrative**`,
+          `> <:badge:1539875454725521488> **Administrative**`,
           `> - **Administrator:** \`${hasAdmin ? "✓ Authorized" : "✗ Denied"}\``,
           `> - **Manage Server:** \`${hasManageServer ? "✓ Authorized" : "✗ Denied"}\``,
           `> - **Manage Roles:** \`${hasManageRoles ? "✓ Authorized" : "✗ Denied"}\``,
           `> - **Manage Channels:** \`${hasManageChannels ? "✓ Authorized" : "✗ Denied"}\``,
           "",
-          `> <:members:1528311049726591006> **Moderation**`,
+          `> <:members:1539875392532512808> **Moderation**`,
           `> - **Kick Members:** \`${hasKick ? "✓ Authorized" : "✗ Denied"}\``,
           `> - **Ban Members:** \`${hasBan ? "✓ Authorized" : "✗ Denied"}\``,
           `> - **Mute Members:** \`${hasMute ? "✓ Authorized" : "✗ Denied"}\``,
           `> - **Deafen Members:** \`${hasDeafen ? "✓ Authorized" : "✗ Denied"}\``,
           "",
-          `> <:rmessage:1528690062005506160> **Text & Voice**`,
+          `> <:rmessage:1539875489601036298> **Text & Voice**`,
           `> - **Send Messages:** \`${hasSend ? "✓ Authorized" : "✗ Denied"}\``,
           `> - **Manage Messages:** \`${hasManageMessages ? "✓ Authorized" : "✗ Denied"}\``,
           `> - **Mention Everyone:** \`${hasMentionEveryone ? "✓ Authorized" : "✗ Denied"}\``,
@@ -142,13 +142,13 @@ module.exports = {
         .setDisabled(disableComponents)
         .addOptions(
           new StringSelectMenuOptionBuilder()
-            .setEmoji("<:list:1528313871889334382>")
+            .setEmoji("<:list:1539875411780042802>")
             .setLabel("Role Overview")
             .setValue("0")
             .setDescription("General role settings, color and membership list.")
             .setDefault(pageIndex === 0),
           new StringSelectMenuOptionBuilder()
-            .setEmoji("<:rshield:1528681364340080713>")
+            .setEmoji("<:rshield:1539875466939338773>")
             .setLabel("Role Permissions")
             .setValue("1")
             .setDescription(
@@ -204,7 +204,7 @@ module.exports = {
         )
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `-# *<:astrix:1527205612205903973> Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE. All rights reserved.*`,
+            `-# *<:astrix:1539875362945900574> Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE. All rights reserved.*`,
           ),
         )
         .addActionRowComponents(selectRow)

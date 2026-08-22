@@ -88,23 +88,23 @@ module.exports = {
           : "Not in this server";
 
         content = [
-          `### <:members:1528311049726591006> User Profile: ${targetUser.username}`,
+          `### <:members:1539875392532512808> User Profile: ${targetUser.username}`,
           `-# *General identification, timelines, and account registration details.*`,
           "",
-          `> <:list:1528313871889334382> **Basic Info**`,
+          `> <:list:1539875411780042802> **Basic Info**`,
           `> - **Username:** \`${targetUser.username}\``,
           `> - **ID:** \`${targetUser.id}\``,
           `> - **Mention:** ${targetUser}`,
           `> - **Bot Account:** \`${targetUser.bot ? "Yes" : "No"}\``,
           "",
-          `> <:calender:1528415348058099822> **Timelines**`,
+          `> <:calender:1539875441274523649> **Timelines**`,
           `> - **Account Created:** <t:${Math.floor(targetUser.createdTimestamp / 1000)}:f> (<t:${Math.floor(targetUser.createdTimestamp / 1000)}:R>)`,
           `> - **Joined Server:** ${joinedGuildStr}`,
         ].join("\n");
       } else if (pageIndex === 1) {
         // Page 2: Roles & Permissions
         if (!member) {
-          content = `### <:Servericon:1528415740196294776> Guild Status: ${targetUser.username}\n\n*This user is not a member of this server. Roles and permissions cannot be displayed.*`;
+          content = `### <:Servericon:1539875445166702592> Guild Status: ${targetUser.username}\n\n*This user is not a member of this server. Roles and permissions cannot be displayed.*`;
         } else {
           const sortedRoles = [...member.roles.cache.values()]
             .filter((r) => r.id !== guild.id) // exclude @everyone
@@ -139,15 +139,15 @@ module.exports = {
             keyPermissions.length > 0 ? keyPermissions.join(", ") : "None";
 
           content = [
-            `### <:Servericon:1528415740196294776> Guild Status: ${targetUser.username}`,
+            `### <:Servericon:1539875445166702592> Guild Status: ${targetUser.username}`,
             `-# *Role authorization, nickname, and administrative permissions.*`,
             "",
-            `> <:discord:1527683374523744367> **Server Identity**`,
+            `> <:discord:1539875375981797596> **Server Identity**`,
             `> - **Nickname:** \`${member.nickname || "None"}\``,
             `> - **Highest Role:** ${highestRole}`,
             `> - **Key Permissions:** \`${permissionsText}\``,
             "",
-            `> <:list:1528313871889334382> **Roles List [${rolesCount}]**`,
+            `> <:list:1539875411780042802> **Roles List [${rolesCount}]**`,
             rolesText,
           ].join("\n");
         }
@@ -203,17 +203,17 @@ module.exports = {
             : "None";
 
         content = [
-          `### <:stats:1528322466521546826> Activity & Status: ${targetUser.username}`,
+          `### <:stats:1539875420256866314> Activity & Status: ${targetUser.username}`,
           `-# *Live status systems, device clients, and developer badges.*`,
           "",
-          `> <:online:1528327584520081519> **Presence Status**`,
+          `> <:online:1539875424144859239> **Presence Status**`,
           `> - **Status:** \`${status}\``,
           `> - **Active Clients:** \`${clientsText}\``,
           "",
-          `> <:games:1528416832199987393> **Current Activities**`,
+          `> <:games:1539875449151426672> **Current Activities**`,
           activityList,
           "",
-          `> <a:badge:1528417015918891090> **User Badges**`,
+          `> <:badge:1539875454725521488> **User Badges**`,
           `> - **Badges:** \`${badges}\``,
         ].join("\n");
       }
@@ -225,19 +225,19 @@ module.exports = {
         .setDisabled(disableComponents)
         .addOptions(
           new StringSelectMenuOptionBuilder()
-            .setEmoji("<:members:1528311049726591006>")
+            .setEmoji("<:members:1539875392532512808>")
             .setLabel("Profile Overview")
             .setValue("0")
             .setDescription("General user details, registration and timelines.")
             .setDefault(pageIndex === 0),
           new StringSelectMenuOptionBuilder()
-            .setEmoji("<:Servericon:1528415740196294776>")
+            .setEmoji("<:Servericon:1539875445166702592>")
             .setLabel("Roles & Permissions")
             .setValue("1")
             .setDescription("Server nickname, roles listing and permissions.")
             .setDefault(pageIndex === 1),
           new StringSelectMenuOptionBuilder()
-            .setEmoji("<:stats:1528322466521546826>")
+            .setEmoji("<:stats:1539875420256866314>")
             .setLabel("Activity & Status")
             .setValue("2")
             .setDescription("Client presence status, activities and badges.")
@@ -291,7 +291,7 @@ module.exports = {
         )
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `-# *<:astrix:1527205612205903973> Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE. All rights reserved.*`,
+            `-# *<:astrix:1539875362945900574> Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE. All rights reserved.*`,
           ),
         )
         .addActionRowComponents(selectRow)

@@ -35,7 +35,7 @@ module.exports = {
     if (!targetChannel) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Voice Channel Required\n` +
+          `### <:red_star:1539875482680696834> Voice Channel Required\n` +
             `-# *You must be in a voice channel or specify a valid voice channel to join.*`,
         ),
       );
@@ -51,7 +51,7 @@ module.exports = {
     if (!botPermissions?.has("Connect") || !botPermissions?.has("Speak")) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Missing Permissions\n` +
+          `### <:red_star:1539875482680696834> Missing Permissions\n` +
             `-# *I do not have Connect and Speak permissions in <#${targetChannel.id}>.*`,
         ),
       );

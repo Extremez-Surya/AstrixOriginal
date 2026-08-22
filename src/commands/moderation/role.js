@@ -20,7 +20,7 @@ module.exports = {
     if (!targetUser) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Target User Required\n` +
+          `### <:red_star:1539875482680696834> Target User Required\n` +
           `-# *Please mention a user or provide a valid user ID.*\n\n` +
           `> - **Usage:** \`.role @user <role>\``
         )
@@ -38,7 +38,7 @@ module.exports = {
     if (!member) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Member Not Found\n` +
+          `### <:red_star:1539875482680696834> Member Not Found\n` +
           `-# *This user is not currently in this server.*`
         )
       );
@@ -53,7 +53,7 @@ module.exports = {
     if (!roleArg) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Role Parameter Missing\n` +
+          `### <:red_star:1539875482680696834> Role Parameter Missing\n` +
           `-# *Please specify a role to add or remove.*`
         )
       );
@@ -74,7 +74,7 @@ module.exports = {
     if (!role) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Role Not Found\n` +
+          `### <:red_star:1539875482680696834> Role Not Found\n` +
           `-# *Could not find the specified role in this server.*`
         )
       );
@@ -88,7 +88,7 @@ module.exports = {
     if (role.position >= message.guild.members.me.roles.highest.position) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Hierarchy Check Failed\n` +
+          `### <:red_star:1539875482680696834> Hierarchy Check Failed\n` +
           `-# *I cannot manage this role because it is higher than or equal to my highest role.*`
         )
       );

@@ -17,7 +17,7 @@ module.exports = {
       goodbyeManager.updateGuildGoodbye(message.guild.id, { leaveDmEnabled: true });
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Leave DM Greetings Activated\n` +
+          `### <:red_star:1539875482680696834> Leave DM Greetings Activated\n` +
           `-# *Departing members will now receive a direct message when leaving.*\n\n` +
           `> - **Current DM Template:** \`${config.leaveDmText}\``
         )

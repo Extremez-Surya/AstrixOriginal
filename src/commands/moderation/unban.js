@@ -17,7 +17,7 @@ module.exports = {
     if (!args[0]) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Target User ID Required\n` +
+          `### <:red_star:1539875482680696834> Target User ID Required\n` +
           `-# *Please provide a valid user ID to unban.*\n\n` +
           `> - **Usage:** \`.unban <user_id> [reason]\``
         )
@@ -33,7 +33,7 @@ module.exports = {
     if (!targetUser) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Invalid User ID\n` +
+          `### <:red_star:1539875482680696834> Invalid User ID\n` +
           `-# *Invalid user ID. Could not fetch user data.*`
         )
       );
@@ -48,7 +48,7 @@ module.exports = {
     if (bans && !bans.has(targetUser.id)) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> User Not Banned\n` +
+          `### <:red_star:1539875482680696834> User Not Banned\n` +
           `-# *This user is not currently banned in this server.*`
         )
       );

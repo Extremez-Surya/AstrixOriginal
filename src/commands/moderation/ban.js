@@ -20,7 +20,7 @@ module.exports = {
     if (!targetUser) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Target User Required\n` +
+          `### <:red_star:1539875482680696834> Target User Required\n` +
           `-# *Please mention a user or provide a valid user ID to ban.*\n\n` +
           `> - **Usage:** \`.ban @user [reason]\``
         )
@@ -41,7 +41,7 @@ module.exports = {
       if (!member.bannable) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Cannot Ban Member\n` +
+            `### <:red_star:1539875482680696834> Cannot Ban Member\n` +
             `-# *I cannot ban this user (they might have a higher role or permissions than the bot).*`
           )
         );

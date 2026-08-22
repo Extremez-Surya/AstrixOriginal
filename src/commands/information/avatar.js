@@ -68,16 +68,16 @@ module.exports = {
           : user.username;
 
       const mainContent =
-        `### <:members:1528311049726591006> ${isGlobal ? "Global Profile Avatar" : "Server Profile Avatar"} ── ${user.username}\n\n` +
-        `> -# <:servers:1528311514065535007> **User** ─ \`${userTag}\`\n` +
-        `> -# <:prefix:1528309903972892772> **Type** ─ \`${isGlobal ? "Global Profile Avatar" : "Server Profile Avatar"}\`\n` +
-        `> -# <:list:1528313871889334382> **Links** ─ [PNG](${pngUrl}) • [JPG](${jpgUrl}) • [WEBP](${webpUrl})`;
+        `### <:members:1539875392532512808> ${isGlobal ? "Global Profile Avatar" : "Server Profile Avatar"} ── ${user.username}\n\n` +
+        `> -# <:servers:1539875396546207795> **User** ─ \`${userTag}\`\n` +
+        `> -# <:prefix:1539875384080990228> **Type** ─ \`${isGlobal ? "Global Profile Avatar" : "Server Profile Avatar"}\`\n` +
+        `> -# <:list:1539875411780042802> **Links** ─ [PNG](${pngUrl}) • [JPG](${jpgUrl}) • [WEBP](${webpUrl})`;
 
       const requesterTag =
         message.author.discriminator && message.author.discriminator !== "0"
           ? `${message.author.username}#${message.author.discriminator}`
           : message.author.username;
-      const footerContent = `-# Requested by ${requesterTag} • Built with <a:Red_heart:1528312958541631578> by ASTRIXCODE™`;
+      const footerContent = `-# Requested by ${requesterTag} • Built with <:Red_heart:1539875406671388683> by ASTRIXCODE™`;
 
       // Interactive Buttons
       const globalBtn = new ButtonBuilder()

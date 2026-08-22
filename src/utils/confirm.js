@@ -29,23 +29,23 @@ async function confirmAction({
     if (status === "pending") {
       title = `Confirm Proposed ${actionName}`;
       desc = `Review details before executing the action.`;
-      emoji = "<:Warn_red:1528691439658078290>";
+      emoji = "<:Warn_red:1539875499147399218>";
     } else if (status === "confirmed") {
       title = `${actionName} Executed Successfully`;
       desc = `The action has been processed and logged.`;
-      emoji = "<:online:1528327584520081519>";
+      emoji = "<:online:1539875424144859239>";
     } else if (status === "cancelled") {
       title = `Action Aborted`;
       desc = `The proposed action was cancelled by the moderator.`;
-      emoji = "<:offline:1528328082434424892>";
+      emoji = "<:offline:1539875436690153474>";
     } else if (status === "failed") {
       title = `${actionName} Failed`;
       desc = `An error occurred during execution:\n> \`${errorMsg}\``;
-      emoji = "<:offline:1528328082434424892>";
+      emoji = "<:offline:1539875436690153474>";
     } else if (status === "timeout") {
       title = `Action Expired`;
       desc = `The confirmation request timed out.`;
-      emoji = "<:offline:1528328082434424892>";
+      emoji = "<:offline:1539875436690153474>";
     }
 
     const content = [
@@ -81,7 +81,7 @@ async function confirmAction({
       )
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `-# *<:astrix:1527205612205903973> Moderation Subsystem • Powered by ASTRIXCODE™ • © 2026*`
+          `-# *<:astrix:1539875362945900574> Moderation Subsystem • Powered by ASTRIXCODE™ • © 2026*`
         )
       )
       .addActionRowComponents(row);

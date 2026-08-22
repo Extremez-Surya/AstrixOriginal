@@ -32,7 +32,7 @@ module.exports = {
     if (!g || g.guildId !== interaction.guild.id) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Giveaway Not Found\n` +
+          `### <:red_star:1539875482680696834> Giveaway Not Found\n` +
             `-# *No giveaway matching message ID \`${messageId}\` was found.*`,
         ),
       );
@@ -45,7 +45,7 @@ module.exports = {
     if (!g.ended) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Giveaway Still Active\n` +
+          `### <:red_star:1539875482680696834> Giveaway Still Active\n` +
             `-# *You can only reroll giveaways that have already ended. Use \`/gend\` to end it first.*`,
         ),
       );
@@ -64,9 +64,9 @@ module.exports = {
 
     const container = new ContainerBuilder().addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
-        `### <a:tada2:1530099488398508073> Giveaway Rerolled Successfully\n` +
+        `### <:tada2:1539875614440554597> Giveaway Rerolled Successfully\n` +
           `-# *New random winner(s) picked for **${res.prize}**.*\n\n` +
-          `> <a:Trophy:1530099764887289956> **New Winner(s):** ${winnerText}`,
+          `> <:Trophy:1539875620270641185> **New Winner(s):** ${winnerText}`,
       ),
     );
 

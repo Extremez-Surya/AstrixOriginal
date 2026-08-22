@@ -40,7 +40,7 @@ module.exports = {
       if (!voiceChannel) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Voice Channel Required\n` +
+            `### <:red_star:1539875482680696834> Voice Channel Required\n` +
               `-# *You must be connected to a voice channel to launch mood playlists.*`,
           ),
         );

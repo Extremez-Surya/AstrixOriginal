@@ -39,7 +39,7 @@ module.exports = {
     if (seconds < 0 || seconds > 21600) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Invalid Duration\n` +
+          `### <:red_star:1539875482680696834> Invalid Duration\n` +
           `-# *Slowmode duration out of bounds.*\n\n` +
           `> - **Allowed Range:** \`0\` to \`21600\` seconds (up to 6 hours).`
         )
@@ -55,7 +55,7 @@ module.exports = {
       const statusText = seconds === 0 ? "Disabled" : `${seconds} seconds`;
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <:online:1528327584520081519> Slowmode Updated\n` +
+          `### <:online:1539875424144859239> Slowmode Updated\n` +
           `-# *Channel rate limit has been updated successfully.*\n\n` +
           `> - **Target Channel:** <#${channel.id}>\n` +
           `> - **Slowmode Duration:** \`${statusText}\``
@@ -64,7 +64,7 @@ module.exports = {
         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
       ).addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `-# *<:astrix:1527205612205903973> Channel Management • Powered by ASTRIXCODE™ • © 2026*`
+          `-# *<:astrix:1539875362945900574> Channel Management • Powered by ASTRIXCODE™ • © 2026*`
         )
       );
 
@@ -75,7 +75,7 @@ module.exports = {
     } catch (err) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <:offline:1528328082434424892> Slowmode Error\n` +
+          `### <:offline:1539875436690153474> Slowmode Error\n` +
           `-# *Failed to update slowmode duration.*\n\n` +
           `> - **Error:** \`${err.message}\``
         )

@@ -23,7 +23,7 @@ module.exports = {
     if (currentOverwrites && currentOverwrites.deny.has("SendMessages")) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Channel Already Locked\n` +
+          `### <:red_star:1539875482680696834> Channel Already Locked\n` +
           `-# *Channel <#${channel.id}> is already locked.*`
         )
       );

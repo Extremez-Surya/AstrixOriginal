@@ -21,7 +21,7 @@ module.exports = {
     if (!roleArg) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Missing Role Argument\n` +
+          `### <:red_star:1539875482680696834> Missing Role Argument\n` +
             `-# *Usage: \`.roledelete <@role | role_id | role_name>\`*`,
         ),
       );
@@ -40,7 +40,7 @@ module.exports = {
     if (!role) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Role Not Found\n` +
+          `### <:red_star:1539875482680696834> Role Not Found\n` +
             `-# *Could not find role \`${roleArg}\` in this server.*`,
         ),
       );
@@ -52,7 +52,7 @@ module.exports = {
     if (role.position >= message.guild.members.me.roles.highest.position) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Hierarchy Check Failed\n` +
+          `### <:red_star:1539875482680696834> Hierarchy Check Failed\n` +
             `-# *I cannot delete this role because it is higher than or equal to my highest role.*`,
         ),
       );
@@ -75,7 +75,7 @@ module.exports = {
         const container = new ContainerBuilder()
           .addTextDisplayComponents(
             new TextDisplayBuilder().setContent(
-              `### <:astrix:1527205612205903973> Role Deleted Successfully\n` +
+              `### <:astrix:1539875362945900574> Role Deleted Successfully\n` +
                 `-# *Successfully removed role **${roleName}** from the server.*`,
             ),
           )

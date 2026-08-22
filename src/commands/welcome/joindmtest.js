@@ -75,13 +75,13 @@ module.exports = {
     }
 
     const websiteButton = new ButtonBuilder()
-      .setEmoji("<:website:1528304906400960582>")
+      .setEmoji("<:website:1539875380159184977>")
       .setLabel("Website")
       .setStyle(ButtonStyle.Link)
       .setURL("https://extremez.vercel.app/");
 
     const supportButton = new ButtonBuilder()
-      .setEmoji("<:discord:1527683374523744367>")
+      .setEmoji("<:discord:1539875375981797596>")
       .setLabel("Support")
       .setStyle(ButtonStyle.Link)
       .setURL("https://discord.gg/FR9pXG2Mwb");
@@ -89,13 +89,13 @@ module.exports = {
     const row = new ActionRowBuilder().addComponents(websiteButton, supportButton);
 
     const mainContent =
-      `<:members:1528311049726591006> **Member Overview**\n` +
-      `> -# <:prefix:1528309903972892772> **Member:** <@${message.author.id}>\n` +
-      `> -# <:servers:1528311514065535007> **Username:** \`${message.author.username}\`\n` +
-      `> -# <:list:1528313871889334382> **Member Count:** \`#${message.guild.memberCount.toLocaleString()}\`\n\n` +
+      `<:members:1539875392532512808> **Member Overview**\n` +
+      `> -# <:prefix:1539875384080990228> **Member:** <@${message.author.id}>\n` +
+      `> -# <:servers:1539875396546207795> **Username:** \`${message.author.username}\`\n` +
+      `> -# <:list:1539875411780042802> **Member Count:** \`#${message.guild.memberCount.toLocaleString()}\`\n\n` +
       `> ${dmContent}`;
 
-    const footerText = `-# Built with <a:Red_heart:1528312958541631578> by ASTRIXCODE™ • Test Triggered By ${message.author.tag}`;
+    const footerText = `-# Built with <:Red_heart:1539875406671388683> by ASTRIXCODE™ • Test Triggered By ${message.author.tag}`;
 
     const container = new ContainerBuilder();
     if (mediaGallery) {

@@ -151,19 +151,19 @@ async function endGiveaway(client, messageId) {
             : "No valid participants";
 
         const content = [
-          `### <a:tada2:1530099488398508073> Giveaway Ended ── ${g.prize}`,
+          `### <:tada2:1539875614440554597> Giveaway Ended ── ${g.prize}`,
           `-# *Host: <@${g.hostId}> • Total Entries: \`${entries.length}\`*`,
           "",
-          `> <a:Trophy:1530099764887289956> **Winner(s):** ${winnerMentions}`,
-          `> <a:red_yellow_gift:1530099989181759488> **Prize:** **${g.prize}**`,
-          `> <:calender:1528415348058099822> **Ended:** <t:${Math.floor(Date.now() / 1000)}:R>`,
+          `> <:Trophy:1539875620270641185> **Winner(s):** ${winnerMentions}`,
+          `> <:red_yellow_gift:1539875626364698735> **Prize:** **${g.prize}**`,
+          `> <:calender:1539875441274523649> **Ended:** <t:${Math.floor(Date.now() / 1000)}:R>`,
         ].join("\n");
 
         const disabledButton = new ActionRowBuilder().addComponents(
           new ButtonBuilder()
             .setCustomId(`giveaway_ended_${g.messageId}`)
             .setLabel(`Giveaway Ended (${entries.length} Entries)`)
-            .setEmoji("<a:tada2:1530099488398508073>")
+            .setEmoji("<:tada2:1539875614440554597>")
             .setStyle(ButtonStyle.Secondary)
             .setDisabled(true),
         );
@@ -193,13 +193,13 @@ async function endGiveaway(client, messageId) {
         if (winners.length > 0) {
           await channel
             .send({
-              content: `<a:tada2:1530099488398508073> Congratulations ${winnerMentions}! You won **${g.prize}**!`,
+              content: `<:tada2:1539875614440554597> Congratulations ${winnerMentions}! You won **${g.prize}**!`,
             })
             .catch(() => null);
         } else {
           await channel
             .send({
-              content: `<a:tada2:1530099488398508073> Giveaway for **${g.prize}** ended, but there were no valid participants.`,
+              content: `<:tada2:1539875614440554597> Giveaway for **${g.prize}** ended, but there were no valid participants.`,
             })
             .catch(() => null);
         }
@@ -238,7 +238,7 @@ async function rerollGiveaway(client, messageId) {
       const winnerMentions = winners.map((id) => `<@${id}>`).join(", ");
       await channel
         .send({
-          content: `<a:tada2:1530099488398508073> New Reroll Winner(s) for **${g.prize}**: ${winnerMentions}!`,
+          content: `<:tada2:1539875614440554597> New Reroll Winner(s) for **${g.prize}**: ${winnerMentions}!`,
         })
         .catch(() => null);
     }

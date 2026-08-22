@@ -25,7 +25,7 @@ module.exports = {
     if (!isPermitted) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Permission Denied\n` +
+          `### <:red_star:1539875482680696834> Permission Denied\n` +
             `-# *You need the Manage Server permission to change the Starboard channel.*`,
         ),
       );
@@ -91,7 +91,7 @@ module.exports = {
     if (!targetChannel || !targetChannel.isTextBased()) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Invalid Channel\n` +
+          `### <:red_star:1539875482680696834> Invalid Channel\n` +
             `-# *Please mention a valid text channel for starboard showcases.*`,
         ),
       );

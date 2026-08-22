@@ -41,7 +41,7 @@ module.exports = {
       if (!voiceChannel) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Voice Channel Required\n` +
+            `### <:red_star:1539875482680696834> Voice Channel Required\n` +
               `-# *You must be connected to a voice channel to use music commands.*`,
           ),
         );
@@ -57,7 +57,7 @@ module.exports = {
       if (existingPlayer && existingPlayer.voiceId !== voiceChannel.id) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Channel Mismatch\n` +
+            `### <:red_star:1539875482680696834> Channel Mismatch\n` +
               `-# *You must be in the same voice channel as the bot (<#${existingPlayer.voiceId}>).*`,
           ),
         );
@@ -86,7 +86,7 @@ module.exports = {
       if (!res || !res.tracks || !res.tracks.length || res.type === "EMPTY") {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> No Results Found\n` +
+            `### <:red_star:1539875482680696834> No Results Found\n` +
               `-# *Could not find any tracks matching your request. Try another keyword or URL.*`,
           ),
         );
@@ -187,7 +187,7 @@ module.exports = {
       console.error("[PlaySlashCommand] Execution Error:", error);
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Playback Error\n` +
+          `### <:red_star:1539875482680696834> Playback Error\n` +
             `-# *An unexpected error occurred while processing playback: ${error?.message || "Lavalink Node Error"}*`,
         ),
       );

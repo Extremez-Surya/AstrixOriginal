@@ -71,7 +71,7 @@ module.exports = {
       if (!isDev(interaction.user.id)) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Access Denied\n` +
+            `### <:red_star:1539875482680696834> Access Denied\n` +
               `-# *Granting custom badges is restricted strictly to authorized bot developers and team members.*`,
           ),
         );
@@ -85,7 +85,7 @@ module.exports = {
         const available = Object.keys(badgeManager.CUSTOM_BADGES).join(", ");
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Missing Arguments\n` +
+            `### <:red_star:1539875482680696834> Missing Arguments\n` +
               `-# *Please specify both a target user and a badge ID.*` +
               `\n\n> - **Available Badges:** \`${available}\``,
           ),
@@ -99,9 +99,9 @@ module.exports = {
       const bInfo = badgeManager.CUSTOM_BADGES[badgeId] || { name: badgeId, emoji: "🏷️" };
 
       const content = success
-        ? `### <a:badge:1528417015918891090> Badge Granted Successfully\n` +
+        ? `### <:badge:1539875454725521488> Badge Granted Successfully\n` +
           `-# *Added badge ${bInfo.emoji} **${bInfo.name}** (\`${badgeId}\`) to ${targetUser.username}.*`
-        : `### <a:red_star:1528688099436003419> Badge Already Present\n` +
+        : `### <:red_star:1539875482680696834> Badge Already Present\n` +
           `-# *User ${targetUser.username} already possesses the badge \`${badgeId}\`.*`;
 
       const container = new ContainerBuilder()
@@ -126,7 +126,7 @@ module.exports = {
       if (!isDev(interaction.user.id)) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Access Denied\n` +
+            `### <:red_star:1539875482680696834> Access Denied\n` +
               `-# *Revoking custom badges is restricted strictly to authorized bot developers and team members.*`,
           ),
         );
@@ -139,7 +139,7 @@ module.exports = {
       if (!targetUser || !badgeId) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Missing Arguments\n` +
+            `### <:red_star:1539875482680696834> Missing Arguments\n` +
               `-# *Please specify both a target user and a badge ID.*`,
           ),
         );
@@ -151,9 +151,9 @@ module.exports = {
       const success = badgeManager.removeBadge(targetUser.id, badgeId);
 
       const content = success
-        ? `### <a:badge:1528417015918891090> Badge Revoked Successfully\n` +
+        ? `### <:badge:1539875454725521488> Badge Revoked Successfully\n` +
           `-# *Removed badge \`${badgeId}\` from ${targetUser.username}.*`
-        : `### <a:red_star:1528688099436003419> Badge Not Found\n` +
+        : `### <:red_star:1539875482680696834> Badge Not Found\n` +
           `-# *User ${targetUser.username} does not have badge \`${badgeId}\`.*`;
 
       const container = new ContainerBuilder()
@@ -181,7 +181,7 @@ module.exports = {
       );
 
       const content = [
-        `### <a:badge:1528417015918891090> Available Custom Badges`,
+        `### <:badge:1539875454725521488> Available Custom Badges`,
         `-# *Bot Developer & Staff Badges System Registry.*`,
         "",
         ...listLines,
@@ -224,9 +224,9 @@ module.exports = {
         "<:brilliance:1528681364340080713> HypeSquad Brilliance",
       HypeSquadOnlineHouse3: "<:balance:1528681364340080713> HypeSquad Balance",
       PremiumEarlySupporter:
-        "<:earlysupporter:1528681364340080713> Early Supporter",
+        "<:EarlySupporter:1539875579292024833> Early Supporter",
       VerifiedDeveloper:
-        "<a:developers:1530088612228497418> Early Verified Bot Developer",
+        "<:developers:1539875562124738602> Early Verified Bot Developer",
       CertifiedModerator:
         "<:mod:1528681364340080713> Discord Certified Moderator",
       ActiveDeveloper: "<:activedev:1528681364340080713> Active Developer",
@@ -235,7 +235,7 @@ module.exports = {
 
     const discordBadges = flags.map((f) => badgeMap[f] || `\`${f}\``);
     if (fetchedUser.bot)
-      discordBadges.unshift("<:bote:1528696929649954866> Verified Bot");
+      discordBadges.unshift("<:bote:1539875512757911643> Verified Bot");
 
     const customBadges = badgeManager.getUserBadges(fetchedUser.id);
     const customBadgeLines = customBadges.map(
@@ -246,15 +246,15 @@ module.exports = {
     const totalCount = customBadges.length + discordBadges.length;
 
     const badgesContent = [
-      `### <a:badge:1528417015918891090> Profile Badges ── ${fetchedUser.username}`,
+      `### <:badge:1539875454725521488> Profile Badges ── ${fetchedUser.username}`,
       `-# *Official Discord flags and custom developer-granted badges.*`,
       "",
       customBadges.length > 0
-        ? `> <a:red_star:1528688099436003419> **Custom Astrix Badges**\n${customBadgeLines.join("\n")}`
+        ? `> <:red_star:1539875482680696834> **Custom Astrix Badges**\n${customBadgeLines.join("\n")}`
         : null,
       customBadges.length > 0 && discordBadges.length > 0 ? "" : null,
       discordBadges.length > 0
-        ? `> <:rshield:1528681364340080713> **Discord System Badges**\n${discordBadgeLines.join("\n")}`
+        ? `> <:rshield:1539875466939338773> **Discord System Badges**\n${discordBadgeLines.join("\n")}`
         : null,
       totalCount === 0
         ? `> - *No public or custom profile badges found.*`
@@ -264,7 +264,7 @@ module.exports = {
       .join("\n");
 
     const telemetryContent = [
-      `> <:stats:1528322466521546826> **Telemetry Summary**`,
+      `> <:stats:1539875420256866314> **Telemetry Summary**`,
       `> - **Total Badges:** \`${totalCount}\``,
       `> - **User ID:** \`${fetchedUser.id}\``,
     ].join("\n");

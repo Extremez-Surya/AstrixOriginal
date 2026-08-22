@@ -19,7 +19,7 @@ module.exports = {
     goodbyeManager.updateGuildGoodbye(message.guild.id, { enabled: true });
     const container = new ContainerBuilder().addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
-        `### <a:red_star:1528688099436003419> Goodbye Module Activated\n` +
+        `### <:red_star:1539875482680696834> Goodbye Module Activated\n` +
         `-# *Farewell messages for departing members are now ENABLED.*\n\n` +
         `> - **Goodbye Channels:** ${config.channels.map(c => `<#${c.channelId}>`).join(", ")}\n` +
         `> - **Tip:** Use \`.goodbyetest\` or \`.leavetest\` to preview your leave card!`

@@ -28,7 +28,7 @@ module.exports = {
     if (!snipe) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Nothing to Snipe\n` +
+          `### <:red_star:1539875482680696834> Nothing to Snipe\n` +
             `-# *There are no recently deleted messages recorded in this channel.*`,
         ),
       );
@@ -44,15 +44,15 @@ module.exports = {
     const author = snipe.author;
 
     const content = [
-      `### <a:ticky_red:1530092915735400548> Sniped Message ── ${author?.username || "Unknown User"}`,
+      `### <:ticky_red:1539875600280592495> Sniped Message ── ${author?.username || "Unknown User"}`,
       `-# *Deleted <t:${deleteTs}:R> (<t:${deleteTs}:T>)*`,
       "",
-      `> <:rmessage:1528690062005506160> **Message Content:**`,
+      `> <:rmessage:1539875489601036298> **Message Content:**`,
       `> ${snipe.content ? snipe.content.replace(/\n/g, "\n> ") : "*No text content (Attachment only)*"}`,
       "",
-      `> <:members:1528311049726591006> **Author:** ${author ? `${author} (\`${author.id}\`)` : "*Unknown*"}`,
+      `> <:members:1539875392532512808> **Author:** ${author ? `${author} (\`${author.id}\`)` : "*Unknown*"}`,
       snipe.attachments.length > 0
-        ? `> <:linkRed:1528701532617314425> **Attachments:** \`${snipe.attachments.length}\` attached file(s)`
+        ? `> <:linkRed:1539875517132705832> **Attachments:** \`${snipe.attachments.length}\` attached file(s)`
         : null,
     ]
       .filter(Boolean)

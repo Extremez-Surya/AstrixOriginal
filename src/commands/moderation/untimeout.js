@@ -18,7 +18,7 @@ module.exports = {
     if (!targetUser) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Target User Required\n` +
+          `### <:red_star:1539875482680696834> Target User Required\n` +
           `-# *Please mention a user or provide a valid user ID to remove timeout.*\n\n` +
           `> - **Usage:** \`.untimeout @user [reason]\``
         )
@@ -34,7 +34,7 @@ module.exports = {
     if (!member) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Member Not Found\n` +
+          `### <:red_star:1539875482680696834> Member Not Found\n` +
           `-# *This user is not currently in this server.*`
         )
       );
@@ -48,7 +48,7 @@ module.exports = {
     if (!member.communicationDisabledUntilTimestamp || member.communicationDisabledUntilTimestamp < Date.now()) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Member Not Timed Out\n` +
+          `### <:red_star:1539875482680696834> Member Not Timed Out\n` +
           `-# *<@${targetUser.id}> is not currently timed out.*`
         )
       );

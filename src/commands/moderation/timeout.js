@@ -40,7 +40,7 @@ module.exports = {
     if (!targetUser) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Target User Required\n` +
+          `### <:red_star:1539875482680696834> Target User Required\n` +
           `-# *Please mention a user or provide a valid user ID to timeout.*\n\n` +
           `> - **Usage:** \`.timeout @user [duration] [reason]\`\n` +
           `> - **Example:** \`.timeout @user 10m Spamming\``
@@ -59,7 +59,7 @@ module.exports = {
     if (!member) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Member Not Found\n` +
+          `### <:red_star:1539875482680696834> Member Not Found\n` +
           `-# *This user is not currently in this server.*`
         )
       );
@@ -73,7 +73,7 @@ module.exports = {
     if (!member.moderatable) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Cannot Timeout Member\n` +
+          `### <:red_star:1539875482680696834> Cannot Timeout Member\n` +
           `-# *I cannot timeout this member (they might have higher roles or permissions than the bot).*`
         )
       );

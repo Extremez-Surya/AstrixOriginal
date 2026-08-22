@@ -19,7 +19,7 @@ module.exports = {
     if (!args[0]) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Missing Arguments\n` +
+          `### <:red_star:1539875482680696834> Missing Arguments\n` +
             `-# *Usage: \`.delsticker <sticker_name | sticker_id>\`*`,
         ),
       );
@@ -37,7 +37,7 @@ module.exports = {
     if (!targetSticker) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Sticker Not Found\n` +
+          `### <:red_star:1539875482680696834> Sticker Not Found\n` +
             `-# *Could not find sticker \`${input}\` in this server.*`,
         ),
       );
@@ -53,7 +53,7 @@ module.exports = {
       const container = new ContainerBuilder()
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <:astrix:1527205612205903973> Sticker Deleted Successfully\n` +
+            `### <:astrix:1539875362945900574> Sticker Deleted Successfully\n` +
               `-# *Successfully removed custom sticker **${stickerName}** from the server.*`,
           ),
         )
@@ -74,7 +74,7 @@ module.exports = {
     } catch (err) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Failed to Delete Sticker\n` +
+          `### <:red_star:1539875482680696834> Failed to Delete Sticker\n` +
             `-# *${err.message || "An error occurred while deleting the sticker."}*`,
         ),
       );

@@ -28,9 +28,9 @@ module.exports = {
     if (!iconUrl) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <:Servericon:1528415740196294776> Server Icon ── ${guild.name}\n` +
+          `### <:Servericon:1539875445166702592> Server Icon ── ${guild.name}\n` +
             `-# *No custom icon set for this server.*\n\n` +
-            `> -# <:Warn_red:1528691439658078290> **Note** ─ This server does not have a custom icon.`,
+            `> -# <:Warn_red:1539875499147399218> **Note** ─ This server does not have a custom icon.`,
         ),
       );
 
@@ -72,16 +72,16 @@ module.exports = {
         : "Animated Server Icon";
 
       const mainContent =
-        `### <:Servericon:1528415740196294776> ${typeTitle} ── ${guild.name}\n\n` +
-        `> -# <:servers:1528311514065535007> **Guild** ─ \`${guild.name}\`\n` +
-        `> -# <:prefix:1528309903972892772> **Type** ─ \`${typeTitle}\`\n` +
-        `> -# <:list:1528313871889334382> **Links** ─ ${links.join(" • ")}`;
+        `### <:Servericon:1539875445166702592> ${typeTitle} ── ${guild.name}\n\n` +
+        `> -# <:servers:1539875396546207795> **Guild** ─ \`${guild.name}\`\n` +
+        `> -# <:prefix:1539875384080990228> **Type** ─ \`${typeTitle}\`\n` +
+        `> -# <:list:1539875411780042802> **Links** ─ ${links.join(" • ")}`;
 
       const requesterTag =
         message.author.discriminator && message.author.discriminator !== "0"
           ? `${message.author.username}#${message.author.discriminator}`
           : message.author.username;
-      const footerContent = `-# Requested by ${requesterTag} • Built with <a:Red_heart:1528312958541631578> by ASTRIXCODE™`;
+      const footerContent = `-# Requested by ${requesterTag} • Built with <:Red_heart:1539875406671388683> by ASTRIXCODE™`;
 
       // Buttons
       const staticBtn = new ButtonBuilder()

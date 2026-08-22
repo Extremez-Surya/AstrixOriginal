@@ -33,7 +33,7 @@ module.exports = {
     if (!success) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Giveaway Not Found\n` +
+          `### <:red_star:1539875482680696834> Giveaway Not Found\n` +
             `-# *No giveaway matching message ID \`${messageId}\` was found.*`,
         ),
       );

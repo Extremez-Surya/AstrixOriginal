@@ -24,7 +24,7 @@ module.exports = {
     if (!isOwner && !isAdmin) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Permission Denied\n` +
+          `### <:red_star:1539875482680696834> Permission Denied\n` +
             `-# *Only the Server Owner or Administrators can configure server moderation settings.*`,
         ),
       );
@@ -84,7 +84,7 @@ module.exports = {
       if (!setting || !validSettings.includes(setting)) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Invalid Setting\n` +
+            `### <:red_star:1539875482680696834> Invalid Setting\n` +
               `-# *Valid settings: \`support\`, \`mod\`, \`headmod\`, \`detainrole\`, \`detainchannel\`, \`detainmode\`*\n\n` +
               `> - **Example:** \`.modconfig set mod @Moderator\`\n` +
               `> - **Example:** \`.modconfig set detainchannel #mod-logs\``,
@@ -104,7 +104,7 @@ module.exports = {
         if (!channel || !channel.isTextBased()) {
           const container = new ContainerBuilder().addTextDisplayComponents(
             new TextDisplayBuilder().setContent(
-              `### <a:red_star:1528688099436003419> Channel Not Found\n` +
+              `### <:red_star:1539875482680696834> Channel Not Found\n` +
                 `-# *Please specify a valid text channel for detain notifications.*`,
             ),
           );
@@ -158,7 +158,7 @@ module.exports = {
       if (!role) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Role Not Found\n` +
+            `### <:red_star:1539875482680696834> Role Not Found\n` +
               `-# *Could not locate the specified role. Please mention the role or provide its ID.*`,
           ),
         );

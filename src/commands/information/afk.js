@@ -25,9 +25,9 @@ module.exports = {
     const promptContainer = new ContainerBuilder()
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <:Sleepy:1528993260713017377> Choose AFK Scope: ${message.author.username}\n` +
+          `### <:Sleepy:1539875521326751825> Choose AFK Scope: ${message.author.username}\n` +
             `-# *Select whether you want to be marked as AFK globally or only in this server.*\n\n` +
-            `> <:list:1528313871889334382> **Reason:** \`${reason}\``,
+            `> <:list:1539875411780042802> **Reason:** \`${reason}\``,
         ),
       )
       .addActionRowComponents(
@@ -39,7 +39,7 @@ module.exports = {
             .setStyle(ButtonStyle.Primary),
           new ButtonBuilder()
             .setCustomId("afk_server")
-            .setEmoji("<:website:1528304906400960582>")
+            .setEmoji("<:website:1539875380159184977>")
             .setLabel("Server AFK")
             .setStyle(ButtonStyle.Success),
         ),
@@ -72,12 +72,12 @@ module.exports = {
       const confirmContainer = new ContainerBuilder()
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <:Sleepy:1528993260713017377> AFK Status Enabled\n` +
+            `### <:Sleepy:1539875521326751825> AFK Status Enabled\n` +
               `-# *You are now registered as Away From Keyboard.*\n\n` +
-              `> <:members:1528311049726591006> **User:** ${message.author}\n` +
-              `> <:website:1528304906400960582> **Scope:** \`${isGlobal ? "Global (All Servers)" : "Server Only"}\`\n` +
-              `> <:list:1528313871889334382> **Reason:** \`${reason}\`\n` +
-              `> <:clock:1528312173275906088> **Time:** <t:${Math.floor(Date.now() / 1000)}:R>`,
+              `> <:members:1539875392532512808> **User:** ${message.author}\n` +
+              `> <:website:1539875380159184977> **Scope:** \`${isGlobal ? "Global (All Servers)" : "Server Only"}\`\n` +
+              `> <:list:1539875411780042802> **Reason:** \`${reason}\`\n` +
+              `> <:clock:1539875400975388713> **Time:** <t:${Math.floor(Date.now() / 1000)}:R>`,
           ),
         )
         .addSeparatorComponents(
@@ -87,7 +87,7 @@ module.exports = {
         )
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `-# *<:astrix:1527205612205903973> Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE. All rights reserved.*`,
+            `-# *<:astrix:1539875362945900574> Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE. All rights reserved.*`,
           ),
         );
 
@@ -104,7 +104,7 @@ module.exports = {
           const timeoutContainer =
             new ContainerBuilder().addTextDisplayComponents(
               new TextDisplayBuilder().setContent(
-                `### <:Sleepy:1528993260713017377> AFK Configuration Timed Out\n` +
+                `### <:Sleepy:1539875521326751825> AFK Configuration Timed Out\n` +
                   `-# *No option was selected within 30 seconds. Please run the command again.*`,
               ),
             );

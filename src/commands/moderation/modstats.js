@@ -36,19 +36,19 @@ module.exports = {
       member?.permissions.has("KickMembers") ||
       member?.permissions.has("BanMembers");
 
-    const tickEmoji = "<:tick:1530093327997992971>";
-    const crossEmoji = "<:cross:1530093349447405568>";
+    const tickEmoji = "<:tick:1539875604248141825>";
+    const crossEmoji = "<:cross:1539875608463548426>";
 
     const content = [
-      `### <:rshield:1528681364340080713> Moderation Telemetry ── ${targetUser.username}`,
+      `### <:rshield:1539875466939338773> Moderation Telemetry ── ${targetUser.username}`,
       `-# *Server staff activity and moderation standing.*`,
       "",
-      `> <:stats:1528322466521546826> **Moderator Overview**`,
+      `> <:stats:1539875420256866314> **Moderator Overview**`,
       `> - **Target Staff:** ${targetUser} (\`${targetUser.id}\`)`,
-      `> - **Staff Standing:** ${isMod ? "`Active Staff Member` <:online:1528327584520081519>" : "`Regular Member` <:offline:1528328082434424892>"}`,
+      `> - **Staff Standing:** ${isMod ? "`Active Staff Member` <:online:1539875424144859239>" : "`Regular Member` <:offline:1539875436690153474>"}`,
       `> - **Highest Role:** ${member?.roles.highest ? `<@&${member.roles.highest.id}>` : "\`None\`"}`,
       "",
-      `> <a:red_star:1528688099436003419> **Permissions Telemetry**`,
+      `> <:red_star:1539875482680696834> **Permissions Telemetry**`,
       `> - **Administrator:** \`${member?.permissions.has("Administrator") ? "Yes" : "No"}\` ${member?.permissions.has("Administrator") ? tickEmoji : crossEmoji}`,
       `> - **Ban Members:** \`${member?.permissions.has("BanMembers") ? "Yes" : "No"}\` ${member?.permissions.has("BanMembers") ? tickEmoji : crossEmoji}`,
       `> - **Kick Members:** \`${member?.permissions.has("KickMembers") ? "Yes" : "No"}\` ${member?.permissions.has("KickMembers") ? tickEmoji : crossEmoji}`,

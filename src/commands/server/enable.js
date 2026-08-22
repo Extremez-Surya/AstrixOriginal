@@ -24,7 +24,7 @@ module.exports = {
     if (!isOwner && !isManager) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Permission Denied\n` +
+          `### <:red_star:1539875482680696834> Permission Denied\n` +
             `-# *You need the Manage Server permission to enable commands.*`,
         ),
       );
@@ -38,7 +38,7 @@ module.exports = {
     if (!args[0]) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Missing Arguments\n` +
+          `### <:red_star:1539875482680696834> Missing Arguments\n` +
             `-# *Usage: \`.enable <command | category> [channel | server]\`*\n\n` +
             `> - **Example:** \`.enable fun\` (Re-enables fun category globally)\n` +
             `> - **Example:** \`.enable play #general\` (Re-enables play in #general)`,
@@ -74,7 +74,7 @@ module.exports = {
     if (!resolvedName) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Command or Category Not Found\n` +
+          `### <:red_star:1539875482680696834> Command or Category Not Found\n` +
             `-# *Could not locate command or category \`${args[0]}\`.*`,
         ),
       );

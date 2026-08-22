@@ -24,7 +24,7 @@ module.exports = {
     if (!isOwner && !isManager) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Permission Denied\n` +
+          `### <:red_star:1539875482680696834> Permission Denied\n` +
             `-# *You need the Manage Server permission to configure detain templates.*`,
         ),
       );
@@ -91,7 +91,7 @@ module.exports = {
       if (!type || !validTypes.includes(type)) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Invalid Template Type\n` +
+            `### <:red_star:1539875482680696834> Invalid Template Type\n` +
               `-# *Valid types: \`detain\` (DM on detain), \`release\` (DM on release), \`response\` (Mod response)*`,
           ),
         );
@@ -106,7 +106,7 @@ module.exports = {
       if (!templateContent) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Missing Content\n` +
+            `### <:red_star:1539875482680696834> Missing Content\n` +
               `-# *Please provide the template message text.*\n\n` +
               `> - **Example:** \`.detainmessages set detain You have been detained in {server} for {duration}. Reason: {reason}\``,
           ),

@@ -37,14 +37,14 @@ module.exports = {
     } else if (count < 14) {
       nextTierText = `\`${14 - count}\` more boosts needed for Tier 3`;
     } else {
-      nextTierText = "Max Tier (Tier 3) reached! <a:tada2:1530099488398508073>";
+      nextTierText = "Max Tier (Tier 3) reached! <:tada2:1539875614440554597>";
     }
 
     const content = [
-      `### <a:red_boost:1528682966199566356> Server Boost Status: ${guild.name}`,
+      `### <:red_boost:1539875476255023157> Server Boost Status: ${guild.name}`,
       `-# *Premium Nitro status metrics and next tier requirements.*`,
       "",
-      `> <:stats:1528322466521546826> **Metrics**`,
+      `> <:stats:1539875420256866314> **Metrics**`,
       `> - **Boost Level:** \`Tier ${tier}\``,
       `> - **Total Boosts:** \`${count}\``,
       `> - **Cached Boosters:** \`${boosters}\``,
@@ -61,7 +61,7 @@ module.exports = {
       )
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `-# *<:astrix:1527205612205903973> Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE. All rights reserved.*`,
+          `-# *<:astrix:1539875362945900574> Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE. All rights reserved.*`,
         ),
       );
 

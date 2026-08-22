@@ -19,7 +19,7 @@ module.exports = {
     if (!args[0]) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Invalid Argument\n` +
+          `### <:red_star:1539875482680696834> Invalid Argument\n` +
             `-# *Slowmode duration parameter is missing.*\n\n` +
             `> - **Usage:** \`.slowmode <seconds | off> [#channel]\`\n` +
             `> - **Example:** \`.slowmode 5\` or \`.slowmode off\``,
@@ -40,7 +40,7 @@ module.exports = {
       if (isNaN(seconds) || seconds < 0 || seconds > 21600) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Invalid Duration\n` +
+            `### <:red_star:1539875482680696834> Invalid Duration\n` +
               `-# *Slowmode duration out of bounds.*\n\n` +
               `> - **Allowed Range:** \`0\` to \`21600\` seconds (up to 6 hours).`,
           ),

@@ -18,7 +18,7 @@ module.exports = {
     if (isNaN(amount) || amount < 1 || amount > 100) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Invalid Message Amount\n` +
+          `### <:red_star:1539875482680696834> Invalid Message Amount\n` +
           `-# *Please specify a valid number of messages to scan (between 1 and 100).*\n\n` +
           `> - **Usage:** \`.purgebot [amount]\``
         )

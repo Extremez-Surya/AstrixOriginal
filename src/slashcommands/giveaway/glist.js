@@ -27,7 +27,7 @@ module.exports = {
     if (active.length === 0) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:tada2:1530099488398508073> Server Giveaways\n` +
+          `### <:tada2:1539875614440554597> Server Giveaways\n` +
             `-# *No active or paused giveaways currently running in this server.*\n\n` +
             `> - *Use \`/gstart\` to start one!*`,
         ),
@@ -44,12 +44,12 @@ module.exports = {
       const entriesCount = g.entries ? g.entries.length : 0;
       return (
         `> **${index + 1}. ${g.prize}** (\`${g.messageId}\`)\n` +
-        `> -# <:channel:1528678228141543557> **Channel:** <#${g.channelId}> • <a:Trophy:1530099764887289956> **Winners:** \`${g.winnersCount}\` • <:members:1528311049726591006> **Entries:** \`${entriesCount}\` • <:clock:1528312173275906088> **Status:** ${statusStr}`
+        `> -# <:channel:1539875458970288258> **Channel:** <#${g.channelId}> • <:Trophy:1539875620270641185> **Winners:** \`${g.winnersCount}\` • <:members:1539875392532512808> **Entries:** \`${entriesCount}\` • <:clock:1539875400975388713> **Status:** ${statusStr}`
       );
     });
 
     const content = [
-      `### <a:tada2:1530099488398508073> Active Server Giveaways ── ${interaction.guild.name}`,
+      `### <:tada2:1539875614440554597> Active Server Giveaways ── ${interaction.guild.name}`,
       `-# *Total Active/Paused Giveaways: \`${active.length}\`*`,
       "",
       ...lines,

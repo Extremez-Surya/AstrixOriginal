@@ -11,19 +11,19 @@ const os = require("os");
 function getStatusLabel(status) {
   switch (status) {
     case 0:
-      return "<:online:1528327584520081519> Ready";
+      return "<:online:1539875424144859239> Ready";
     case 1:
-      return "<:idle:1528327733191643189> Connecting";
+      return "<:idle:1539875427722727565> Connecting";
     case 2:
       return "🔄 Reconnecting";
     case 3:
       return "💤 Idle";
     case 4:
-      return "<:idle:1528327733191643189> Nearly";
+      return "<:idle:1539875427722727565> Nearly";
     case 5:
-      return "<:red_circle:1530092627528257647> Disconnected";
+      return "<:red_circle:1539875594744107008> Disconnected";
     default:
-      return "<:offline:1528328082434424892> Unknown";
+      return "<:offline:1539875436690153474> Unknown";
   }
 }
 
@@ -133,7 +133,7 @@ module.exports = {
     });
 
     const content = [
-      `### <:stats:1528322466521546826> Shard & Cluster Diagnostics ── Active Shard #${shardId}`,
+      `### <:stats:1539875420256866314> Shard & Cluster Diagnostics ── Active Shard #${shardId}`,
       `-# *Real-time cluster telemetry managing over 100+ servers across all shards.*`,
       "",
       `> - **Current Shard:** \`#${shardId} of ${totalShards}\``,
@@ -147,7 +147,7 @@ module.exports = {
       `> - **System Platform:** \`${os.type()} ${os.arch()}\``,
       `> - **Current Shard Uptime:** \`${days}d ${hours}h ${minutes}m\``,
       "",
-      "### <:stats:1528322466521546826> Shards Telemetry Summary",
+      "### <:stats:1539875420256866314> Shards Telemetry Summary",
       ...shardListLines,
     ].join("\n");
 

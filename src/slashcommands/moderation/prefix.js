@@ -26,7 +26,7 @@ module.exports = {
     const container = new ContainerBuilder()
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <:astrix:1527205612205903973> Server Prefix Telemetry\n` +
+          `### <:astrix:1539875362945900574> Server Prefix Telemetry\n` +
             `-# *Active command prefix configuration for **${interaction.guild.name}**.*\n\n` +
             `> - **Current Prefix:** \`${currentPrefix}\`\n` +
             `> - **Set New Prefix:** \`/setprefix new_prefix:<new_prefix>\`\n` +

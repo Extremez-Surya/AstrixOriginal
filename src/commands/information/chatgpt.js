@@ -19,7 +19,7 @@ module.exports = {
     if (!args.length) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Missing Prompt\n` +
+          `### <:red_star:1539875482680696834> Missing Prompt\n` +
             `-# *Please provide a question or topic for the AI.*`,
         ),
       );
@@ -51,7 +51,7 @@ module.exports = {
     }
 
     const content = [
-      `### <:chatgpt:1530087438024704070> ChatGPT AI Assistant`,
+      `### <:chatgpt:1539875550460387350> ChatGPT AI Assistant`,
       `-# *Prompt: "${query.substring(0, 100)}${query.length > 100 ? "..." : ""}"*`,
       "",
       `> ${replyText}`,

@@ -26,7 +26,7 @@ module.exports = {
     if (!isOwner && !isAdmin && !isDev) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Permission Denied\n` +
+          `### <:red_star:1539875482680696834> Permission Denied\n` +
             `-# *You need Administrator permissions to change the server prefix.*`,
         ),
       );
@@ -97,7 +97,7 @@ module.exports = {
     if (newPrefix.length > 5) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Invalid Prefix\n` +
+          `### <:red_star:1539875482680696834> Invalid Prefix\n` +
             `-# *Prefix must be 5 characters or less.*`,
         ),
       );
@@ -111,7 +111,7 @@ module.exports = {
     if (newPrefix.includes(" ")) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Invalid Prefix\n` +
+          `### <:red_star:1539875482680696834> Invalid Prefix\n` +
             `-# *Prefix cannot contain whitespace or spaces.*`,
         ),
       );

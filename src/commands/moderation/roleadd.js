@@ -20,7 +20,7 @@ module.exports = {
     if (!targetUser) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Target User Required\n` +
+          `### <:red_star:1539875482680696834> Target User Required\n` +
             `-# *Please mention a user or provide a valid user ID.*\n\n` +
             `> - **Usage:** \`.roleadd @user <@role | role_name | role_id>\``,
         ),
@@ -40,7 +40,7 @@ module.exports = {
     if (!member) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Member Not Found\n` +
+          `### <:red_star:1539875482680696834> Member Not Found\n` +
             `-# *This user is not currently in this server.*`,
         ),
       );
@@ -57,7 +57,7 @@ module.exports = {
     if (!roleArg) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Role Specified Required\n` +
+          `### <:red_star:1539875482680696834> Role Specified Required\n` +
             `-# *Please specify a role to add.*`,
         ),
       );
@@ -80,7 +80,7 @@ module.exports = {
     if (!role) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Role Not Found\n` +
+          `### <:red_star:1539875482680696834> Role Not Found\n` +
             `-# *Could not find the specified role in this server.*`,
         ),
       );
@@ -96,7 +96,7 @@ module.exports = {
     if (role.position >= message.guild.members.me.roles.highest.position) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Hierarchy Check Failed\n` +
+          `### <:red_star:1539875482680696834> Hierarchy Check Failed\n` +
             `-# *I cannot manage this role because it is higher than or equal to my highest role.*`,
         ),
       );
@@ -112,7 +112,7 @@ module.exports = {
     if (member.roles.cache.has(role.id)) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Member Already Has Role\n` +
+          `### <:red_star:1539875482680696834> Member Already Has Role\n` +
             `-# *<@${targetUser.id}> already has role <@&${role.id}>.*`,
         ),
       );

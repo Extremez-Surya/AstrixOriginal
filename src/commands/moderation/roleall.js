@@ -18,7 +18,7 @@ module.exports = {
     if (action !== "add" && action !== "remove") {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Action Specified Required\n` +
+          `### <:red_star:1539875482680696834> Action Specified Required\n` +
           `-# *Please specify the action: \`add\` or \`remove\`.*\n\n` +
           `> - **Usage:** \`.roleall <add | remove> <role> [all | humans | bots]\``
         )
@@ -34,7 +34,7 @@ module.exports = {
     if (!roleArg) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Role Specified Required\n` +
+          `### <:red_star:1539875482680696834> Role Specified Required\n` +
           `-# *Please specify the role to assign/remove.*`
         )
       );
@@ -55,7 +55,7 @@ module.exports = {
     if (!role) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Role Not Found\n` +
+          `### <:red_star:1539875482680696834> Role Not Found\n` +
           `-# *Role not found in this server.*`
         )
       );
@@ -69,7 +69,7 @@ module.exports = {
     if (role.position >= message.guild.members.me.roles.highest.position) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Hierarchy Check Failed\n` +
+          `### <:red_star:1539875482680696834> Hierarchy Check Failed\n` +
           `-# *I cannot manage this role because it is higher than or equal to my highest role.*`
         )
       );
@@ -88,7 +88,7 @@ module.exports = {
     ) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Invalid Target Type\n` +
+          `### <:red_star:1539875482680696834> Invalid Target Type\n` +
           `-# *Invalid target type. Use: \`all\`, \`humans\`, or \`bots\`.*`
         )
       );

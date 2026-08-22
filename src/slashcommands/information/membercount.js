@@ -65,19 +65,19 @@ module.exports = {
 
     // Main Content
     let mainContent =
-      `# <:members:1528311049726591006> Server Population\n` +
+      `# <:members:1539875392532512808> Server Population\n` +
       `-# *Current user metrics for the server.*\n\n` +
-      `<:stats:1528322466521546826> **Statistics**\n` +
-      `> -# <:servers:1528311514065535007> **Guild Name** ─ \`${guild.name}\`\n` +
-      `> -# <:members:1528311049726591006> **Total Members** ─ \`${totalCount.toLocaleString()}\`\n\n` +
-      `<:stats:1528322466521546826> **Status Breakdown**\n` +
-      `> -# <:online:1528327584520081519> **Online** ─ \`${online.toLocaleString()}\`\n` +
-      `> -# <:idle:1528327733191643189> **Idle** ─ \`${idle.toLocaleString()}\`\n` +
-      `> -# <:DoNotDisturb:1528327971570450502> **Do Not Disturb** ─ \`${dnd.toLocaleString()}\`\n` +
-      `> -# <:offline:1528328082434424892> **Offline** ─ \`${offline.toLocaleString()}\``;
+      `<:stats:1539875420256866314> **Statistics**\n` +
+      `> -# <:servers:1539875396546207795> **Guild Name** ─ \`${guild.name}\`\n` +
+      `> -# <:members:1539875392532512808> **Total Members** ─ \`${totalCount.toLocaleString()}\`\n\n` +
+      `<:stats:1539875420256866314> **Status Breakdown**\n` +
+      `> -# <:online:1539875424144859239> **Online** ─ \`${online.toLocaleString()}\`\n` +
+      `> -# <:idle:1539875427722727565> **Idle** ─ \`${idle.toLocaleString()}\`\n` +
+      `> -# <:DoNotDisturb:1539875432717881435> **Do Not Disturb** ─ \`${dnd.toLocaleString()}\`\n` +
+      `> -# <:offline:1539875436690153474> **Offline** ─ \`${offline.toLocaleString()}\``;
 
     if (!hasPresences) {
-      mainContent += `\n\n<:Warn_red:1528691439658078290> *Enable Presence Intent in Discord Developer Portal to view status counts.*`;
+      mainContent += `\n\n<:Warn_red:1539875499147399218> *Enable Presence Intent in Discord Developer Portal to view status counts.*`;
     }
 
     const container = new ContainerBuilder().addTextDisplayComponents(

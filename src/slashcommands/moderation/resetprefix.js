@@ -27,7 +27,7 @@ module.exports = {
     const container = new ContainerBuilder()
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <:astrix:1527205612205903973> Server Prefix Reset\n` +
+          `### <:astrix:1539875362945900574> Server Prefix Reset\n` +
             `-# *Successfully restored default server command prefix (\`${defaultPrefix}\`) for **${interaction.guild.name}**.*\n\n` +
             `> - **Current Command Prefix:** \`${defaultPrefix}\`\n` +
             `> - **Example Usage:** \`${defaultPrefix}help\``,

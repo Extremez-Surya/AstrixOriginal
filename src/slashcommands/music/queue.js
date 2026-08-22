@@ -24,7 +24,7 @@ module.exports = {
     if (!player || (!player.queue.current && player.queue.length === 0)) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Empty Queue\n` +
+          `### <:red_star:1539875482680696834> Empty Queue\n` +
             `-# *There are no tracks in the queue right now.*`
         )
       );

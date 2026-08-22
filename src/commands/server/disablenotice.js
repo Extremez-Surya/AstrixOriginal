@@ -24,7 +24,7 @@ module.exports = {
     if (!isOwner && !isManager) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Permission Denied\n` +
+          `### <:red_star:1539875482680696834> Permission Denied\n` +
             `-# *You need the Manage Server permission to change disabled command alert settings.*`,
         ),
       );

@@ -50,7 +50,7 @@ async function handleGoodbyeInteraction(client, interaction) {
 
     const container = new ContainerBuilder().addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
-        `### ${newStatus ? "<a:red_star:1528688099436003419> Goodbye Engine Activated" : "⚠️ Goodbye Engine Deactivated"}\n` +
+        `### ${newStatus ? "<:red_star:1539875482680696834> Goodbye Engine Activated" : "⚠️ Goodbye Engine Deactivated"}\n` +
           `-# *Member departure greetings are now **${newStatus ? "ENABLED 🟢" : "DISABLED 🔴"}**.*`
       )
     );
@@ -108,13 +108,13 @@ async function handleGoodbyeInteraction(client, interaction) {
       }
 
       const websiteButton = new ButtonBuilder()
-        .setEmoji("<:website:1528304906400960582>")
+        .setEmoji("<:website:1539875380159184977>")
         .setLabel("Website")
         .setStyle(ButtonStyle.Link)
         .setURL("https://extremez.vercel.app/");
 
       const supportButton = new ButtonBuilder()
-        .setEmoji("<:discord:1527683374523744367>")
+        .setEmoji("<:discord:1539875375981797596>")
         .setLabel("Support")
         .setStyle(ButtonStyle.Link)
         .setURL("https://discord.gg/FR9pXG2Mwb");
@@ -128,10 +128,10 @@ async function handleGoodbyeInteraction(client, interaction) {
       );
 
       let mainContent =
-        `<:members:1528311049726591006> **Member Departure**\n` +
-        `> -# <:prefix:1528309903972892772> **User:** \`${interaction.user.username}\` (<@${interaction.user.id}>)\n` +
-        `> -# <:servers:1528311514065535007> **Remaining Members:** \`${interaction.guild.memberCount.toLocaleString()}\`\n\n` +
-        `> -# <:clock:1528312173275906088> ${formattedDesc}`;
+        `<:members:1539875392532512808> **Member Departure**\n` +
+        `> -# <:prefix:1539875384080990228> **User:** \`${interaction.user.username}\` (<@${interaction.user.id}>)\n` +
+        `> -# <:servers:1539875396546207795> **Remaining Members:** \`${interaction.guild.memberCount.toLocaleString()}\`\n\n` +
+        `> -# <:clock:1539875400975388713> ${formattedDesc}`;
 
       if (channelConfig.title) {
         const titleFormatted = goodbyeManager.formatGoodbyeText(channelConfig.title, interaction.member, interaction.guild);

@@ -21,7 +21,7 @@ module.exports = {
     if (currentOverwrites && currentOverwrites.deny.has("ViewChannel")) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Channel Already Hidden\n` +
+          `### <:red_star:1539875482680696834> Channel Already Hidden\n` +
           `-# *Channel <#${channel.id}> is already hidden from @everyone.*`
         )
       );

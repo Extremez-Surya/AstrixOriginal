@@ -33,7 +33,7 @@ module.exports = {
       const config = welcomeManager.updateGuildWelcome(message.guild.id, { enabled: true });
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Welcome Module Activated\n` +
+          `### <:red_star:1539875482680696834> Welcome Module Activated\n` +
           `-# *Greetings for new member joins are now ENABLED.*\n\n` +
           `> - **Welcome Channel:** ${config.channelId ? `<#${config.channelId}>` : "`Not set (use .welcome channel #channel)`"}\n` +
           `> - **Canvas Card:** \`${config.canvasEnabled ? "ENABLED" : "DISABLED"}\`\n` +
@@ -380,13 +380,13 @@ module.exports = {
     const mediaGallery = new MediaGalleryBuilder().addItems(mediaItem);
 
     const websiteButton = new ButtonBuilder()
-      .setEmoji("<:website:1528304906400960582>")
+      .setEmoji("<:website:1539875380159184977>")
       .setLabel("Website")
       .setStyle(ButtonStyle.Link)
       .setURL("https://extremez.vercel.app/");
 
     const supportButton = new ButtonBuilder()
-      .setEmoji("<:discord:1527683374523744367>")
+      .setEmoji("<:discord:1539875375981797596>")
       .setLabel("Support")
       .setStyle(ButtonStyle.Link)
       .setURL("https://discord.gg/FR9pXG2Mwb");
@@ -394,14 +394,14 @@ module.exports = {
     const row = new ActionRowBuilder().addComponents(websiteButton, supportButton);
 
     const mainContent =
-      `# <:astrix:1527205612205903973> Welcome & Join Engine Dashboard\n` +
+      `# <:astrix:1539875362945900574> Welcome & Join Engine Dashboard\n` +
       `-# *Configure automatic member greetings, roles, canvas cards, and join DMs.*\n\n` +
-      `<:list:1528313871889334382> **Configuration Overview**\n` +
-      `> -# <:prefix:1528309903972892772> **Status:** \`${config.enabled ? "ENABLED" : "DISABLED"}\`\n` +
-      `> -# <:servers:1528311514065535007> **Welcome Channel:** ${channelMention}\n` +
-      `> -# <:members:1528311049726591006> **Auto-Role:** ${roleMention}\n` +
-      `> -# <:clock:1528312173275906088> **Canvas Card:** \`${config.canvasEnabled ? "ENABLED" : "DISABLED"}\`\n` +
-      `> -# <:clock:1528312173275906088> **Join DM:** \`${config.joinDmEnabled ? "ENABLED" : "DISABLED"}\`\n\n` +
+      `<:list:1539875411780042802> **Configuration Overview**\n` +
+      `> -# <:prefix:1539875384080990228> **Status:** \`${config.enabled ? "ENABLED" : "DISABLED"}\`\n` +
+      `> -# <:servers:1539875396546207795> **Welcome Channel:** ${channelMention}\n` +
+      `> -# <:members:1539875392532512808> **Auto-Role:** ${roleMention}\n` +
+      `> -# <:clock:1539875400975388713> **Canvas Card:** \`${config.canvasEnabled ? "ENABLED" : "DISABLED"}\`\n` +
+      `> -# <:clock:1539875400975388713> **Join DM:** \`${config.joinDmEnabled ? "ENABLED" : "DISABLED"}\`\n\n` +
       `> **Available Commands & Subcommands:**\n` +
       `> - \`.welcome enable\` — Activate greeting module\n` +
       `> - \`.welcome disable\` — Deactivate greeting module\n` +
@@ -416,7 +416,7 @@ module.exports = {
       `> - \`.welcome joindm <on|off|text>\` — Configure private join DM\n` +
       `> - \`.welcome test\` — Send live preview test card`;
 
-    const footerText = `-# Built with <a:Red_heart:1528312958541631578> by ASTRIXCODE™ • © 2026 ASTRIXCODE`;
+    const footerText = `-# Built with <:Red_heart:1539875406671388683> by ASTRIXCODE™ • © 2026 ASTRIXCODE`;
 
     const container = new ContainerBuilder()
       .addMediaGalleryComponents(mediaGallery)

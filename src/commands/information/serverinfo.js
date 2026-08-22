@@ -76,10 +76,10 @@ module.exports = {
         ).size;
 
         content = [
-          `### <:Servericon:1528415740196294776> Server Information: ${guild.name}`,
+          `### <:Servericon:1539875445166702592> Server Information: ${guild.name}`,
           `-# *General overview, owner details, and member populations.*`,
           "",
-          `> <:list:1528313871889334382> **About**`,
+          `> <:list:1539875411780042802> **About**`,
           `> - **Name:** \`${guild.name}\``,
           `> - **ID:** \`${guild.id}\``,
           `> - **Owner:** \`${ownerText}\``,
@@ -87,7 +87,7 @@ module.exports = {
           `> - **Preferred Locale:** \`${guild.preferredLocale || "en-US"}\``,
           `> - **Description:** ${guild.description || "No description set."}`,
           "",
-          `> <:members:1528311049726591006> **Population**`,
+          `> <:members:1539875392532512808> **Population**`,
           `> - **Total Members:** \`${total.toLocaleString()}\``,
           `> - **Humans:** \`${humans.toLocaleString()}\``,
           `> - **Bots:** \`${bots.toLocaleString()}\``,
@@ -106,10 +106,10 @@ module.exports = {
         const threads = channels.filter((c) => c.isThread()).size;
 
         content = [
-          `### <:rmessage:1528690062005506160> Channel Breakdown: ${guild.name}`,
+          `### <:rmessage:1539875489601036298> Channel Breakdown: ${guild.name}`,
           `-# *Channels statistics, categories, and communication pathways.*`,
           "",
-          `> <:stats:1528322466521546826> **Metrics**`,
+          `> <:stats:1539875420256866314> **Metrics**`,
           `> - **Total Channels:** \`${totalChannels}\``,
           `> - **Categories:** \`${categories}\``,
           `> - **Text:** \`${textChannels}\``,
@@ -119,7 +119,7 @@ module.exports = {
           `> - **Forums:** \`${forums}\``,
           `> - **Active Threads:** \`${threads}\``,
           "",
-          `> <:rmicrophone:1528680686628769862> **Bandwidth**`,
+          `> <:rmicrophone:1539875463067860992> **Bandwidth**`,
           `> - **Maximum Bitrate:** \`${(guild.maximumBitrate / 1000).toFixed(0)} kbps\``,
         ].join("\n");
       } else if (pageIndex === 2) {
@@ -178,16 +178,16 @@ module.exports = {
           : "None";
 
         content = [
-          `### <:rshield:1528681364340080713> Server Settings: ${guild.name}`,
+          `### <:rshield:1539875466939338773> Server Settings: ${guild.name}`,
           `-# *Security filters, verification rules, and administrative channels.*`,
           "",
-          `> <:rshield:1528681364340080713> **Security & Protection**`,
+          `> <:rshield:1539875466939338773> **Security & Protection**`,
           `> - **Verification Level:** \`${verificationLevel}\``,
           `> - **Content Filter:** \`${explicitFilter}\``,
           `> - **MFA Level:** \`${mfaLevel}\``,
           `> - **NSFW Safety:** \`${nsfwLevel}\``,
           "",
-          `> <:rspeaker:1528681739646664786> **Notifications & System Channels**`,
+          `> <:rspeaker:1539875471032844308> **Notifications & System Channels**`,
           `> - **Default Notifications:** \`${defaultNotifications}\``,
           `> - **System Messages:** ${systemChannel}`,
           `> - **AFK Pathway:** ${afkChannel} (Timeout: \`${guild.afkTimeout / 60} mins\`)`,
@@ -217,16 +217,16 @@ module.exports = {
             : "None";
 
         content = [
-          `### <a:red_boost:1528682966199566356> Premium Status & Features: ${guild.name}`,
+          `### <:red_boost:1539875476255023157> Premium Status & Features: ${guild.name}`,
           `-# *Nitro boosts indicators, vanity links, and guild properties.*`,
           "",
-          `> <a:red_boost:1528682966199566356> **Boost Status**`,
+          `> <:red_boost:1539875476255023157> **Boost Status**`,
           `> - **Premium Tier:** \`Tier ${guild.premiumTier}\``,
           `> - **Boost Subscriptions:** \`${guild.premiumSubscriptionCount || 0}\``,
           `> - **Booster Role:** ${boosterRoleMention}`,
           `> - **Vanity Link:** ${guild.vanityURLCode ? `\`discord.gg/${guild.vanityURLCode}\`` : "`None`"}`,
           "",
-          `> <a:red_star:1528688099436003419> **Guild Features**`,
+          `> <:red_star:1539875482680696834> **Guild Features**`,
           featuresList,
         ].join("\n");
       } else if (pageIndex === 4) {
@@ -256,16 +256,16 @@ module.exports = {
         const stickers = guild.stickers.cache.size;
 
         content = [
-          `### <:discord:1527683374523744367> Assets & Roles: ${guild.name}`,
+          `### <:discord:1539875375981797596> Assets & Roles: ${guild.name}`,
           `-# *Roles hierarchy, member roles list, and emoji indicators.*`,
           "",
-          `> <:members:1528311049726591006> **Roles Overview**`,
+          `> <:members:1539875392532512808> **Roles Overview**`,
           `> - **Total Roles:** \`${rolesCount}\``,
           `> - **Highest Role:** ${highestRole}`,
           `> - **Roles List:**`,
           rolesText,
           "",
-          `> <a:assetemoji:1528690731328475166> **Custom Assets**`,
+          `> <:assetemoji:1539875495271731250> **Custom Assets**`,
           `> - **Regular Emojis:** \`${regularEmojis}\``,
           `> - **Animated Emojis:** \`${animatedEmojis}\``,
           `> - **Total Emojis:** \`${totalEmojis}\``,
@@ -281,25 +281,25 @@ module.exports = {
         .setDisabled(disableComponents)
         .addOptions(
           new StringSelectMenuOptionBuilder()
-            .setEmoji("<:Servericon:1528415740196294776>")
+            .setEmoji("<:Servericon:1539875445166702592>")
             .setLabel("Overview & Members")
             .setValue("0")
             .setDescription("General details, owner, locale, and populations.")
             .setDefault(pageIndex === 0),
           new StringSelectMenuOptionBuilder()
-            .setEmoji("<:channel:1528678228141543557>")
+            .setEmoji("<:channel:1539875458970288258>")
             .setLabel("Channel Breakdown")
             .setValue("1")
             .setDescription("Channels statistics, categories, and bitrate.")
             .setDefault(pageIndex === 1),
           new StringSelectMenuOptionBuilder()
-            .setEmoji("<:rshield:1528681364340080713>")
+            .setEmoji("<:rshield:1539875466939338773>")
             .setLabel("Security & Settings")
             .setValue("2")
             .setDescription("Verification, filters, AFK, and system channels.")
             .setDefault(pageIndex === 2),
           new StringSelectMenuOptionBuilder()
-            .setEmoji("<a:red_boost:1528682966199566356>")
+            .setEmoji("<:red_boost:1539875476255023157>")
             .setLabel("Boosts & Features")
             .setValue("3")
             .setDescription(
@@ -307,7 +307,7 @@ module.exports = {
             )
             .setDefault(pageIndex === 3),
           new StringSelectMenuOptionBuilder()
-            .setEmoji("<:members:1528311049726591006>")
+            .setEmoji("<:members:1539875392532512808>")
             .setLabel("Roles & Emojis")
             .setValue("4")
             .setDescription("Server roles list, emojis, and stickers count.")
@@ -361,7 +361,7 @@ module.exports = {
         )
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `-# *<:astrix:1527205612205903973> Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE. All rights reserved.*`,
+            `-# *<:astrix:1539875362945900574> Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE. All rights reserved.*`,
           ),
         )
         .addActionRowComponents(selectRow)

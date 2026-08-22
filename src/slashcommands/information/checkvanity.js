@@ -41,7 +41,7 @@ module.exports = {
     if (!inputCode) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Missing Vanity Code\n` +
+          `### <:red_star:1539875482680696834> Missing Vanity Code\n` +
             `-# *Please specify a vanity code to check.*`,
         ),
       );
@@ -85,18 +85,18 @@ module.exports = {
       const isPartnered = g.features?.includes("PARTNERED");
       const isVerified = g.features?.includes("VERIFIED");
       const badgeStr = isPartnered
-        ? " • <a:owner3:1530088048996384812> *Partnered*"
+        ? " • <:owner3:1539875556173029380> *Partnered*"
         : isVerified
-          ? " • <a:ticky_red:1530092915735400548> *Verified*"
+          ? " • <:ticky_red:1539875600280592495> *Verified*"
           : "";
 
       const content = [
-        `### <:astrix:1527205612205903973> Vanity URL Inspector ── discord.gg/${cleanCode}`,
+        `### <:astrix:1539875362945900574> Vanity URL Inspector ── discord.gg/${cleanCode}`,
         descText
           ? `-# *${descText}*`
           : `-# *Active Discord server invite telemetry.*`,
         "",
-        `> <:linkRed:1528701532617314425> **Vanity Status:** \`Taken / Claimed <:red_circle:1530092627528257647>\``,
+        `> <:linkRed:1539875517132705832> **Vanity Status:** \`Taken / Claimed <:red_circle:1539875594744107008>\``,
         `> - **Target Code:** \`discord.gg/${cleanCode}\``,
         `> - **Guild Name:** **${g.name}**${badgeStr}`,
         `> - **Guild ID:** \`${g.id}\``,
@@ -145,10 +145,10 @@ module.exports = {
       );
     } else {
       const content = [
-        `### <:astrix:1527205612205903973> Vanity URL Inspector ── discord.gg/${cleanCode}`,
+        `### <:astrix:1539875362945900574> Vanity URL Inspector ── discord.gg/${cleanCode}`,
         `-# *Discord Custom Vanity Code Availability Inspection.*`,
         "",
-        `> <:online:1528327584520081519> **Vanity Status:** \`Available / Unclaimed\``,
+        `> <:online:1539875424144859239> **Vanity Status:** \`Available / Unclaimed\``,
         `> - **Target Code:** \`discord.gg/${cleanCode}\``,
         `> - **Availability:** \`Available for registration / Unclaimed\``,
         `> - **Status Note:** *No active server invite found for this code.*`,

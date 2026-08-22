@@ -20,7 +20,7 @@ module.exports = {
     if (!targetUser) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Target User Required\n` +
+          `### <:red_star:1539875482680696834> Target User Required\n` +
           `-# *Please mention a user or provide a valid user ID to kick.*\n\n` +
           `> - **Usage:** \`.kick @user [reason]\``
         )
@@ -38,7 +38,7 @@ module.exports = {
     if (!member) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Member Not Found\n` +
+          `### <:red_star:1539875482680696834> Member Not Found\n` +
           `-# *This user is not currently in this server.*`
         )
       );
@@ -52,7 +52,7 @@ module.exports = {
     if (!member.kickable) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Cannot Kick Member\n` +
+          `### <:red_star:1539875482680696834> Cannot Kick Member\n` +
           `-# *I cannot kick this member (they might have a higher role or permissions than the bot).*`
         )
       );

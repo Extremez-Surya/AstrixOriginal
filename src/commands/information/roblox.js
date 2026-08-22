@@ -25,7 +25,7 @@ module.exports = {
     if (!args[0]) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Missing Username\n` +
+          `### <:red_star:1539875482680696834> Missing Username\n` +
             `-# *Please specify a Roblox username (e.g. \`.roblox Builderman\`).*`,
         ),
       );
@@ -62,7 +62,7 @@ module.exports = {
     if (!user) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Roblox Profile Not Found\n` +
+          `### <:red_star:1539875482680696834> Roblox Profile Not Found\n` +
             `-# *No Roblox account found matching \`${username}\`.*`,
         ),
       );
@@ -114,17 +114,17 @@ module.exports = {
       : "No profile description provided.";
 
     const content = [
-      `### <a:roblox_op:1530086089656635533> Roblox Profile ── ${user.displayName} (@${user.name})`,
+      `### <:roblox_op:1539875542571163648> Roblox Profile ── ${user.displayName} (@${user.name})`,
       `-# *${bioText}*`,
       "",
-      `> <:members:1528311049726591006> **Identity & Status**`,
+      `> <:members:1539875392532512808> **Identity & Status**`,
       `> - **Display Name:** \`${user.displayName}\``,
-      `> - **Username:** \`@${user.name}\` ${user.hasVerifiedBadge ? "• <a:ticky_red:1530092915735400548> *Verified*" : ""}`,
+      `> - **Username:** \`@${user.name}\` ${user.hasVerifiedBadge ? "• <:ticky_red:1539875600280592495> *Verified*" : ""}`,
       `> - **Roblox User ID:** \`${user.id}\``,
-      `> - **Account Status:** \`${user.isBanned ? "Banned <:red_circle:1530092627528257647>" : "Clean <:online:1528327584520081519>"}\``,
+      `> - **Account Status:** \`${user.isBanned ? "Banned <:red_circle:1539875594744107008>" : "Clean <:online:1539875424144859239>"}\``,
       `> - **Account Created:** <t:${createdTs}:D> (<t:${createdTs}:R>)`,
       "",
-      `> <:members:1528311049726591006> **Social & Telemetry**`,
+      `> <:members:1539875392532512808> **Social & Telemetry**`,
       `> - **Friends:** \`${friendsCount.toLocaleString()}\``,
       `> - **Followers:** \`${followersCount.toLocaleString()}\``,
       `> - **Following:** \`${followingsCount.toLocaleString()}\``,

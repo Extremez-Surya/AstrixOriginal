@@ -18,7 +18,7 @@ module.exports = {
       if (!targetUser) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Target Required\n` +
+            `### <:red_star:1539875482680696834> Target Required\n` +
             `-# *Usage: \`.jail @user [reason]\`*`
           )
         );

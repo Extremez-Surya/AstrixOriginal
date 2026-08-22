@@ -6,30 +6,30 @@ const BADGES_FILE = path.join(__dirname, "userBadges.json");
 const CUSTOM_BADGES = {
   owner: {
     name: "Bot Founder / Owner",
-    emoji: "<a:owner3:1530088048996384812>",
+    emoji: "<:owner3:1539875556173029380>",
   },
   developer: {
     name: "Lead Developer",
-    emoji: "<a:developers:1530088612228497418>",
+    emoji: "<:developers:1539875562124738602>",
   },
   designer: {
     name: "Bot Designer & Artist",
-    emoji: "<a:Artist:1530089006484815962>",
+    emoji: "<:Artist:1539875568122597406>",
   },
-  partner: { name: "Astrix Partner", emoji: "<:servers:1528311514065535007>" },
-  vip: { name: "VIP Member", emoji: "<a:vip:1530089304552902790>" },
+  partner: { name: "Astrix Partner", emoji: "<:servers:1539875396546207795>" },
+  vip: { name: "VIP Member", emoji: "<:vip:1539875573252231209>" },
   supporter: {
     name: "Early Supporter",
-    emoji: "<a:EarlySupporter:1530089449105526834>",
+    emoji: "<:EarlySupporter:1539875579292024833>",
   },
   bug_hunter: {
     name: "Astrix Bug Hunter",
-    emoji: "<a:bug_hunter:1530089623764598855>",
+    emoji: "<:bug_hunter:1539875585097080922>",
   },
-  staff: { name: "Astrix Staff Team", emoji: "<a:staff:1530089783467184218>" },
+  staff: { name: "Astrix Staff Team", emoji: "<:staff:1539875590298009672>" },
   booster: {
     name: "Server Booster",
-    emoji: "<a:red_boost:1528682966199566356>",
+    emoji: "<:red_boost:1539875476255023157>",
   },
 };
 

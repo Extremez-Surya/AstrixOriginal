@@ -54,7 +54,7 @@ module.exports = {
       const container = new ContainerBuilder()
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <:astrix:1527205612205903973> Sticker Added Successfully\n` +
+            `### <:astrix:1539875362945900574> Sticker Added Successfully\n` +
               `-# *Successfully created custom sticker **${createdSticker.name}** in the server.*\n\n` +
               `> - **Sticker Name:** \`${createdSticker.name}\`\n` +
               `> - **Sticker ID:** \`${createdSticker.id}\`\n` +
@@ -78,7 +78,7 @@ module.exports = {
     } catch (err) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Failed to Add Sticker\n` +
+          `### <:red_star:1539875482680696834> Failed to Add Sticker\n` +
             `-# *${err.message || "An error occurred while creating the sticker."}*`,
         ),
       );

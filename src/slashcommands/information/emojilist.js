@@ -56,13 +56,13 @@ module.exports = {
       }
 
       const content = [
-        `### <a:assetemoji:1528690731328475166> Server Emojis: ${guild.name}`,
+        `### <:assetemoji:1539875495271731250> Server Emojis: ${guild.name}`,
         `-# *Directory of custom server emojis.*`,
         "",
         gridContent,
         "",
-        `> <:stats:1528322466521546826> **Current View:** \`${displayTitle}\``,
-        `> <:clock:1528312173275906088> **Page:** \`${currentPage + 1} of ${totalPages}\` (Total Items: \`${totalItems}\`)`,
+        `> <:stats:1539875420256866314> **Current View:** \`${displayTitle}\``,
+        `> <:clock:1539875400975388713> **Page:** \`${currentPage + 1} of ${totalPages}\` (Total Items: \`${totalItems}\`)`,
       ].join("\n");
 
       // Buttons
@@ -110,7 +110,7 @@ module.exports = {
         )
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `-# *<:astrix:1527205612205903973> Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE. All rights reserved.*`,
+            `-# *<:astrix:1539875362945900574> Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE. All rights reserved.*`,
           ),
         )
         .addActionRowComponents(row);

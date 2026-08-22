@@ -57,7 +57,7 @@ module.exports = {
         const dmContainer = new ContainerBuilder()
           .addTextDisplayComponents(
             new TextDisplayBuilder().setContent(
-              `### <:Warn_red:1528691439658078290> Disciplinary Notification: ${interaction.guild.name}\n` +
+              `### <:Warn_red:1539875499147399218> Disciplinary Notification: ${interaction.guild.name}\n` +
               `-# *You have received a formal warning in the server.*\n\n` +
               `> **Reason:** ${reason}\n` +
               `> **Moderator:** <@${interaction.user.id}>\n` +

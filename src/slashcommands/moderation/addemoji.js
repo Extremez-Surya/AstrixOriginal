@@ -53,7 +53,7 @@ module.exports = {
     if (!emojiUrl || !name) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Invalid Emoji Input\n` +
+          `### <:red_star:1539875482680696834> Invalid Emoji Input\n` +
             `-# *Please provide a valid custom emoji or direct image URL.*`,
         ),
       );
@@ -72,7 +72,7 @@ module.exports = {
       const container = new ContainerBuilder()
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <:astrix:1527205612205903973> Emoji Added Successfully\n` +
+            `### <:astrix:1539875362945900574> Emoji Added Successfully\n` +
               `-# *Successfully added ${createdEmoji} \`:${createdEmoji.name}:\` to the server.*\n\n` +
               `> - **Emoji Name:** \`${createdEmoji.name}\`\n` +
               `> - **Emoji ID:** \`${createdEmoji.id}\``,
@@ -95,7 +95,7 @@ module.exports = {
     } catch (err) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Failed to Add Emoji\n` +
+          `### <:red_star:1539875482680696834> Failed to Add Emoji\n` +
             `-# *${err.message || "An error occurred while creating the emoji."}*`,
         ),
       );

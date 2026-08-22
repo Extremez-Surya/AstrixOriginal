@@ -38,7 +38,7 @@ module.exports = {
     if (!parsed || !parsed.id) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Invalid Custom Emoji\n` +
+          `### <:red_star:1539875482680696834> Invalid Custom Emoji\n` +
             `-# *Please specify a custom Discord emoji to enlarge.*`,
         ),
       );
@@ -64,7 +64,7 @@ module.exports = {
         )
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <:astrix:1527205612205903973> Emoji ── :${parsed.name}:\n` +
+            `### <:astrix:1539875362945900574> Emoji ── :${parsed.name}:\n` +
               `-# *High-resolution render of custom emoji.*`,
           ),
         );
@@ -73,7 +73,7 @@ module.exports = {
     } catch (e) {
       container.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <:astrix:1527205612205903973> Emoji ── :${parsed.name}:\n` +
+          `### <:astrix:1539875362945900574> Emoji ── :${parsed.name}:\n` +
             `-# *Direct Link:* ${imageUrl}`,
         ),
       );

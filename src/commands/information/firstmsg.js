@@ -44,12 +44,12 @@ module.exports = {
       const time = Math.floor(firstMsg.createdTimestamp / 1000);
 
       const content = [
-        `### <a:RedMail:1528693438650781696> First Message in ${channel}`,
+        `### <:RedMail:1539875508437778483> First Message in ${channel}`,
         `-# *The historical beginning of this channel.*`,
         "",
-        `> <:members:1528311049726591006> **Author:** ${firstMsg.author} (\`${firstMsg.author.id}\`)`,
-        `> <:clock:1528312173275906088> **Sent:** <t:${time}:f> (<t:${time}:R>)`,
-        `> <:rmessage:1528690062005506160> **Content:**`,
+        `> <:members:1539875392532512808> **Author:** ${firstMsg.author} (\`${firstMsg.author.id}\`)`,
+        `> <:clock:1539875400975388713> **Sent:** <t:${time}:f> (<t:${time}:R>)`,
+        `> <:rmessage:1539875489601036298> **Content:**`,
         `> ${contentSnippet.replace(/\n/g, "\n> ")}`,
       ].join("\n");
 
@@ -69,7 +69,7 @@ module.exports = {
         )
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `-# *<:astrix:1527205612205903973> Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE. All rights reserved.*`,
+            `-# *<:astrix:1539875362945900574> Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE. All rights reserved.*`,
           ),
         )
         .addActionRowComponents(row);

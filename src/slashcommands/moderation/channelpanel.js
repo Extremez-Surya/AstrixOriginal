@@ -39,7 +39,7 @@ module.exports = {
       const slowmodeText = slowmode === 0 ? "Off" : `${slowmode}s`;
 
       const content = [
-        `### <:rshield:1528681364340080713> Channel Control Console: <#${channel.id}>`,
+        `### <:rshield:1539875466939338773> Channel Control Console: <#${channel.id}>`,
         `-# *Manage locking, visibility, slowmodes, and purging for this channel.*`,
         "",
         `> **Slowmode Duration:** \`${slowmodeText}\``,
@@ -69,7 +69,7 @@ module.exports = {
         )
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `-# *<:astrix:1527205612205903973> Channel Management Console • Powered by ASTRIXCODE™ • © 2026*`
+            `-# *<:astrix:1539875362945900574> Channel Management Console • Powered by ASTRIXCODE™ • © 2026*`
           )
         )
         .addActionRowComponents(row1)
@@ -149,7 +149,7 @@ module.exports = {
     collector.on("end", async () => {
       try {
         const content = [
-          `### <:rshield:1528681364340080713> Channel Control Console: <#${channel.id}>`,
+          `### <:rshield:1539875466939338773> Channel Control Console: <#${channel.id}>`,
           `-# *Manage locking, visibility, slowmodes, and purging for this channel.*`,
           "",
           `*This panel has expired and is now inactive.*`,

@@ -27,7 +27,7 @@ module.exports = {
 
     const buildPanel = (statusMessage = "Awaiting command deployment. Highly restricted control area.") => {
       const content = [
-        `### <:Warn_red:1528691439658078290> Server Override Console: ${guild.name}`,
+        `### <:Warn_red:1539875499147399218> Server Override Console: ${guild.name}`,
         `-# *Server-wide emergency lockdowns, channel purges, and slowmode configurations.*`,
         "",
         `> **Console Message:** *${statusMessage}*`,
@@ -54,7 +54,7 @@ module.exports = {
         )
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `-# *<:astrix:1527205612205903973> Emergency Action Overrides • Powered by ASTRIXCODE™ • © 2026*`
+            `-# *<:astrix:1539875362945900574> Emergency Action Overrides • Powered by ASTRIXCODE™ • © 2026*`
           )
         )
         .addActionRowComponents(row1)
@@ -136,7 +136,7 @@ module.exports = {
     collector.on("end", async () => {
       try {
         const content = [
-          `### <:Warn_red:1528691439658078290> Server Override Console: ${guild.name}`,
+          `### <:Warn_red:1539875499147399218> Server Override Console: ${guild.name}`,
           `-# *Server-wide emergency lockdowns, channel purges, and slowmode configurations.*`,
           "",
           `*This panel has expired and is now inactive.*`,

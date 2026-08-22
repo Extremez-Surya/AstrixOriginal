@@ -59,7 +59,7 @@ module.exports = {
 
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Welcome Back, ${message.author.username}!\n` +
+            `### <:red_star:1539875482680696834> Welcome Back, ${message.author.username}!\n` +
               `-# *Your AFK status has been successfully cleared.*\n\n` +
               `> - **Duration:** \`${durationStr}\`\n` +
               `> - **Reason was:** \`${authorAfk.reason}\``,
@@ -94,7 +94,7 @@ module.exports = {
 
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <:Sleepy:1528993260713017377> Away From Keyboard\n` +
+            `### <:Sleepy:1539875521326751825> Away From Keyboard\n` +
               `-# *The following mentioned users are currently away:*\n\n` +
               lines.join("\n"),
           ),
@@ -146,34 +146,34 @@ module.exports = {
 
       // Creative, shorter unified text content
       const mainContent =
-        `# <:astrix:1527205612205903973> Astrix is Online\n` +
+        `# <:astrix:1539875362945900574> Astrix is Online\n` +
         `-# *Active diagnostics companion — fast, clean, and accurate.*\n\n` +
-        `<:list:1528313871889334382> **System Overview**\n` +
-        `> -# <:prefix:1528309903972892772> **Prefix:** \`${guildPrefix}\`\n` +
-        `> -# <:signal:1528310798869598291> **WebSocket:** \`${wsLatency}ms\`\n` +
-        `> -# <:members:1528311049726591006> **Members:** \`${memberCount}\`\n` +
-        `> -# <:servers:1528311514065535007> **Guilds:** \`${serverCount}\`\n` +
-        `> -# <:prefix:1528309903972892772> **Commands:** \`${commandCount}\`\n` +
-        `> -# <:clock:1528312173275906088> **Uptime:** \`${uptimeStr}\``;
+        `<:list:1539875411780042802> **System Overview**\n` +
+        `> -# <:prefix:1539875384080990228> **Prefix:** \`${guildPrefix}\`\n` +
+        `> -# <:signal:1539875388304527372> **WebSocket:** \`${wsLatency}ms\`\n` +
+        `> -# <:members:1539875392532512808> **Members:** \`${memberCount}\`\n` +
+        `> -# <:servers:1539875396546207795> **Guilds:** \`${serverCount}\`\n` +
+        `> -# <:prefix:1539875384080990228> **Commands:** \`${commandCount}\`\n` +
+        `> -# <:clock:1539875400975388713> **Uptime:** \`${uptimeStr}\``;
 
       // Footer Text
-      const footerContent = `-# Built with <a:Red_heart:1528312958541631578> by ASTRIXCODE™ • © 2026 ASTRIXCODE`;
+      const footerContent = `-# Built with <:Red_heart:1539875406671388683> by ASTRIXCODE™ • © 2026 ASTRIXCODE`;
 
       // Buttons Action Row
       const inviteButton = new ButtonBuilder()
-        .setEmoji("<:invite:1527681405319123054>")
+        .setEmoji("<:invite:1539875370248052736>")
         .setLabel("Invite Me")
         .setStyle(ButtonStyle.Link)
         .setURL(inviteUrl);
 
       const websiteButton = new ButtonBuilder()
-        .setEmoji("<:website:1528304906400960582>")
+        .setEmoji("<:website:1539875380159184977>")
         .setLabel("Website")
         .setStyle(ButtonStyle.Link)
         .setURL("https://extremez.vercel.app/");
 
       const supportButton = new ButtonBuilder()
-        .setEmoji("<:discord:1527683374523744367>")
+        .setEmoji("<:discord:1539875375981797596>")
         .setLabel("Support")
         .setStyle(ButtonStyle.Link)
         .setURL("https://discord.gg/FR9pXG2Mwb");

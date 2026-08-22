@@ -25,7 +25,7 @@ module.exports = {
     if (!args[0]) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Missing Server IP\n` +
+          `### <:red_star:1539875482680696834> Missing Server IP\n` +
             `-# *Please specify a Minecraft server IP address (e.g. \`.minecraft mc.hypixel.net\`).*`,
         ),
       );
@@ -49,7 +49,7 @@ module.exports = {
     if (!data || !data.online) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Server Offline / Not Found\n` +
+          `### <:red_star:1539875482680696834> Server Offline / Not Found\n` +
             `-# *Unable to query Minecraft server \`${ip}\`. Server is offline or invalid IP.*`,
         ),
       );
@@ -65,16 +65,16 @@ module.exports = {
     const serverName = data.hostname || ip;
 
     const content = [
-      `### <a:minecraft:1530085289811247255> Minecraft Server ── ${serverName}`,
+      `### <:minecraft:1539875531179433994> Minecraft Server ── ${serverName}`,
       `-# *${motdClean}*`,
       "",
-      `> <:games:1528416832199987393> **Server Telemetry**`,
-      `> - **Status:** \`Online <:online:1528327584520081519>\``,
+      `> <:games:1539875449151426672> **Server Telemetry**`,
+      `> - **Status:** \`Online <:online:1539875424144859239>\``,
       `> - **Players Online:** \`${playersOnline.toLocaleString()} / ${playersMax.toLocaleString()}\``,
       `> - **Version:** \`${version}\``,
       `> - **Software:** \`${data.software || "Standard Java"}\``,
       "",
-      `> <:website:1528304906400960582> **Network Details**`,
+      `> <:website:1539875380159184977> **Network Details**`,
       `> - **Domain/IP:** \`${serverName}\``,
       `> - **Numeric IP:** \`${data.ip || ip}\``,
       `> - **Port:** \`${data.port || 25565}\``,

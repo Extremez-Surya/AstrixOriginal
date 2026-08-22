@@ -22,7 +22,7 @@ module.exports = {
     if (!player || !player.queue.current) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> No Active Track\n` +
+          `### <:red_star:1539875482680696834> No Active Track\n` +
             `-# *You need to be playing a track to configure audio filters.*`,
         ),
       );

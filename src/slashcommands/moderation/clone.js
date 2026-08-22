@@ -42,7 +42,7 @@ module.exports = {
         const container = new ContainerBuilder()
           .addTextDisplayComponents(
             new TextDisplayBuilder().setContent(
-              `### <:astrix:1527205612205903973> Channel Successfully Cloned\n` +
+              `### <:astrix:1539875362945900574> Channel Successfully Cloned\n` +
                 `-# *This channel was cloned by ${interaction.user}. Message history has been wiped cleanly.*`,
             ),
           )

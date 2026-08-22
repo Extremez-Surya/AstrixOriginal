@@ -23,7 +23,7 @@ module.exports = {
     if (!player) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Not in Voice Channel\n` +
+          `### <:red_star:1539875482680696834> Not in Voice Channel\n` +
             `-# *The bot is not currently connected to any voice channel.*`,
         ),
       );
@@ -37,7 +37,7 @@ module.exports = {
     if (voiceChannel && player.voiceId !== voiceChannel.id) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Channel Mismatch\n` +
+          `### <:red_star:1539875482680696834> Channel Mismatch\n` +
             `-# *You must be in <#${player.voiceId}> to disconnect the bot.*`,
         ),
       );

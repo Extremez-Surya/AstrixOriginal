@@ -26,7 +26,7 @@ module.exports = {
     if (!isOwner && !isAdmin && !isDev) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Permission Denied\n` +
+          `### <:red_star:1539875482680696834> Permission Denied\n` +
             `-# *You need Administrator permission or be the Server Owner to change the bot's banner.*`,
         ),
       );
@@ -71,7 +71,7 @@ module.exports = {
       if (!validExtensions.some((ext) => cleanUrl.endsWith(ext))) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Invalid Image Format\n` +
+            `### <:red_star:1539875482680696834> Invalid Image Format\n` +
               `-# *Please provide a valid image URL or attachment (PNG, JPG, GIF, or WebP).*`,
           ),
         );
@@ -91,7 +91,7 @@ module.exports = {
       } catch (fetchErr) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Download Failed\n` +
+            `### <:red_star:1539875482680696834> Download Failed\n` +
               `-# *Could not download the banner image. Please verify the URL.*`,
           ),
         );
@@ -145,7 +145,7 @@ module.exports = {
 
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Banner Update Notice\n-# *${errMsg}*`,
+          `### <:red_star:1539875482680696834> Banner Update Notice\n-# *${errMsg}*`,
         ),
       );
       return message.reply({

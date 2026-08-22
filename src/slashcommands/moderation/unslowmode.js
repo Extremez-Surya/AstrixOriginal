@@ -32,7 +32,7 @@ module.exports = {
     if (channel.rateLimitPerUser === 0) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Slowmode Already Off\n` +
+          `### <:red_star:1539875482680696834> Slowmode Already Off\n` +
           `-# *Slowmode is not active in <#${channel.id}>.*`
         )
       );
@@ -46,7 +46,7 @@ module.exports = {
       await channel.setRateLimitPerUser(0);
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <:online:1528327584520081519> Slowmode Disabled\n` +
+          `### <:online:1539875424144859239> Slowmode Disabled\n` +
           `-# *Channel slowmode has been turned off.*\n\n` +
           `> - **Target Channel:** <#${channel.id}>`
         )
@@ -54,7 +54,7 @@ module.exports = {
         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
       ).addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `-# *<:astrix:1527205612205903973> Channel Management • Powered by ASTRIXCODE™ • © 2026*`
+          `-# *<:astrix:1539875362945900574> Channel Management • Powered by ASTRIXCODE™ • © 2026*`
         )
       );
 
@@ -65,7 +65,7 @@ module.exports = {
     } catch (err) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <:offline:1528328082434424892> Error\n` +
+          `### <:offline:1539875436690153474> Error\n` +
           `-# *Failed to disable slowmode.*\n\n` +
           `> - **Error:** \`${err.message}\``
         )

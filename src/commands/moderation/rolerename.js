@@ -22,7 +22,7 @@ module.exports = {
     if (!roleArg || !newName) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Missing Arguments\n` +
+          `### <:red_star:1539875482680696834> Missing Arguments\n` +
             `-# *Usage: \`.rolerename <@role | role_id> <new_name>\`*`,
         ),
       );
@@ -38,7 +38,7 @@ module.exports = {
     if (!role) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Role Not Found\n` +
+          `### <:red_star:1539875482680696834> Role Not Found\n` +
             `-# *Could not find specified role in this server.*`,
         ),
       );
@@ -50,7 +50,7 @@ module.exports = {
     if (role.position >= message.guild.members.me.roles.highest.position) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Hierarchy Check Failed\n` +
+          `### <:red_star:1539875482680696834> Hierarchy Check Failed\n` +
             `-# *I cannot rename this role because it is higher than or equal to my highest role.*`,
         ),
       );
@@ -66,7 +66,7 @@ module.exports = {
       const container = new ContainerBuilder()
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <:astrix:1527205612205903973> Role Renamed Successfully\n` +
+            `### <:astrix:1539875362945900574> Role Renamed Successfully\n` +
               `-# *Renamed role **${oldName}** to **${newName}**.*`,
           ),
         )
@@ -87,7 +87,7 @@ module.exports = {
     } catch (err) {
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### <a:red_star:1528688099436003419> Failed to Rename Role\n` +
+          `### <:red_star:1539875482680696834> Failed to Rename Role\n` +
             `-# *${err.message || "An error occurred while renaming the role."}*`,
         ),
       );

@@ -319,12 +319,12 @@ module.exports = {
       }
 
       const mainContent =
-        `<:members:1528311049726591006> **Member Overview**\n` +
-        `> -# <:prefix:1528309903972892772> **Member:** <@${interaction.user.id}>\n` +
-        `> -# <:servers:1528311514065535007> **Username:** \`${interaction.user.username}\`\n` +
-        `> -# <:list:1528313871889334382> **Member Count:** \`#${interaction.guild.memberCount.toLocaleString()}\``;
+        `<:members:1539875392532512808> **Member Overview**\n` +
+        `> -# <:prefix:1539875384080990228> **Member:** <@${interaction.user.id}>\n` +
+        `> -# <:servers:1539875396546207795> **Username:** \`${interaction.user.username}\`\n` +
+        `> -# <:list:1539875411780042802> **Member Count:** \`#${interaction.guild.memberCount.toLocaleString()}\``;
 
-      const footerText = `-# Built with <a:Red_heart:1528312958541631578> by ASTRIXCODE™ • Test Triggered By ${interaction.user.tag}`;
+      const footerText = `-# Built with <:Red_heart:1539875406671388683> by ASTRIXCODE™ • Test Triggered By ${interaction.user.tag}`;
 
       const container = new ContainerBuilder();
       if (mediaGallery) container.addMediaGalleryComponents(mediaGallery);
