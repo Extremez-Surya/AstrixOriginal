@@ -4,7 +4,6 @@ const {
   SeparatorBuilder,
   SeparatorSpacingSize,
   MessageFlags,
-  PermissionFlagsBits,
 } = require("discord.js");
 const antinukeManager = require("../../lib/antinukeManager");
 const EMOJIS = require("../../lib/emojis");
@@ -45,7 +44,7 @@ module.exports = {
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
           `### ${EMOJIS.ticky_red || "✅"} Anti-Nuke System Activated\n` +
-            `-# Master anti-nuke protection system is now **ENABLED**.`
+            `-# Master anti-nuke protection system is now **ENABLED** (Sub-0.1s Zero-Bypass Defense Online).`
         )
       )
       .addSeparatorComponents(

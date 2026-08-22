@@ -15,6 +15,7 @@ const {
 } = require("discord.js");
 const path = require("path");
 const allCategories = require("../../lib/categories.json");
+const EMOJIS = require("../../lib/emojis");
 
 module.exports = {
   name: "help",
@@ -54,7 +55,7 @@ module.exports = {
       if (!targetCmd) {
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Command Not Found\n` +
+            `### ${EMOJIS.red_star || "⭐"} Command Not Found\n` +
               `-# *No command matching \`${commandQuery}\` was found in the database.*\n\n` +
               `> - **Tip:** Run \`/help\` without arguments to explore all command categories.`,
           ),
@@ -77,10 +78,10 @@ module.exports = {
       const category = targetCmd.category || "General";
 
       const detailsContent = [
-        `### <:astrix:1527205612205903973> Command Info ── \`.${primaryName}\``,
+        `### ${EMOJIS.astrix || "✨"} Command Info ── \`.${primaryName}\``,
         `-# *${description}*\n`,
         `> -# 📁 **Category:** \`${category}\``,
-        `> -# <:prefix:1528309903972892772> **Aliases:** ${aliasesList}`,
+        `> -# ${EMOJIS.prefix || "⚡"} **Aliases:** ${aliasesList}`,
       ].join("\n");
 
       const footerText = `-# Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE`;
@@ -190,7 +191,7 @@ module.exports = {
               label: "Home Overview",
               value: "home",
               description: "Return to the main category overview.",
-              emoji: "<:home:1528317590848540762>",
+              emoji: "🏠",
             },
             ...group.categories.map((cat) => {
               const cmds = categoryMap.get(cat) || [];
@@ -269,7 +270,7 @@ module.exports = {
         )
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `-# *<:astrix:1527205612205903973> Built with <a:Red_heart:1528312958541631578> by ASTRIXCODE™ • © 2026 ASTRIXCODE. All rights reserved.*`,
+            `-# *${EMOJIS.astrix || "✨"} Built with ${EMOJIS.Red_heart || "❤️"} by ASTRIXCODE™ • © 2026 ASTRIXCODE. All rights reserved.*`,
           ),
         )
         .addActionRowComponents(...menuRows);

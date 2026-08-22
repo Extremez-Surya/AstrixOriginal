@@ -15,6 +15,12 @@
       "expiresAt": 9999999999999,
       "grantedBy": "984409270344908872",
       "grantedAt": 1787160174195
+    },
+    {
+      "id": "1102973356405444749",
+      "expiresAt": 9999999999999,
+      "grantedBy": "1299394763933618239",
+      "grantedAt": 1787409445403
     }
   ],
   "servers": [],
@@ -22,6 +28,6 @@
   "blacklistedUsers": [],
   "blacklistedServers": [],
   "stats": {
-    "totalNoPrefixExecutions": 122
+    "totalNoPrefixExecutions": 132
   }
 }

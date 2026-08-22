@@ -24,5 +24,32 @@
       "reversionsExecuted": 0,
       "lastNukeTimestamp": null
     }
+  },
+  "1361725951607832718": {
+    "enabled": false,
+    "logChannel": null,
+    "extraOwners": [],
+    "whitelist": [],
+    "punishment": "kick",
+    "threshold": 1,
+    "windowMs": 60000,
+    "autoRevert": true,
+    "modules": {
+      "channel": false,
+      "role": false,
+      "ban": false,
+      "kick": false,
+      "webhook": false,
+      "botAdd": false,
+      "guildUpdate": false,
+      "emoji": false,
+      "permissions": false,
+      "prune": false
+    },
+    "stats": {
+      "nukesIntercepted": 0,
+      "reversionsExecuted": 0,
+      "lastNukeTimestamp": null
+    }
   }
 }

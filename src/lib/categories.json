@@ -8,24 +8,24 @@
     "desc": "Server customization, bot branding, per-channel command toggles & server configurations."
   },
   "Information": {
-    "emoji": "<:list:1528313871889334382>",
+    "emoji": "📋",
     "desc": "View bot network stats and user information."
   },
   "Moderation": {
-    "emoji": "<:rshield:1528681364340080713>",
+    "emoji": "🛡️",
     "desc": "Server management and member enforcement commands."
   },
   "Security": {
     "emoji": "🛡️",
-    "desc": "Anti-nuke, whitelist, nightmode, and verification controls."
+    "desc": "Server security controls, nightmode, member verification and security gates."
   },
   "Anti Raid": {
-    "emoji": "<:rshield:1528681364340080713>",
+    "emoji": "🚨",
     "desc": "Automated server raid defense, mass join rate limits, regex filters & emergency lockdown."
   },
   "Anti Nuke": {
-    "emoji": "<:antinuke:1529371458973863986>",
-    "desc": "Unbypassable server protection, channel/role auto-reversion, anti-ban, anti-bot & extra owners."
+    "emoji": "🔒",
+    "desc": "Sub-0.1s unbypassable server protection, channel/role auto-reversion, rogue bot auto-ban & extra owners."
   },
   "Automod": {
     "emoji": "🤖",
@@ -48,7 +48,7 @@
     "desc": "Server auto-responders, reaction triggers, channel auto-emojis & custom server configuration."
   },
   "Giveaway": {
-    "emoji": "<a:tada2:1530099488398508073>",
+    "emoji": "🎉",
     "desc": "Host, manage, and automate server giveaways."
   },
   "Music": {
@@ -92,7 +92,7 @@
     "desc": "Welcome messages, join DMs, auto-roles configuration."
   },
   "Goodbye": {
-    "emoji": "<:leave:1528311514065535007>",
+    "emoji": "🚪",
     "desc": "Member departure alerts, goodbye cards, multi-channel leave system & auto-delete configuration."
   },
   "Join To Create": {

@@ -28,14 +28,14 @@ module.exports = {
     const isDev = client.developer && Array.isArray(client.developer) && client.developer.includes(interaction.user.id);
 
     if (!isOwner && !isExtraOwner && !isDev) {
-      const container = new ContainerBuilder().addTextDisplayComponents(
+      const errorContainer = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
           `### ${EMOJIS.cross || "❌"} Access Denied\n` +
             `-# Only the **Guild Owner** or designated **Extra Owners** can enable Anti-Nuke.`
         )
       );
       return interaction.reply({
-        components: [container],
+        components: [errorContainer],
         flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
       }).catch(() => null);
     }
@@ -46,7 +46,7 @@ module.exports = {
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
           `### ${EMOJIS.ticky_red || "✅"} Anti-Nuke System Activated\n` +
-            `-# Master anti-nuke protection system is now **ENABLED**.`
+            `-# Master anti-nuke protection system is now **ENABLED** (Sub-0.1s Zero-Bypass Engine Online).`
         )
       )
       .addSeparatorComponents(

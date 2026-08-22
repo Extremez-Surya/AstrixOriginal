@@ -79,8 +79,38 @@ module.exports = {
       ],
     },
     {
+      name: "module",
+      description: "Toggle a specific Anti-Nuke defense module.",
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: "name",
+          description: "Module name to toggle.",
+          type: ApplicationCommandOptionType.String,
+          required: true,
+          choices: [
+            { name: "Channel Defense", value: "channel" },
+            { name: "Role Defense", value: "role" },
+            { name: "Anti-Ban", value: "ban" },
+            { name: "Anti-Kick", value: "kick" },
+            { name: "Rogue Bot Infiltration", value: "botAdd" },
+            { name: "Webhook Defense", value: "webhook" },
+            { name: "Server/Vanity Defense", value: "guildUpdate" },
+            { name: "Emoji/Sticker Defense", value: "emoji" },
+            { name: "Dangerous Perm Escalation", value: "permissions" },
+          ],
+        },
+        {
+          name: "state",
+          description: "Enable or disable this module.",
+          type: ApplicationCommandOptionType.Boolean,
+          required: false,
+        },
+      ],
+    },
+    {
       name: "revert",
-      description: "Toggle auto-reversion of deleted channels and roles.",
+      description: "Toggle auto-reversion of deleted channels, roles, and unauthorized bans.",
       type: ApplicationCommandOptionType.Subcommand,
     },
     {
@@ -192,7 +222,7 @@ module.exports = {
     if (subcommand === "enable") {
       antinukeManager.enableMaster(guildId);
       return interaction.reply({
-        components: [buildSuccessNotice("Anti-Nuke Activated", "Master Anti-Nuke system is now **ENABLED**.")],
+        components: [buildSuccessNotice("Anti-Nuke Activated", "Master Anti-Nuke system is now **ENABLED** (Sub-0.1s Zero-Bypass Engine Active).")],
         flags: MessageFlags.IsComponentsV2,
       }).catch(() => null);
     }
@@ -211,6 +241,21 @@ module.exports = {
       antinukeManager.setGuildAntinuke(guildId, config);
       return interaction.reply({
         components: [buildSuccessNotice("Punishment Updated", `Anti-Nuke punishment action set to \`${action.toUpperCase()}\`.`)],
+        flags: MessageFlags.IsComponentsV2,
+      }).catch(() => null);
+    }
+
+    if (subcommand === "module") {
+      const modName = interaction.options.getString("name");
+      const state = interaction.options.getBoolean("state");
+
+      if (!config.modules) config.modules = {};
+      if (state !== null) config.modules[modName] = state;
+      else config.modules[modName] = !config.modules[modName];
+
+      antinukeManager.setGuildAntinuke(guildId, config);
+      return interaction.reply({
+        components: [buildSuccessNotice("Module Toggled", `Module \`${modName}\` is now \`${config.modules[modName] ? "ENABLED" : "DISABLED"}\`.`)],
         flags: MessageFlags.IsComponentsV2,
       }).catch(() => null);
     }
@@ -256,7 +301,7 @@ module.exports = {
         return interaction.reply({
           components: [
             added
-              ? buildSuccessNotice("User Whitelisted", `<@${targetUser.id}> added to whitelist.`)
+              ? buildSuccessNotice("User Whitelisted", `<@${targetUser.id}> is now whitelisted and immune.`)
               : buildErrorNotice("Already Whitelisted", `<@${targetUser.id}> is already whitelisted.`),
           ],
           flags: MessageFlags.IsComponentsV2,
@@ -269,7 +314,7 @@ module.exports = {
           components: [
             removed
               ? buildSuccessNotice("User Removed", `<@${targetUser.id}> removed from whitelist.`)
-              : buildErrorNotice("Not Whitelisted", `<@${targetUser.id}> is not whitelisted.`),
+              : buildErrorNotice("Not Whitelisted", `<@${targetUser.id}> is not in whitelist.`),
           ],
           flags: MessageFlags.IsComponentsV2,
         }).catch(() => null);

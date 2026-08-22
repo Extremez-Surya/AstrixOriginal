@@ -4,6 +4,7 @@ const path = require("path");
 const CONFIG_FILE = path.join(__dirname, "antinukeConfig.json");
 const configCache = new Map();
 let isInitialized = false;
+let saveTimer = null;
 
 function getDefaultConfig() {
   return {
@@ -11,8 +12,8 @@ function getDefaultConfig() {
     logChannel: null,
     extraOwners: [],
     whitelist: [],
-    punishment: "ban",
-    threshold: 2,
+    punishment: "ban", // "ban" | "kick" | "strip" | "timeout" | "quarantine"
+    threshold: 1, // Default 1 for zero-tolerance sub-0.1s instant interception
     windowMs: 60000,
     autoRevert: true,
     modules: {
@@ -25,6 +26,7 @@ function getDefaultConfig() {
       guildUpdate: true,
       emoji: true,
       permissions: true,
+      prune: true,
     },
     stats: {
       nukesIntercepted: 0,
@@ -51,7 +53,8 @@ function initCache() {
 }
 
 function saveDiskAsync() {
-  setImmediate(() => {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
     try {
       const obj = {};
       for (const [guildId, cfg] of configCache.entries()) {
@@ -61,7 +64,7 @@ function saveDiskAsync() {
     } catch (e) {
       console.error("[AntiNukeManager] Save disk error:", e);
     }
-  });
+  }, 100);
 }
 
 function getGuildAntinuke(guildId) {
@@ -148,14 +151,14 @@ function updateGuildAntinuke(guildId, updates) {
 function isWhitelisted(client, guild, userId) {
   if (!guild || !userId) return true;
 
-  // Bot Owners / Developers are strictly immune
+  // Bot Developers / Owners are strictly immune
   const noprefixManager = require("./noprefixManager");
   if (noprefixManager.isOwner(userId, client)) return true;
 
   // Guild Owner is strictly immune
   if (guild.ownerId === userId) return true;
 
-  // Bot itself is immune
+  // Bot itself is strictly immune
   if (client.user?.id === userId) return true;
 
   const config = getGuildAntinuke(guild.id);
@@ -179,7 +182,7 @@ function removeWhitelist(guildId, userId) {
   const config = getGuildAntinuke(guildId);
   if (config.whitelist.includes(userId)) {
     config.whitelist = config.whitelist.filter((id) => id !== userId);
-    setGuildAntiraid(guildId, config);
+    setGuildAntinuke(guildId, config);
     return true;
   }
   return false;

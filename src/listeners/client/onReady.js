@@ -22,6 +22,10 @@ module.exports = {
   once: true,
 
   async execute(client) {
+    // Synchronize Application Emojis from Developer Portal
+    const EMOJIS = require("../../lib/emojis");
+    await EMOJIS.syncFromClient(client);
+
     await AppMessages(client);
     await sleep(1500);
     await AppSlashCommands(client);

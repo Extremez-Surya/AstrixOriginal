@@ -5,6 +5,7 @@ const {
   SeparatorBuilder,
   SeparatorSpacingSize,
   MessageFlags,
+  PermissionFlagsBits,
 } = require("discord.js");
 const antinukeManager = require("../../lib/antinukeManager");
 const { buildAntinukeContainer } = require("../../lib/security/handleAntiNukeInteraction");

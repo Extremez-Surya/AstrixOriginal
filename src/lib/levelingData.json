@@ -38,5 +38,43 @@
       "optOut": false,
       "warnings": 0
     }
+  },
+  "1361725951607832718": {
+    "1299394763933618239": {
+      "userId": "1299394763933618239",
+      "xp": 54,
+      "level": 1,
+      "totalXp": 154,
+      "lastMessageAt": 1787409482428,
+      "lastVoiceAt": 1787409913432,
+      "rewardsGranted": [],
+      "muteAnnouncements": false,
+      "optOut": false,
+      "warnings": 0
+    },
+    "984409270344908872": {
+      "userId": "984409270344908872",
+      "xp": 65,
+      "level": 1,
+      "totalXp": 165,
+      "lastMessageAt": 1787410346606,
+      "lastVoiceAt": 0,
+      "rewardsGranted": [],
+      "muteAnnouncements": false,
+      "optOut": false,
+      "warnings": 0
+    },
+    "1102973356405444749": {
+      "userId": "1102973356405444749",
+      "xp": 91,
+      "level": 0,
+      "totalXp": 91,
+      "lastMessageAt": 1787409526542,
+      "lastVoiceAt": 1787409982994,
+      "rewardsGranted": [],
+      "muteAnnouncements": false,
+      "optOut": false,
+      "warnings": 0
+    }
   }
 }

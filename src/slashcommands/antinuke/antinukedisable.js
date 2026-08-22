@@ -5,6 +5,7 @@ const {
   SeparatorBuilder,
   SeparatorSpacingSize,
   MessageFlags,
+  PermissionFlagsBits,
 } = require("discord.js");
 const antinukeManager = require("../../lib/antinukeManager");
 const EMOJIS = require("../../lib/emojis");
@@ -27,14 +28,14 @@ module.exports = {
     const isDev = client.developer && Array.isArray(client.developer) && client.developer.includes(interaction.user.id);
 
     if (!isOwner && !isExtraOwner && !isDev) {
-      const container = new ContainerBuilder().addTextDisplayComponents(
+      const errorContainer = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
           `### ${EMOJIS.cross || "❌"} Access Denied\n` +
             `-# Only the **Guild Owner** or designated **Extra Owners** can disable Anti-Nuke.`
         )
       );
       return interaction.reply({
-        components: [container],
+        components: [errorContainer],
         flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
       }).catch(() => null);
     }
@@ -44,7 +45,7 @@ module.exports = {
     const container = new ContainerBuilder()
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.cross || "⚠️"} Anti-Nuke System Deactivated\n` +
+          `### ${EMOJIS.cross || "🔴"} Anti-Nuke System Deactivated\n` +
             `-# Master anti-nuke protection system is now **DISABLED**.`
         )
       )
@@ -52,7 +53,7 @@ module.exports = {
         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
       )
       .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(`-# Protection paused • ASTRIXCODE™ System`)
+        new TextDisplayBuilder().setContent(`-# Server shields offline`)
       );
 
     return interaction.reply({

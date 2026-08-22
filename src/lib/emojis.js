@@ -1,58 +1,179 @@
-module.exports = {
-  "Loading": "<:Loading:1539873499739324506>",
-  "astrix": "<:astrix:1539873348677271552>",
-  "invite": "<:invite:1539873354352304218>",
-  "discord": "<:discord:1539873377676959805>",
-  "website": "<:website:1539873505892634685>",
-  "prefix": "<:prefix:1539873514000224256>",
-  "signal": "<:signal:1539873520056799334>",
-  "members": "<:members:1539873525781766156>",
-  "servers": "<:servers:1539873531498602537>",
-  "clock": "<:clock:1539873538071076899>",
-  "Red_heart": "<:Red_heart:1539873548066365532>",
-  "list": "<:list:1539873553904828446>",
-  "home": "<:home:1539873560036646982>",
-  "stats": "<:stats:1539873566567178302>",
-  "online": "<:online:1539873574733480007>",
-  "idle": "<:idle:1539873580840648724>",
-  "DoNotDisturb": "<:DoNotDisturb:1539873586683052112>",
-  "offline": "<:offline:1539873592676847687>",
-  "calender": "<:calender:1539873598511120395>",
-  "Servericon": "<:Servericon:1539873617519575101>",
-  "games": "<:games:1539873623739863092>",
-  "badge": "<:badge:1539873631251734558>",
-  "channel": "<:channel:1539873637186805780>",
-  "rmicrophone": "<:rmicrophone:1539873643054768168>",
-  "rshield": "<:rshield:1539873649211744287>",
-  "rspeaker": "<:rspeaker:1539873655700332554>",
-  "red_boost": "<:red_boost:1539873663925358623>",
-  "red_star": "<:red_star:1539873671865172008>",
-  "rmessage": "<:rmessage:1539873677859098744>",
-  "assetemoji": "<:assetemoji:1539873685458915349>",
-  "Warn_red": "<:Warn_red:1539873691607892038>",
-  "RedGear": "<:RedGear:1539873697270210582>",
-  "RedMail": "<:RedMail:1539873705893568532>",
-  "bote": "<:bote:1539873715058114570>",
-  "linkRed": "<:linkRed:1539873721009831997>",
-  "Sleepy": "<:Sleepy:1539873727234318377>",
-  "antinuke": "<:antinuke:1539873751347367966>",
-  "minecraft": "<:minecraft:1539873758838390824>",
-  "Valorant": "<:Valorant:1539873766862233671>",
-  "roblox_op": "<:roblox_op:1539873780367757382>",
-  "github": "<:github:1539873786579521617>",
-  "chatgpt": "<:chatgpt:1539873792636227665>",
-  "owner3": "<:owner3:1539873800454275083>",
-  "developers": "<:developers:1539873812894584852>",
-  "Artist": "<:Artist:1539873822197416006>",
-  "vip": "<:vip:1539873829684379688>",
-  "EarlySupporter": "<:EarlySupporter:1539873837309632532>",
-  "bug_hunter": "<:bug_hunter:1539873844720959508>",
-  "staff": "<:staff:1539873852400607262>",
-  "red_circle": "<:red_circle:1539873858268434442>",
-  "ticky_red": "<:ticky_red:1539873865973506158>",
-  "tick": "<:tick:1539874496897355817>",
-  "cross": "<:cross:1539874502614196264>",
-  "tada2": "<:tada2:1539874509426008105>",
-  "Trophy": "<:Trophy:1539874517223088182>",
-  "red_yellow_gift": "<:red_yellow_gift:1539874524957249536>"
+const fs = require("fs");
+const path = require("path");
+
+// Default aesthetic fallback Unicode emojis for every known key
+const FALLBACKS = {
+  Loading: "⏳",
+  astrix: "✨",
+  invite: "🔗",
+  discord: "💬",
+  website: "🌐",
+  prefix: "⚡",
+  signal: "📶",
+  members: "👥",
+  servers: "🏛️",
+  clock: "⏰",
+  Red_heart: "❤️",
+  list: "📋",
+  home: "🏠",
+  stats: "📊",
+  online: "🟢",
+  idle: "🟡",
+  DoNotDisturb: "🔴",
+  offline: "⚪",
+  calender: "📅",
+  Servericon: "🖼️",
+  games: "🎮",
+  badge: "🎖️",
+  channel: "💬",
+  rmicrophone: "🎙️",
+  rshield: "🛡️",
+  rspeaker: "🔊",
+  red_boost: "🚀",
+  red_star: "⭐",
+  rmessage: "✉️",
+  assetemoji: "💎",
+  Warn_red: "⚠️",
+  RedGear: "⚙️",
+  RedMail: "📬",
+  bote: "🤖",
+  linkRed: "🔗",
+  Sleepy: "💤",
+  antinuke: "🔒",
+  minecraft: "⛏️",
+  Valorant: "🎯",
+  roblox_op: "🕹️",
+  github: "🐙",
+  chatgpt: "🧠",
+  owner3: "👑",
+  developers: "💻",
+  Artist: "🎨",
+  vip: "🌟",
+  EarlySupporter: "⭐",
+  bug_hunter: "🐛",
+  staff: "🛡️",
+  red_circle: "🔴",
+  ticky_red: "✅",
+  tick: "✅",
+  cross: "❌",
+  tada2: "🎉",
+  Trophy: "🏆",
+  red_yellow_gift: "🎁",
 };
+
+// In-memory dynamic cache for Developer Portal Application Emojis
+const dynamicCache = new Map();
+
+// Helper to normalize strings for fuzzy matching
+function normalizeKey(str) {
+  if (!str) return "";
+  return str.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+/**
+ * Fetch and synchronize all Application Emojis from Discord Developer Portal
+ */
+async function syncFromClient(client) {
+  try {
+    if (!client || !client.application) return;
+
+    let appEmojis = null;
+    try {
+      appEmojis = await client.application.emojis.fetch();
+    } catch (err) {
+      console.warn("[Emoji Engine] Could not fetch application emojis via client.application.emojis:", err.message);
+    }
+
+    if (!appEmojis || appEmojis.size === 0) {
+      // Also check client.emojis.cache across guilds bot is in
+      if (client.emojis?.cache?.size > 0) {
+        client.emojis.cache.forEach((e) => {
+          const formatted = `<${e.animated ? "a" : ""}:${e.name}:${e.id}>`;
+          dynamicCache.set(e.name, formatted);
+          dynamicCache.set(normalizeKey(e.name), formatted);
+        });
+      }
+      return;
+    }
+
+    console.log(`[Emoji Engine] 📡 Successfully synced ${appEmojis.size} Application Emojis from Developer Portal.`);
+
+    const rawExport = {};
+
+    appEmojis.forEach((e) => {
+      const formatted = `<${e.animated ? "a" : ""}:${e.name}:${e.id}>`;
+      dynamicCache.set(e.name, formatted);
+      dynamicCache.set(normalizeKey(e.name), formatted);
+      rawExport[e.name] = formatted;
+    });
+
+    // Save updated map to emojis.json for persistence
+    const jsonPath = path.join(__dirname, "emojis.json");
+    try {
+      fs.writeFileSync(jsonPath, JSON.stringify(rawExport, null, 2), "utf8");
+    } catch (_) {}
+  } catch (err) {
+    console.error("[Emoji Engine] Sync Error:", err);
+  }
+}
+
+// Initial load from emojis.json if present
+try {
+  const jsonPath = path.join(__dirname, "emojis.json");
+  if (fs.existsSync(jsonPath)) {
+    const parsed = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+    for (const [k, v] of Object.entries(parsed)) {
+      dynamicCache.set(k, v);
+      dynamicCache.set(normalizeKey(k), v);
+    }
+  }
+} catch (_) {}
+
+/**
+ * Resolve an emoji by name or key
+ */
+function resolveEmoji(prop) {
+  if (typeof prop !== "string") return "✨";
+
+  // 1. Direct match in dynamic cache
+  if (dynamicCache.has(prop)) {
+    return dynamicCache.get(prop);
+  }
+
+  // 2. Normalized match in dynamic cache
+  const norm = normalizeKey(prop);
+  if (dynamicCache.has(norm)) {
+    return dynamicCache.get(norm);
+  }
+
+  // 3. Match in default fallbacks
+  if (FALLBACKS[prop]) {
+    return FALLBACKS[prop];
+  }
+  const normFallback = Object.keys(FALLBACKS).find((k) => normalizeKey(k) === norm);
+  if (normFallback) {
+    return FALLBACKS[normFallback];
+  }
+
+  return "✨";
+}
+
+// Smart Proxy that never returns broken undefined or raw invalid text
+const emojisProxy = new Proxy(FALLBACKS, {
+  get(target, prop) {
+    if (prop === "syncFromClient") return syncFromClient;
+    if (prop === "resolveEmoji") return resolveEmoji;
+    if (prop === "dynamicCache") return dynamicCache;
+    if (typeof prop !== "string") return Reflect.get(target, prop);
+    return resolveEmoji(prop);
+  },
+  set(target, prop, value) {
+    if (typeof prop === "string") {
+      dynamicCache.set(prop, value);
+      dynamicCache.set(normalizeKey(prop), value);
+    }
+    return Reflect.set(target, prop, value);
+  },
+});
+
+module.exports = emojisProxy;

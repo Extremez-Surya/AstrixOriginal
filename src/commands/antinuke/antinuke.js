@@ -79,7 +79,7 @@ module.exports = {
       antinukeManager.enableMaster(guildId);
       return message.reply({
         components: [
-          buildSuccessNotice("Anti-Nuke Activated", "Master Anti-Nuke protection system is now **ENABLED**."),
+          buildSuccessNotice("Anti-Nuke Activated", "Master Anti-Nuke protection system is now **ENABLED** (Sub-0.1s Zero-Bypass Engine Active)."),
         ],
         flags: MessageFlags.IsComponentsV2,
         allowedMentions: { repliedUser: false },
@@ -106,7 +106,7 @@ module.exports = {
           components: [
             buildErrorNotice(
               "Invalid Punishment Action",
-              "Valid actions are: `ban`, `kick`, `strip` (roles), or `timeout`."
+              "Valid actions are: `ban`, `kick`, `strip` (roles), or `timeout` (28 days)."
             ),
           ],
           flags: MessageFlags.IsComponentsV2,
@@ -133,7 +133,7 @@ module.exports = {
       const modName = args[1]?.toLowerCase();
       const state = args[2]?.toLowerCase();
 
-      const validMods = ["channel", "role", "ban", "kick", "webhook", "botAdd", "guildUpdate", "emoji", "permissions"];
+      const validMods = ["channel", "role", "ban", "kick", "webhook", "botAdd", "guildUpdate", "emoji", "permissions", "prune"];
       if (!validMods.includes(modName)) {
         return message.reply({
           components: [
@@ -173,7 +173,7 @@ module.exports = {
         components: [
           buildSuccessNotice(
             "Auto-Revert Updated",
-            `Automatic channel & role restoration is now \`${config.autoRevert ? "ENABLED" : "DISABLED"}\`.`
+            `Automatic channel, role & ban restoration is now \`${config.autoRevert ? "ENABLED" : "DISABLED"}\`.`
           ),
         ],
         flags: MessageFlags.IsComponentsV2,

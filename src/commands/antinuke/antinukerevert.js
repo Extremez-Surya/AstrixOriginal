@@ -9,9 +9,9 @@ const antinukeManager = require("../../lib/antinukeManager");
 const EMOJIS = require("../../lib/emojis");
 
 module.exports = {
-  alias: ["antinukedisable", "andisable"],
+  alias: ["antinukerevert", "anrevert"],
   category: "Anti Nuke",
-  desc: "Shortcut to disable master Anti-Nuke server protection.",
+  desc: "Toggle automatic recreation of nuked channels, roles, and auto-unbans.",
   botPermissions: ["Administrator"],
   userPermissions: ["Administrator"],
   devOnly: false,
@@ -28,7 +28,7 @@ module.exports = {
       const errorContainer = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
           `### ${EMOJIS.cross || "❌"} Access Denied\n` +
-            `-# Only the **Guild Owner** or designated **Extra Owners** can disable Anti-Nuke.`
+            `-# Only the **Guild Owner** or designated **Extra Owners** can configure Auto-Revert.`
         )
       );
       return message.reply({
@@ -38,20 +38,21 @@ module.exports = {
       }).catch(() => null);
     }
 
-    antinukeManager.disableMaster(message.guild.id);
+    config.autoRevert = !config.autoRevert;
+    antinukeManager.setGuildAntinuke(message.guild.id, config);
 
     const container = new ContainerBuilder()
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.cross || "🔴"} Anti-Nuke System Deactivated\n` +
-            `-# Master anti-nuke protection system is now **DISABLED**.`
+          `### ${config.autoRevert ? (EMOJIS.ticky_red || "✅") : (EMOJIS.cross || "🔴")} Auto-Revert ${config.autoRevert ? "Activated" : "Deactivated"}\n` +
+            `-# Automatic channel/role restoration is now **${config.autoRevert ? "ENABLED" : "DISABLED"}**.`
         )
       )
       .addSeparatorComponents(
         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
       )
       .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(`-# Server shields offline`)
+        new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Sub-0.1s Zero-Bypass Engine`)
       );
 
     return message.reply({

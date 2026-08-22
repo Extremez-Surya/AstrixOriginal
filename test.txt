@@ -1,6 +1,4 @@
-we have Ares-master\src\commands\prefix\General cmd and system in ares master, add it in our code system, like i want to add cmds and the whole exact system in our code, with cool features and lots and better ideas, cmds and system,
-make Ares-master\src\commands\prefix\General sooooo much advance that no one can even by pass it, and if they try to do it, they will get ban or smth, but i want to make it soo much advanced and secrure
-i want to make Ares-master\src\commands\prefix\General system soo much fast that the bot react it in just 0.1 or 0.3 seconds. not 1 or more sec
-make Ares-master\src\commands\prefix\General UI minimal, and more creative like dropdown or something, small minal and fantastic
-make Ares-master\src\commands\prefix\General category separate. 
-check if any cmd is already there, just leave it if it is not then make
+make antinuke sooooo much advance that no one can even by pass it, and if they try to do it, they will get ban or smth, but i want to make it soo much advanced and secrure
+i want to make antinuke system soo much fast that the bot react it in just 0.1 or 0.3 seconds. not 1 or more sec
+make antinuke UI minimal, and more creative like dropdown or something, small minimal and fantastic
+make antinuke category separate. 

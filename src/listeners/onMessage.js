@@ -16,6 +16,7 @@ const path = require("path");
 const { clientPrefix } = require("../lib/config.json");
 const afkManager = require("../lib/afkManager");
 const prefixManager = require("../lib/prefixManager");
+const EMOJIS = require("../lib/emojis");
 /** @type {import('../lib/types/index.ts').Event} */
 
 const levelingManager = require("../lib/levelingManager");
@@ -213,30 +214,43 @@ module.exports = {
 
     // Blacklist Check
     const noprefixManager = require("../lib/noprefixManager");
-    const blInfo = noprefixManager.isBlacklisted(message.author.id, message.guild.id);
+    const blInfo = noprefixManager.isBlacklisted(
+      message.author.id,
+      message.guild.id,
+    );
     if (blInfo.isBlacklisted) {
       const blContainer = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
           `### 🚫 **Access Denied (Blacklisted)**\n` +
             `-# *Your access to Astrix command system has been restricted by bot administrators.*\n\n` +
-            `> - **Reason:** \`${blInfo.reason}\``
-        )
+            `> - **Reason:** \`${blInfo.reason}\``,
+        ),
       );
-      return message.reply({
-        components: [blContainer],
-        flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { parse: [], repliedUser: false },
-      }).catch(() => null);
+      return message
+        .reply({
+          components: [blContainer],
+          flags: MessageFlags.IsComponentsV2,
+          allowedMentions: { parse: [], repliedUser: false },
+        })
+        .catch(() => null);
     }
 
     let usedPrefix = null;
     const mentionPrefixPattern = new RegExp(`^<@!?${client.user.id}>\\s*`);
 
     const memberRoleIds = message.member?.roles?.cache?.map((r) => r.id) || [];
-    const userHasNoPrefix = noprefixManager.hasNoPrefix(message.author.id, message.guild.id, memberRoleIds, client);
+    const userHasNoPrefix = noprefixManager.hasNoPrefix(
+      message.author.id,
+      message.guild.id,
+      memberRoleIds,
+      client,
+    );
 
     const customRolesManager = require("../lib/customRolesManager");
-    const crConfig = customRolesManager.getGuildConfig(client, message.guild.id);
+    const crConfig = customRolesManager.getGuildConfig(
+      client,
+      message.guild.id,
+    );
     const crAliases = crConfig?.aliases ? Object.keys(crConfig.aliases) : [];
 
     const contentTrimmed = message.content.trim();
@@ -249,8 +263,16 @@ module.exports = {
       const match = message.content.match(mentionPrefixPattern);
       usedPrefix = match[0];
     } else if (message.content.startsWith(".")) {
-      const potentialAlias = contentTrimmed.slice(1).split(/ +/g)[0]?.toLowerCase();
-      if (potentialAlias && (crAliases.includes(potentialAlias) || client.messageCommands.get(potentialAlias) || client.messageCommands.find((c) => c.alias?.includes(potentialAlias)))) {
+      const potentialAlias = contentTrimmed
+        .slice(1)
+        .split(/ +/g)[0]
+        ?.toLowerCase();
+      if (
+        potentialAlias &&
+        (crAliases.includes(potentialAlias) ||
+          client.messageCommands.get(potentialAlias) ||
+          client.messageCommands.find((c) => c.alias?.includes(potentialAlias)))
+      ) {
         usedPrefix = ".";
       }
     } else if (userHasNoPrefix) {
@@ -259,7 +281,9 @@ module.exports = {
           client.messageCommands.get(firstWordRaw) ||
           client.messageCommands.find((c) => c.alias?.includes(firstWordRaw));
 
-        const isCrAlias = crAliases.includes(firstWordRaw) || crAliases.includes(firstWordClean);
+        const isCrAlias =
+          crAliases.includes(firstWordRaw) ||
+          crAliases.includes(firstWordClean);
 
         if (potentialCmd || isCrAlias) {
           usedPrefix = "";
@@ -283,67 +307,83 @@ module.exports = {
       await customRolesManager.executeAlias(client, message, cmd, args);
       return;
     }
-
     if (Command.devOnly && !client.developer.includes(message.author.id))
       return;
 
     const serverManager = require("../lib/serverManager");
     const cmdName = Command.alias?.[0] || cmd;
     const catName = Command.category;
-    if (
-      cmdName !== "disable" &&
-      cmdName !== "enable" &&
-      serverManager.isCommandDisabled(message.guild.id, message.channel.id, cmdName, catName)
-    ) {
-      if (serverManager.getDisableNotice(message.guild.id)) {
-        const disContainer = new ContainerBuilder().addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### 🚫 Command Disabled\n` +
-              `-# *The command \`${cmd}\` is disabled in this channel or server.*`,
-          ),
-        );
-        return message.reply({
-          components: [disContainer],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { parse: [], repliedUser: false },
-        }).catch(() => null);
-      }
-      return;
-    }
 
-    if (Command.userPermissions && Command.userPermissions.length !== 0) {
-      if (!message.member.permissions.has(Command.userPermissions)) {
-        const perms = Array.isArray(Command.userPermissions) ? Command.userPermissions.join(", ") : Command.userPermissions;
-        const container = new ContainerBuilder().addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Permission Required\n` +
-            `-# *Access denied due to missing user permissions.*\n\n` +
-            `> - **Required Permission(s):** \`${perms}\``,
-          ),
-        );
-        return message.reply({
-          components: [container],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { parse: [], repliedUser: false },
-        }).catch(() => null);
+    if (!client.developer.includes(message.author.id)) {
+      if (
+        cmdName !== "disable" &&
+        cmdName !== "enable" &&
+        serverManager.isCommandDisabled(
+          message.guild.id,
+          message.channel.id,
+          cmdName,
+          catName,
+        )
+      ) {
+        if (serverManager.getDisableNotice(message.guild.id)) {
+          const disContainer = new ContainerBuilder().addTextDisplayComponents(
+            new TextDisplayBuilder().setContent(
+              `### 🚫 Command Disabled\n` +
+                `-# *The command \`${cmd}\` is disabled in this channel or server.*`,
+            ),
+          );
+          return message
+            .reply({
+              components: [disContainer],
+              flags: MessageFlags.IsComponentsV2,
+              allowedMentions: { parse: [], repliedUser: false },
+            })
+            .catch(() => null);
+        }
+        return;
+      }
+
+      if (Command.userPermissions && Command.userPermissions.length !== 0) {
+        if (!message.member.permissions.has(Command.userPermissions)) {
+          const perms = Array.isArray(Command.userPermissions)
+            ? Command.userPermissions.join(", ")
+            : Command.userPermissions;
+          const container = new ContainerBuilder().addTextDisplayComponents(
+            new TextDisplayBuilder().setContent(
+              `### ${EMOJIS.red_star || "⭐"} Permission Required\n` +
+                `-# *Access denied due to missing user permissions.*\n\n` +
+                `> - **Required Permission(s):** \`${perms}\``,
+            ),
+          );
+          return message
+            .reply({
+              components: [container],
+              flags: MessageFlags.IsComponentsV2,
+              allowedMentions: { parse: [], repliedUser: false },
+            })
+            .catch(() => null);
+        }
       }
     }
-
     if (Command.botPermissions && Command.botPermissions.length !== 0) {
       if (!message.guild.members.me.permissions.has(Command.botPermissions)) {
-        const perms = Array.isArray(Command.botPermissions) ? Command.botPermissions.join(", ") : Command.botPermissions;
+        const perms = Array.isArray(Command.botPermissions)
+          ? Command.botPermissions.join(", ")
+          : Command.botPermissions;
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### <a:red_star:1528688099436003419> Bot Permission Required\n` +
-            `-# *Action blocked: Bot lacks required server permissions.*\n\n` +
-            `> - **Missing Permission(s):** \`${perms}\``,
+            `### ${EMOJIS.red_star || "⭐"} Bot Permission Required\n` +
+              `-# *Action blocked: Bot lacks required server permissions.*\n\n` +
+              `> - **Missing Permission(s):** \`${perms}\``,
           ),
         );
-        return message.reply({
-          components: [container],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { parse: [], repliedUser: false },
-        }).catch(() => null);
+        return message
+          .reply({
+            components: [container],
+            flags: MessageFlags.IsComponentsV2,
+            allowedMentions: { parse: [], repliedUser: false },
+          })
+          .catch(() => null);
       }
     }
 
