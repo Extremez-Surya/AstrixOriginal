@@ -140,47 +140,78 @@ module.exports = {
     );
     const mediaGallery = new MediaGalleryBuilder().addItems(mediaItem);
 
-    // Auto-chunk categories into batches of 24 (since max per menu is 25, 1 for Home + 24 categories)
-    const CHUNK_SIZE = 24;
-    const categoryChunks = [];
-    for (let i = 0; i < sortedCategories.length; i += CHUNK_SIZE) {
-      categoryChunks.push(sortedCategories.slice(i, i + CHUNK_SIZE));
-    }
+    // Group categories into Main Modules and Extra Modules
+    const MAIN_CATEGORY_NAMES = [
+      "Anti Nuke",
+      "Anti Raid",
+      "Automod",
+      "Security",
+      "Moderation",
+      "Logging",
+      "Server",
+      "Configuration",
+      "Utility",
+      "Custom Roles",
+      "Information",
+      "General",
+      "Owner",
+    ];
+
+    const mainCategories = [];
+    const extraCategories = [];
+
+    sortedCategories.forEach((cat) => {
+      if (MAIN_CATEGORY_NAMES.includes(cat)) {
+        mainCategories.push(cat);
+      } else {
+        extraCategories.push(cat);
+      }
+    });
+
+    const categoryGroups = [
+      {
+        id: "main",
+        placeholder: "Explore Main Modules...",
+        categories: mainCategories,
+      },
+      {
+        id: "extra",
+        placeholder: "Explore Extra Modules...",
+        categories: extraCategories,
+      },
+    ];
 
     const buildActionRows = (disabled = false) => {
-      return categoryChunks.map((chunk, index) => {
-        const options = [
-          {
-            label: "Home Overview",
-            value: "home",
-            description: "Return to the main category overview.",
-            emoji: "<:home:1528317590848540762>",
-          },
-          ...chunk.map((cat) => {
-            const cmds = categoryMap.get(cat) || [];
-            const uniqueAliases = [...new Set(cmds.map((c) => c.alias[0]))];
-            return {
-              label: cat,
-              value: cat.toLowerCase(),
-              description: `${uniqueAliases.length} command(s)`,
-              emoji: allCategories[cat]?.emoji || "📁",
-            };
-          }),
-        ];
+      return categoryGroups
+        .filter((group) => group.categories.length > 0)
+        .map((group) => {
+          const options = [
+            {
+              label: "Home Overview",
+              value: "home",
+              description: "Return to the main category overview.",
+              emoji: "<:home:1528317590848540762>",
+            },
+            ...group.categories.map((cat) => {
+              const cmds = categoryMap.get(cat) || [];
+              const uniqueAliases = [...new Set(cmds.map((c) => c.alias[0]))];
+              return {
+                label: cat,
+                value: cat.toLowerCase(),
+                description: `${uniqueAliases.length} command(s)`,
+                emoji: allCategories[cat]?.emoji || "📁",
+              };
+            }),
+          ];
 
-        const placeholder =
-          categoryChunks.length > 1
-            ? `Explore Categories (Part ${index + 1}/${categoryChunks.length})...`
-            : `Choose a category to explore...`;
+          const menu = new StringSelectMenuBuilder()
+            .setCustomId(`help_category_select_${group.id}`)
+            .setPlaceholder(group.placeholder)
+            .setDisabled(disabled)
+            .addOptions(options);
 
-        const menu = new StringSelectMenuBuilder()
-          .setCustomId(`help_category_select_${index}`)
-          .setPlaceholder(placeholder)
-          .setDisabled(disabled)
-          .addOptions(options);
-
-        return new ActionRowBuilder().addComponents(menu);
-      });
+          return new ActionRowBuilder().addComponents(menu);
+        });
     };
 
     const actionRows = buildActionRows(false);
