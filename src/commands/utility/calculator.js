@@ -1,7 +1,7 @@
 const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require("discord.js");
 
 module.exports = {
-  alias: ["calculator", "calc", "math"],
+  alias: ["calculator", "calc"],
   category: "Utility",
   desc: "Evaluate mathematical expressions safely.",
   botPermissions: ["SendMessages"],

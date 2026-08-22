@@ -3,7 +3,7 @@ const ticketManager = require("../../lib/ticketManager");
 const { generateTranscript } = require("../../lib/ticketTranscript");
 
 module.exports = {
-  alias: ["ticketclose", "close"],
+  alias: ["ticketclose", "tclose", "tktclose"],
   category: "Ticket",
   desc: "Close the current support ticket, generate HTML transcript & delete channel.",
   botPermissions: ["ManageChannels", "SendMessages"],

@@ -2,7 +2,7 @@ const { ContainerBuilder, TextDisplayBuilder, MessageFlags, PermissionFlagsBits 
 const ticketManager = require("../../lib/ticketManager");
 
 module.exports = {
-  alias: ["ticketclaim", "claim"],
+  alias: ["ticketclaim", "tclaim", "tktclaim"],
   category: "Ticket",
   desc: "Claim a support ticket for yourself as a support staff member.",
   botPermissions: ["ManageChannels"],

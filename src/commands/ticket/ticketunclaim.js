@@ -2,7 +2,7 @@ const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require("discord.
 const ticketManager = require("../../lib/ticketManager");
 
 module.exports = {
-  alias: ["ticketunclaim", "unclaim"],
+  alias: ["ticketunclaim", "tunclaim", "tktunclaim"],
   category: "Ticket",
   desc: "Unclaim a support ticket.",
   botPermissions: ["ManageChannels"],

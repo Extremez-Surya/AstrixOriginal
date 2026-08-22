@@ -1,7 +1,7 @@
 const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require("discord.js");
 
 module.exports = {
-  alias: ["vanityroles", "vanityrole", "vanity"],
+  alias: ["vanityroles", "vanityrole", "vroles", "vrole"],
   category: "Booster",
   desc: "Automatically assign roles to members who include server vanity URL in their custom status.",
   botPermissions: ["ManageRoles"],

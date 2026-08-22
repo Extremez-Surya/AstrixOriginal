@@ -2,7 +2,7 @@ const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require("discord.
 const { createTicketChannel } = require("../../lib/ticket/handleTicketInteraction");
 
 module.exports = {
-  alias: ["ticketopen", "ticketcreate", "open"],
+  alias: ["ticketopen", "ticketcreate", "topen", "tktcreate"],
   category: "Ticket",
   desc: "Open a support ticket via text command.",
   botPermissions: ["ManageChannels", "SendMessages"],

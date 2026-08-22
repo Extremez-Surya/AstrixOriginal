@@ -6,7 +6,7 @@ const {
 
 /** @type {import('../../lib/types/index.ts').MessageCommand} */
 module.exports = {
-  alias: ["remove", "rm", "delete"],
+  alias: ["remove", "rm", "removetrack", "mremove"],
   category: "Music",
   desc: "Remove a specific track from the queue.",
 

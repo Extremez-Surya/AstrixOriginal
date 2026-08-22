@@ -27,7 +27,7 @@ function getStatusLabel(status) {
 }
 
 module.exports = {
-  alias: ["shardstats", "shards", "status"],
+  alias: ["shardstats", "shards", "shardinfo"],
   category: "Information",
   desc: "View real-time cluster and multi-shard statistics, memory usage, uptime, and system status.",
 

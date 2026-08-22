@@ -13,7 +13,7 @@ const {
 } = require("discord.js");
 
 module.exports = {
-  alias: ["checkvanity", "vanitycheck", "vanityinfo"],
+  alias: ["checkvanity", "vanitycheck", "vanityinfo", "cvanity", "vcheck"],
   category: "Information",
   desc: "Check availability or inspection details for a Discord custom vanity URL.",
 

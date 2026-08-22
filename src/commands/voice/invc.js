@@ -7,7 +7,7 @@ const {
 } = require("discord.js");
 
 module.exports = {
-  alias: ["invc", "in-vc", "in-voice", "invoice"],
+  alias: ["invc", "in-vc", "in-voice", "vcusers"],
   category: "Voice",
   desc: "View connected member counts across all voice channels in the server.",
   botPermissions: ["SendMessages"],
