@@ -22,7 +22,7 @@ const spamTracker = new Map();
 let isInitialized = false;
 
 const DEFAULT_LEVELING = {
-  enabled: true,
+  enabled: false,
   ignores: {
     channels: [],
     roles: [],
