@@ -67,22 +67,45 @@ module.exports = {
 
     const startTime = process.hrtime();
 
+    const path = require("path");
+    const rootDir = path.resolve(__dirname, "../../..");
+
+    const smartRequire = (modulePath) => {
+      if (typeof modulePath === "string") {
+        if (modulePath.startsWith("./src/") || modulePath.startsWith("src/") || modulePath.startsWith("./")) {
+          const resolvedRoot = path.resolve(rootDir, modulePath.replace(/^\.\//, ""));
+          try {
+            return require(resolvedRoot);
+          } catch (err) {
+            if (err.code !== "MODULE_NOT_FOUND") throw err;
+          }
+        }
+      }
+      return require(modulePath);
+    };
+
     try {
       // Evaluate within a scoped context where process.env is guarded
       const evalFunction = new Function(
         "client",
         "message",
         "process",
+        "require",
         `return (async () => { 
           const env = process.env;
           return ${code}; 
         })();`
       );
 
-      let evaled = await evalFunction(client, message, {
-        ...process,
-        env: safeEnv,
-      });
+      let evaled = await evalFunction(
+        client,
+        message,
+        {
+          ...process,
+          env: safeEnv,
+        },
+        smartRequire
+      );
 
       const diffTime = process.hrtime(startTime);
       const executionMs = ((diffTime[0] * 1e9 + diffTime[1]) / 1e6).toFixed(2);
