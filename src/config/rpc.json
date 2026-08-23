@@ -5,20 +5,7 @@
   "activities": [
     {
       "type": "CUSTOM",
-      "state": "🛡️ Astrix Security • .help"
-    },
-    {
-      "type": "WATCHING",
-      "name": "{guilds} Servers | {members} Members"
-    },
-    {
-      "type": "PLAYING",
-      "name": ".help | Advanced Anti-Nuke"
-    },
-    {
-      "type": "STREAMING",
-      "name": "Live Security Telemetry",
-      "url": "https://twitch.tv/discord"
+      "state": "Use {clientPrefix}help | use /help"
     }
   ]
 }

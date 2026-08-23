@@ -42,12 +42,22 @@ function loadConfig() {
 function replacePlaceholders(text, client) {
   if (typeof text !== "string") return text;
 
-  const totalGuilds = client.guilds.cache.size.toLocaleString();
-  const totalMembers = client.guilds.cache
-    .reduce((acc, g) => acc + (g.memberCount || 0), 0)
-    .toLocaleString();
-  const ping = Math.max(0, client.ws.ping);
-  const prefix = client.clientPrefix || "-";
+  let cfgPrefix = "-";
+  try {
+    const cfg = require("./config.json");
+    cfgPrefix = cfg.clientPrefix || "-";
+  } catch (_) {}
+
+  const totalGuilds = client.guilds?.cache?.size?.toLocaleString() || "0";
+  let totalMembersCount = 0;
+  if (client.guilds?.cache) {
+    for (const g of client.guilds.cache.values()) {
+      totalMembersCount += (g.memberCount || 0);
+    }
+  }
+  const totalMembers = totalMembersCount.toLocaleString();
+  const ping = Math.max(0, client.ws?.ping || 0);
+  const prefix = client.clientPrefix || client.prefix || cfgPrefix || "-";
 
   return text
     .replace(/\{guilds\}/gi, totalGuilds)
@@ -55,6 +65,7 @@ function replacePlaceholders(text, client) {
     .replace(/\{members\}/gi, totalMembers)
     .replace(/\{users\}/gi, totalMembers)
     .replace(/\{ping\}/gi, `${ping}ms`)
+    .replace(/\{clientprefix\}/gi, prefix)
     .replace(/\{prefix\}/gi, prefix);
 }
 
