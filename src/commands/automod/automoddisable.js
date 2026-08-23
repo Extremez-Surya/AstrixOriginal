@@ -1,12 +1,6 @@
-const {
-  ContainerBuilder,
-  TextDisplayBuilder,
-  SeparatorBuilder,
-  SeparatorSpacingSize,
-  MessageFlags,
-  PermissionFlagsBits,
-} = require("discord.js");
+const { MessageFlags, PermissionFlagsBits } = require("discord.js");
 const automodManager = require("../../lib/automodManager");
+const { buildAutomodContainer } = require("../../lib/security/handleAutomodInteraction");
 const EMOJIS = require("../../lib/emojis");
 
 module.exports = {
@@ -21,37 +15,18 @@ module.exports = {
     if (!message.guild) return;
 
     if (!message.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
-      const errorContainer = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.cross || "❌"} Access Denied\n` +
-            `-# You need **Manage Server** permission to disable AutoMod.`
-        )
-      );
       return message.reply({
-        components: [errorContainer],
-        flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { repliedUser: false },
+        content: "❌ You need **Manage Server** permission to disable AutoMod.",
+        flags: MessageFlags.Ephemeral,
       }).catch(() => null);
     }
 
     automodManager.disableMaster(message.guild.id);
-
-    const container = new ContainerBuilder()
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.cross || "⚠️"} AutoMod Deactivated\n` +
-            `-# Master AutoMod message protection is now **DISABLED**.`
-        )
-      )
-      .addSeparatorComponents(
-        new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-      )
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(`-# Protection paused • ASTRIXCODE™ System`)
-      );
+    const freshConfig = automodManager.getGuildAutomod(message.guild.id);
+    const panel = buildAutomodContainer(freshConfig, message.guild, "overview");
 
     return message.reply({
-      components: [container],
+      components: [panel],
       flags: MessageFlags.IsComponentsV2,
       allowedMentions: { repliedUser: false },
     }).catch(() => null);

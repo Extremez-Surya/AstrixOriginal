@@ -1,12 +1,13 @@
 const { MessageFlags, PermissionFlagsBits } = require("discord.js");
+const prefixManager = require("../../lib/prefixManager");
 const noprefixManager = require("../../lib/noprefixManager");
 const { buildConfigurationContainer } = require("../../lib/security/handleConfigurationInteraction");
 
 module.exports = {
-  name: "configuration",
-  alias: ["configuration", "config", "serverconfig", "settings"],
+  name: "setprefix",
+  alias: ["setprefix", "prefixset", "changeprefix"],
   category: "Configuration",
-  desc: "Master Server Configuration Hub (Triggers, Auto-Reactions, Sticky Messages & Server Settings).",
+  desc: "Change the server command execution prefix.",
   botPermissions: ["SendMessages"],
   userPermissions: ["ManageGuild"],
   devOnly: false,
@@ -19,23 +20,24 @@ module.exports = {
 
     if (!isMemberPermitted && !isBotOwner) {
       return message.reply({
-        content: "❌ You need **Manage Server** permission to view or edit server configuration.",
+        content: "❌ You need **Manage Server** permission to change the server prefix.",
         flags: MessageFlags.Ephemeral,
       }).catch(() => null);
     }
 
-    const sub = args[0]?.toLowerCase();
-    let targetTab = "overview";
-    if (sub === "trigger" || sub === "triggers" || sub === "ar") targetTab = "triggers";
-    else if (sub === "reaction" || sub === "reactions" || sub === "autoreact") targetTab = "reactions";
-    else if (sub === "sticky" || sub === "stickymessage") targetTab = "sticky";
-    else if (sub === "prefix" || sub === "setprefix") targetTab = "prefix";
-    else if (sub === "help" || sub === "commands") targetTab = "commands";
+    const newPrefix = args[0]?.trim();
+    if (newPrefix) {
+      if (newPrefix.length > 5) {
+        return message.reply({
+          content: "⚠️ Prefix cannot be longer than 5 characters.",
+        }).catch(() => null);
+      }
+      prefixManager.setPrefix(message.guild.id, newPrefix);
+    }
 
-    const configContainer = buildConfigurationContainer(message.guild, targetTab);
-
+    const container = buildConfigurationContainer(message.guild, "prefix");
     return message.reply({
-      components: [configContainer],
+      components: [container],
       flags: MessageFlags.IsComponentsV2,
       allowedMentions: { repliedUser: false },
     }).catch(() => null);

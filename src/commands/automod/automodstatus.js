@@ -1,10 +1,4 @@
-const {
-  ContainerBuilder,
-  TextDisplayBuilder,
-  SeparatorBuilder,
-  SeparatorSpacingSize,
-  MessageFlags,
-} = require("discord.js");
+const { MessageFlags } = require("discord.js");
 const automodManager = require("../../lib/automodManager");
 const { buildAutomodContainer } = require("../../lib/security/handleAutomodInteraction");
 
@@ -20,7 +14,7 @@ module.exports = {
     if (!message.guild) return;
 
     const config = automodManager.getGuildAutomod(message.guild.id);
-    const panel = buildAutomodContainer(config);
+    const panel = buildAutomodContainer(config, message.guild, "overview");
 
     return message.reply({
       components: [panel],

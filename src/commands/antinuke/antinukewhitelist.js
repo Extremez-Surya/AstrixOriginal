@@ -1,34 +1,10 @@
-const {
-  ContainerBuilder,
-  TextDisplayBuilder,
-  SeparatorBuilder,
-  SeparatorSpacingSize,
-  MessageFlags,
-} = require("discord.js");
+const { MessageFlags } = require("discord.js");
 const antinukeManager = require("../../lib/antinukeManager");
-const EMOJIS = require("../../lib/emojis");
-
-function buildSuccessNotice(title, description) {
-  return new ContainerBuilder()
-    .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(`### ${EMOJIS.ticky_red || "✅"} ${title}`)
-    )
-    .addSeparatorComponents(
-      new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-    )
-    .addTextDisplayComponents(new TextDisplayBuilder().setContent(description));
-}
-
-function buildErrorNotice(title, description) {
-  return new ContainerBuilder()
-    .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(`### ${EMOJIS.cross || "❌"} ${title}`)
-    )
-    .addSeparatorComponents(
-      new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-    )
-    .addTextDisplayComponents(new TextDisplayBuilder().setContent(description));
-}
+const noprefixManager = require("../../lib/noprefixManager");
+const {
+  buildUnifiedWhitelistTargetCard,
+  buildUnifiedWhitelistOverviewCard,
+} = require("../../lib/security/handleUnifiedWhitelist");
 
 module.exports = {
   alias: ["antinukewhitelist", "anwl"],
@@ -45,82 +21,50 @@ module.exports = {
     const config = antinukeManager.getGuildAntinuke(message.guild.id);
     const isExtraOwner = (config.extraOwners || []).includes(message.author.id);
     const isDev = client.developer && Array.isArray(client.developer) && client.developer.includes(message.author.id);
+    const isNoprefix = noprefixManager.isOwner(message.author.id, client);
 
-    if (!isOwner && !isExtraOwner && !isDev) {
+    if (!isOwner && !isExtraOwner && !isDev && !isNoprefix) {
       return message.reply({
-        components: [
-          buildErrorNotice(
-            "Access Denied",
-            "Only the **Guild Owner** or designated **Extra Owners** can configure the Anti-Nuke whitelist."
-          ),
-        ],
-        flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { repliedUser: false },
+        content: "❌ Only the **Guild Owner** or designated **Extra Owners** can configure the security whitelist.",
+        flags: MessageFlags.Ephemeral,
       }).catch(() => null);
     }
 
-    const guildId = message.guild.id;
     const action = args[0]?.toLowerCase();
-    const targetUser = message.mentions.users.first() || (args[1] ? await client.users.fetch(args[1]).catch(() => null) : null);
+    const targetUser =
+      message.mentions.users.first() ||
+      (args[1] ? await client.users.fetch(args[1]).catch(() => null) : null) ||
+      (action && !["view", "list", "show", "clear", "reset", "add", "remove"].includes(action)
+        ? await client.users.fetch(action).catch(() => null)
+        : null);
 
-    if (!action || action === "view" || action === "list" || action === "show") {
-      const list = (config.whitelist || []).map((id, i) => `\`${i + 1}.\` <@${id}> (\`${id}\`)`).join("\n") || "*No whitelisted users.*";
-      return message.reply({
-        components: [buildSuccessNotice("Anti-Nuke Whitelist Directory", list)],
-        flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { repliedUser: false },
-      }).catch(() => null);
-    }
-
-    if (action === "clear" || action === "reset") {
-      if (targetUser) {
-        antinukeManager.removeWhitelist(guildId, targetUser.id);
+    if (action === "add" || action === "trust" || action === "config") {
+      if (!targetUser) {
         return message.reply({
-          components: [buildSuccessNotice("Whitelist Reset", `<@${targetUser.id}> removed from the anti-nuke whitelist.`)],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { repliedUser: false },
+          content: "⚠️ Please mention a valid user or provide a User ID.\n*Usage:* `.antinuke whitelist add @user`",
         }).catch(() => null);
       }
-      antinukeManager.clearWhitelist(guildId);
-      return message.reply({
-        components: [buildSuccessNotice("Whitelist Reset", "All users removed from anti-nuke whitelist.")],
-        flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { repliedUser: false },
-      }).catch(() => null);
+      const card = buildUnifiedWhitelistTargetCard(message.guild, targetUser);
+      return message.reply({ components: [card], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
     }
 
-    if (!targetUser) {
-      return message.reply({
-        components: [buildErrorNotice("User Required", "Usage: `.antinukewhitelist <add|remove|view|clear> [user]`")],
-        flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { repliedUser: false },
-      }).catch(() => null);
+    if (targetUser && !["view", "list", "show", "clear", "reset"].includes(action)) {
+      const card = buildUnifiedWhitelistTargetCard(message.guild, targetUser);
+      return message.reply({ components: [card], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
     }
 
-    if (action === "add") {
-      const added = antinukeManager.addWhitelist(guildId, targetUser.id);
-      return message.reply({
-        components: [
-          added
-            ? buildSuccessNotice("User Whitelisted", `<@${targetUser.id}> is now whitelisted and immune to Anti-Nuke enforcement.`)
-            : buildErrorNotice("Already Whitelisted", `<@${targetUser.id}> is already whitelisted.`),
-        ],
-        flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { repliedUser: false },
-      }).catch(() => null);
+    if (action === "remove" || action === "del") {
+      if (!targetUser) {
+        return message.reply({
+          content: "⚠️ Please mention a valid user or provide a User ID.\n*Usage:* `.antinuke whitelist remove @user`",
+        }).catch(() => null);
+      }
+      const card = buildUnifiedWhitelistTargetCard(message.guild, targetUser);
+      return message.reply({ components: [card], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
     }
 
-    if (action === "remove") {
-      const removed = antinukeManager.removeWhitelist(guildId, targetUser.id);
-      return message.reply({
-        components: [
-          removed
-            ? buildSuccessNotice("User Removed", `<@${targetUser.id}> removed from the anti-nuke whitelist.`)
-            : buildErrorNotice("Not Whitelisted", `<@${targetUser.id}> is not in the whitelist.`),
-        ],
-        flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { repliedUser: false },
-      }).catch(() => null);
-    }
+    const overview = buildUnifiedWhitelistOverviewCard(message.guild, "main");
+    return message.reply({ components: [overview], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
   },
 };
+

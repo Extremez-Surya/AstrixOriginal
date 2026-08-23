@@ -1,17 +1,25 @@
-const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require("discord.js");
+const { MessageFlags, PermissionFlagsBits } = require("discord.js");
+const automodManager = require("../../lib/automodManager");
+const antilinkCmd = require("./antilink");
 
 module.exports = {
   alias: ["antilinkenable", "antilink-on"],
   category: "Automod",
-  desc: "Enable link blocking and invite URL removal.",
+  desc: "Enable link and discord invite block filters.",
   botPermissions: ["ManageMessages"],
   userPermissions: ["ManageGuild"],
   devOnly: false,
 
   async execute(client, message, args) {
-    const container = new ContainerBuilder().addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(`### 🔗 Anti-Link Protection Enabled\n-# *Web links and Discord invites will be auto-deleted.*`)
-    );
-    return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    if (!message.guild) return;
+
+    if (!message.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
+      return message.reply({
+        content: "❌ You need **Manage Server** permission to configure Anti-Link.",
+        flags: MessageFlags.Ephemeral,
+      }).catch(() => null);
+    }
+
+    return antilinkCmd.execute(client, message, ["enable"]);
   },
 };

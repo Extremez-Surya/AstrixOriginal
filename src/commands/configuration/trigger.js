@@ -1,19 +1,8 @@
-const { MessageFlags, PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, SeparatorBuilder, SeparatorSpacingSize } = require("discord.js");
+const { MessageFlags, PermissionFlagsBits } = require("discord.js");
 const configManager = require("../../lib/configManager");
 const noprefixManager = require("../../lib/noprefixManager");
-const EMOJIS = require("../../lib/emojis");
+const { buildConfigurationContainer } = require("../../lib/security/handleConfigurationInteraction");
 
-function buildNotice(title, description) {
-  const container = new ContainerBuilder()
-    .addTextDisplayComponents(new TextDisplayBuilder().setContent(`### ${title}`))
-    .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-    .addTextDisplayComponents(new TextDisplayBuilder().setContent(description))
-    .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-    .addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Hardened Configuration Engine`));
-  return { components: [container], flags: MessageFlags.IsComponentsV2, allowedMentions: { repliedUser: false } };
-}
-
-/** @type {import('../../lib/types/index.ts').MessageCommand} */
 module.exports = {
   name: "trigger",
   alias: ["trigger", "triggers", "autoresponder", "ar"],
@@ -30,44 +19,105 @@ module.exports = {
     const isBotOwner = noprefixManager.isOwner(message.author.id, client);
 
     if (!isMemberPermitted && !isBotOwner) {
-      return message.reply(buildNotice(`${EMOJIS.error || "❌"} Missing Permissions`, "Manage Server permission required."));
+      return message.reply({
+        content: "❌ You need **Manage Server** permission to configure auto-responder triggers.",
+        flags: MessageFlags.Ephemeral,
+      }).catch(() => null);
     }
 
     const config = configManager.getGuildConfig(message.guild.id);
     const sub = args[0]?.toLowerCase();
 
-    if (sub === "add" || sub === "create") {
+    // 1. .trigger add <phrase> | <response>
+    if (sub === "add" || sub === "create" || sub === "set") {
       const fullArgs = args.slice(1).join(" ");
       const splitIdx = fullArgs.indexOf("|");
 
       if (splitIdx === -1) {
-        return message.reply(buildNotice(`${EMOJIS.error || "❌"} Invalid Format`, "Usage: `.trigger add <trigger> | <response>`\nExample: `.trigger add hello | Hello {user}! Welcome to {server}!`"));
+        return message.reply({
+          content: "⚠️ **Invalid Format.**\n*Usage:* `.trigger add <phrase> | <response>`\n*Example:* `.trigger add vanity | Join discord.gg/astrix for cool perks!`",
+        }).catch(() => null);
       }
 
       const trig = fullArgs.slice(0, splitIdx).trim();
       const resp = fullArgs.slice(splitIdx + 1).trim();
 
       if (!trig || !resp) {
-        return message.reply(buildNotice(`${EMOJIS.error || "❌"} Invalid Format`, "Trigger phrase and response text cannot be empty."));
+        return message.reply({
+          content: "⚠️ Trigger phrase and response text cannot be empty.",
+        }).catch(() => null);
       }
 
-      config.triggers.push({
-        id: `trig_${Date.now()}`,
-        trigger: trig,
-        response: resp,
-        matchMode: "includes",
-        enabled: true,
-        useComponentsV2: true,
-      });
+      const existingIdx = config.triggers.findIndex(
+        (t) => (t.trigger || "").toLowerCase() === trig.toLowerCase()
+      );
+
+      if (existingIdx !== -1) {
+        config.triggers[existingIdx].response = resp;
+        config.triggers[existingIdx].matchMode = "exact";
+      } else {
+        config.triggers.push({
+          id: `trig_${Date.now()}`,
+          trigger: trig,
+          response: resp,
+          matchMode: "exact",
+          enabled: true,
+          useComponentsV2: true,
+        });
+      }
 
       configManager.setGuildConfig(message.guild.id, config);
-      return message.reply(buildNotice(`${EMOJIS.success || "✅"} Auto-Responder Trigger Added`, `**Trigger:** \`${trig}\`\n**Response:** ${resp}`));
+      const container = buildConfigurationContainer(message.guild, "triggers");
+      return message.reply({
+        components: [container],
+        flags: MessageFlags.IsComponentsV2,
+        allowedMentions: { repliedUser: false },
+      }).catch(() => null);
     }
 
+    // 2. .trigger edit <phrase> | <new response>
+    if (sub === "edit" || sub === "update" || sub === "modify") {
+      const fullArgs = args.slice(1).join(" ");
+      const splitIdx = fullArgs.indexOf("|");
+
+      if (splitIdx === -1) {
+        return message.reply({
+          content: "⚠️ **Invalid Format.**\n*Usage:* `.trigger edit <phrase> | <new response>`\n*Example:* `.trigger edit vanity | New custom response message!`",
+        }).catch(() => null);
+      }
+
+      const trig = fullArgs.slice(0, splitIdx).trim();
+      const newResp = fullArgs.slice(splitIdx + 1).trim();
+
+      if (!trig || !newResp) {
+        return message.reply({
+          content: "⚠️ Trigger phrase and response text cannot be empty.",
+        }).catch(() => null);
+      }
+
+      const updated = configManager.editTrigger(message.guild.id, trig, newResp, "exact");
+
+      if (!updated) {
+        return message.reply({
+          content: `⚠️ Trigger \`${trig}\` was not found. Use \`.trigger add ${trig} | ${newResp}\` to create it.`,
+        }).catch(() => null);
+      }
+
+      const container = buildConfigurationContainer(message.guild, "triggers");
+      return message.reply({
+        components: [container],
+        flags: MessageFlags.IsComponentsV2,
+        allowedMentions: { repliedUser: false },
+      }).catch(() => null);
+    }
+
+    // 3. .trigger remove <phrase>
     if (sub === "remove" || sub === "delete" || sub === "del") {
       const targetTrig = args.slice(1).join(" ").trim().toLowerCase();
       if (!targetTrig) {
-        return message.reply(buildNotice(`${EMOJIS.error || "❌"} Missing Trigger`, "Usage: `.trigger remove <trigger>`"));
+        return message.reply({
+          content: "⚠️ Please specify a trigger to remove.\n*Usage:* `.trigger remove <phrase>`",
+        }).catch(() => null);
       }
 
       const initialLen = config.triggers.length;
@@ -75,42 +125,34 @@ module.exports = {
 
       if (config.triggers.length < initialLen) {
         configManager.setGuildConfig(message.guild.id, config);
-        return message.reply(buildNotice(`${EMOJIS.success || "✅"} Trigger Removed`, `Removed trigger \`${targetTrig}\`.`));
-      } else {
-        return message.reply(buildNotice(`${EMOJIS.error || "❌"} Not Found`, `Trigger \`${targetTrig}\` not found.`));
-      }
-    }
-
-    if (sub === "list" || sub === "ls") {
-      if (!config.triggers || config.triggers.length === 0) {
-        return message.reply(buildNotice(`${EMOJIS.info || "📋"} Trigger Directory`, "*No auto-responder triggers configured.*"));
       }
 
-      let listStr = "";
-      config.triggers.forEach((t, i) => {
-        listStr += `**#${i + 1} Trigger:** \`${t.trigger}\` • **Match:** \`${t.matchMode || "includes"}\`\n> **Response:** ${t.response}\n\n`;
-      });
-
-      return message.reply(buildNotice(`${EMOJIS.info || "📋"} Auto-Responder Triggers`, listStr));
+      const container = buildConfigurationContainer(message.guild, "triggers");
+      return message.reply({
+        components: [container],
+        flags: MessageFlags.IsComponentsV2,
+        allowedMentions: { repliedUser: false },
+      }).catch(() => null);
     }
 
+    // 4. .trigger clear
     if (sub === "clear" || sub === "reset") {
       config.triggers = [];
       configManager.setGuildConfig(message.guild.id, config);
-      return message.reply(buildNotice(`${EMOJIS.success || "✅"} Triggers Cleared`, "All auto-responder triggers have been cleared."));
+      const container = buildConfigurationContainer(message.guild, "triggers");
+      return message.reply({
+        components: [container],
+        flags: MessageFlags.IsComponentsV2,
+        allowedMentions: { repliedUser: false },
+      }).catch(() => null);
     }
 
-    // Default Help Notice
-    return message.reply(
-      buildNotice(
-        "🤖 Auto-Responder Trigger Commands",
-        "**Usage:**\n" +
-        "> `.trigger add <trigger> | <response>` — Add auto-responder\n" +
-        "> `.trigger remove <trigger>` — Remove auto-responder\n" +
-        "> `.trigger list` — View all active triggers\n" +
-        "> `.trigger clear` — Clear all triggers\n\n" +
-        "**Placeholders:** `{user}`, `{user_name}`, `{server}`, `{channel}`, `{time}`, `{date}`, `{timestamp}`"
-      )
-    );
+    // Default / list: Open Triggers Tab
+    const container = buildConfigurationContainer(message.guild, "triggers");
+    return message.reply({
+      components: [container],
+      flags: MessageFlags.IsComponentsV2,
+      allowedMentions: { repliedUser: false },
+    }).catch(() => null);
   },
 };

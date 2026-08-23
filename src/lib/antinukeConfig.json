@@ -27,7 +27,7 @@
     }
   },
   "1526109131042459678": {
-    "enabled": false,
+    "enabled": true,
     "superAntinuke": false,
     "logChannel": null,
     "superLogChannel": null,

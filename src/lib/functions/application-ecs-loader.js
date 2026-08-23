@@ -86,6 +86,7 @@ async function AppMessages(client) {
 
   const categoryStats = {};
 
+  let totalAliases = 0;
   for (const file of files) {
     const command = require(file);
 
@@ -98,6 +99,7 @@ async function AppMessages(client) {
     }
 
     client.messageCommands.set(command.alias[0], command);
+    totalAliases += command.alias.length;
 
     const cat = command.category || "Miscellaneous";
     categoryStats[cat] = (categoryStats[cat] || 0) + 1;
@@ -137,7 +139,7 @@ async function AppMessages(client) {
 
   console.log(lineSummary);
   console.log(formatFullWidthRow(
-    `${colors.yellow}${print.bold("✦ TOTAL READY")}${reset}    │  ${colors.white}${print.bold(`${totalCmds} Commands loaded across ${Object.keys(categoryStats).length} Categories`)}${reset}`
+    `${colors.yellow}${print.bold("✦ TOTAL READY")}${reset}    │  ${colors.white}${print.bold(`${totalCmds} Base Commands (${totalAliases} Aliases) across ${Object.keys(categoryStats).length} Categories`)}${reset}`
   ));
   console.log(`${lineBottom}\n`);
 }

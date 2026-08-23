@@ -85,8 +85,8 @@ module.exports = {
     const subcommand = args[0]?.toLowerCase();
 
     // Default: Show Dashboard Container
-    if (!subcommand || subcommand === "config" || subcommand === "panel" || subcommand === "status") {
-      const panel = buildAntiraidContainer(config);
+    if (!subcommand || subcommand === "config" || subcommand === "panel" || subcommand === "status" || subcommand === "dashboard") {
+      const panel = buildAntiraidContainer(config, message.guild, "overview");
       return message.reply({
         components: [panel],
         flags: MessageFlags.IsComponentsV2,
@@ -97,10 +97,10 @@ module.exports = {
     // Enable master switch
     if (subcommand === "enable" || subcommand === "on") {
       antiraidManager.enableMaster(guildId);
+      const freshConfig = antiraidManager.getGuildAntiraid(guildId);
+      const panel = buildAntiraidContainer(freshConfig, message.guild, "overview");
       return message.reply({
-        components: [
-          buildSuccessNotice("Anti-Raid Fortress Activated", "Master anti-raid protection system is now **ENABLED**."),
-        ],
+        components: [panel],
         flags: MessageFlags.IsComponentsV2,
         allowedMentions: { repliedUser: false },
       }).catch(() => null);
@@ -109,10 +109,10 @@ module.exports = {
     // Disable master switch
     if (subcommand === "disable" || subcommand === "off") {
       antiraidManager.disableMaster(guildId);
+      const freshConfig = antiraidManager.getGuildAntiraid(guildId);
+      const panel = buildAntiraidContainer(freshConfig, message.guild, "overview");
       return message.reply({
-        components: [
-          buildSuccessNotice("Anti-Raid Fortress Deactivated", "Master anti-raid protection system is now **DISABLED**."),
-        ],
+        components: [panel],
         flags: MessageFlags.IsComponentsV2,
         allowedMentions: { repliedUser: false },
       }).catch(() => null);
@@ -460,23 +460,7 @@ module.exports = {
     }
 
     // Fallback Command Usage Help
-    const helpContainer = new ContainerBuilder()
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.rshield || "🛡️"} HARDENED ANTI-RAID COMMAND REFERENCE\n` +
-            `> - \`.antiraid config\` - Open main interactive control dashboard\n` +
-            `> - \`.antiraid enable/disable\` - Toggle anti-raid master system\n` +
-            `> - \`.antiraid namefilter <on|off> [--do kick|ban] [--add regex]\` - Name & spam regex filter\n` +
-            `> - \`.antiraid massjoin <on|off> [--threshold N] [--do kick|ban] [--lock]\` - Mass join detection\n` +
-            `> - \`.antiraid avatar <on|off> [--do kick|ban]\` - Default avatar filter\n` +
-            `> - \`.antiraid newaccounts <on|off> [--threshold N] [--do kick|ban]\` - New account filter\n` +
-            `> - \`.antiraid state\` - Toggle emergency raid mode\n` +
-            `> - \`.antiraid whitelist <add|remove|view|clear> [user]\` - Manage bypass whitelist\n` +
-            `> - \`.antiraid log <#channel|off>\` - Set audit log channel\n` +
-            `> - \`.antiraid reset\` - Reset configuration`
-        )
-      );
-
+    const helpContainer = buildAntiraidContainer(config, message.guild, "commands");
     return message.reply({
       components: [helpContainer],
       flags: MessageFlags.IsComponentsV2,

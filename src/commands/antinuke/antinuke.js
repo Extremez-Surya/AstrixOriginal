@@ -46,8 +46,7 @@ function buildCommandDirectoryContainer() {
       `🚀 **Whitelist**\n` +
       `\`antinuke whitelist add <user>\` , \`antinuke whitelist remove <user>\` , \`antinuke whitelist reset <user>\` , \`antinuke whitelist show\`\n\n` +
       `> \`antinuke\` **aliases -** \`an\`\n` +
-      `> \`whitelist\` **aliases -** \`wl\`\n\n` +
-      `• \`Note:\` \`Both antinuke and superantinuke have their own separate whitelist systems.\`\n\n` +
+      `• \`Note:\` \`Whitelisted users are completely trusted and bypass all antinuke triggers.\`\n\n` +
       `Use the commands above to manage all antinuke features.`
     )
   );
@@ -119,9 +118,9 @@ module.exports = {
     const guildId = message.guild.id;
     const subcommand = args[0]?.toLowerCase();
 
-    // Default: Open Command Directory Menu (Matches Image 1)
+    // Default: Open Command Directory Menu
     if (!subcommand || subcommand === "help" || subcommand === "cmds" || subcommand === "commands") {
-      const dirContainer = buildCommandDirectoryContainer();
+      const dirContainer = buildAntinukeContainer(config, message.guild, "menu");
       return message.reply({
         components: [dirContainer],
         flags: MessageFlags.IsComponentsV2,

@@ -4,6 +4,40 @@
       "triggers": [],
       "reactionTriggers": [],
       "channelReactions": []
+    },
+    "1526109131042459678": {
+      "triggers": [],
+      "reactionTriggers": [],
+      "channelReactions": [],
+      "stickyMessages": []
+    },
+    "test_guild_123": {
+      "triggers": [
+        {
+          "id": "t1",
+          "trigger": "vanity",
+          "response": "Brand new updated vanity response!",
+          "matchMode": "exact",
+          "enabled": true
+        }
+      ],
+      "reactionTriggers": [],
+      "channelReactions": [],
+      "stickyMessages": []
+    },
+    "test_guild_vanity": {
+      "triggers": [
+        {
+          "id": "t_vanity",
+          "trigger": "vanity",
+          "response": "https://discord.gg/dreamzone",
+          "matchMode": "exact",
+          "enabled": true
+        }
+      ],
+      "reactionTriggers": [],
+      "channelReactions": [],
+      "stickyMessages": []
     }
   }
 }

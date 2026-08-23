@@ -71,11 +71,11 @@ module.exports = {
     const container = new ContainerBuilder()
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.Warn_red || "🔒"} SERVER LOCKDOWN EXECUTED\n` +
+          `### 🔒 **Server Lockdown Executed**\n` +
             `-# *Sending messages disabled for @everyone across text channels.*\n\n` +
-            `> - **Channels Locked:** \`${lockedCount}\` text channel(s)\n` +
-            `> - **Reason:** \`${reason}\` \n` +
-            `> - **Unlock Command:** Run \`.raidunlock\` to restore normal permissions.`
+            `> • **Channels Locked:** \`${lockedCount}\` text channel(s)\n` +
+            `> • **Reason:** \`${reason}\`\n` +
+            `> • **Unlock Command:** Run \`.raidunlock\` to restore normal permissions.`
         )
       )
       .addSeparatorComponents(

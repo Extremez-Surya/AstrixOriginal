@@ -41,7 +41,9 @@
       "thresholdHours": 24,
       "action": "ban"
     },
-    "whitelist": [],
+    "whitelist": [
+      "1299394763933618239"
+    ],
     "stats": {
       "blockedCount": 0,
       "raidsDetected": 0,

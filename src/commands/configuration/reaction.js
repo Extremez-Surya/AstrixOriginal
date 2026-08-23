@@ -1,19 +1,8 @@
-const { MessageFlags, PermissionFlagsBits, ContainerBuilder, TextDisplayBuilder, SeparatorBuilder, SeparatorSpacingSize } = require("discord.js");
+const { MessageFlags, PermissionFlagsBits } = require("discord.js");
 const configManager = require("../../lib/configManager");
 const noprefixManager = require("../../lib/noprefixManager");
-const EMOJIS = require("../../lib/emojis");
+const { buildConfigurationContainer } = require("../../lib/security/handleConfigurationInteraction");
 
-function buildNotice(title, description) {
-  const container = new ContainerBuilder()
-    .addTextDisplayComponents(new TextDisplayBuilder().setContent(`### ${title}`))
-    .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-    .addTextDisplayComponents(new TextDisplayBuilder().setContent(description))
-    .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-    .addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Hardened Configuration Engine`));
-  return { components: [container], flags: MessageFlags.IsComponentsV2, allowedMentions: { repliedUser: false } };
-}
-
-/** @type {import('../../lib/types/index.ts').MessageCommand} */
 module.exports = {
   name: "reaction",
   alias: ["reaction", "rt", "reactiontrigger", "autoreact"],
@@ -30,18 +19,24 @@ module.exports = {
     const isBotOwner = noprefixManager.isOwner(message.author.id, client);
 
     if (!isMemberPermitted && !isBotOwner) {
-      return message.reply(buildNotice(`${EMOJIS.error || "❌"} Missing Permissions`, "Manage Server permission required."));
+      return message.reply({
+        content: "❌ You need **Manage Server** permission to configure auto-reactions.",
+        flags: MessageFlags.Ephemeral,
+      }).catch(() => null);
     }
 
     const config = configManager.getGuildConfig(message.guild.id);
     const sub = args[0]?.toLowerCase();
 
-    if (sub === "add" || sub === "create") {
+    // 1. .reaction add <emoji> <phrase>
+    if (sub === "add" || sub === "create" || sub === "set") {
       const emoji = args[1];
       const trig = args.slice(2).join(" ").trim();
 
       if (!emoji || !trig) {
-        return message.reply(buildNotice(`${EMOJIS.error || "❌"} Invalid Format`, "Usage: `.reaction add <emoji> <trigger>`\nExample: `.reaction add 👍 hello`"));
+        return message.reply({
+          content: "⚠️ **Invalid Format.**\n*Usage:* `.reaction add <emoji> <phrase>`\n*Example:* `.reaction add 👍 hello`",
+        }).catch(() => null);
       }
 
       config.reactionTriggers.push({
@@ -52,13 +47,21 @@ module.exports = {
       });
 
       configManager.setGuildConfig(message.guild.id, config);
-      return message.reply(buildNotice(`${EMOJIS.success || "✅"} Reaction Trigger Added`, `**Emoji:** ${emoji}\n**Trigger:** \`${trig}\``));
+      const container = buildConfigurationContainer(message.guild, "reactions");
+      return message.reply({
+        components: [container],
+        flags: MessageFlags.IsComponentsV2,
+        allowedMentions: { repliedUser: false },
+      }).catch(() => null);
     }
 
+    // 2. .reaction remove <phrase>
     if (sub === "remove" || sub === "delete" || sub === "del") {
       const trig = args.slice(1).join(" ").trim().toLowerCase();
       if (!trig) {
-        return message.reply(buildNotice(`${EMOJIS.error || "❌"} Missing Trigger`, "Usage: `.reaction remove <trigger>`"));
+        return message.reply({
+          content: "⚠️ Please specify a keyword reaction to remove.\n*Usage:* `.reaction remove <phrase>`",
+        }).catch(() => null);
       }
 
       const initialLen = config.reactionTriggers.length;
@@ -66,76 +69,75 @@ module.exports = {
 
       if (config.reactionTriggers.length < initialLen) {
         configManager.setGuildConfig(message.guild.id, config);
-        return message.reply(buildNotice(`${EMOJIS.success || "✅"} Reaction Trigger Removed`, `Removed reaction trigger \`${trig}\`.`));
-      } else {
-        return message.reply(buildNotice(`${EMOJIS.error || "❌"} Not Found`, `Reaction trigger \`${trig}\` not found.`));
       }
+
+      const container = buildConfigurationContainer(message.guild, "reactions");
+      return message.reply({
+        components: [container],
+        flags: MessageFlags.IsComponentsV2,
+        allowedMentions: { repliedUser: false },
+      }).catch(() => null);
     }
 
+    // 3. .reaction messages <#channel> <emojis...>
     if (sub === "messages" || sub === "channel") {
       const channelMention = args[1];
       if (!channelMention) {
-        return message.reply(buildNotice(`${EMOJIS.error || "❌"} Missing Channel`, "Usage: `.reaction messages <#channel> <emojis...>`"));
+        return message.reply({
+          content: "⚠️ **Missing Channel.**\n*Usage:* `.reaction messages <#channel> <emojis...>`",
+        }).catch(() => null);
       }
 
       const channelId = channelMention.replace(/[^0-9]/g, "");
       const channel = message.guild.channels.cache.get(channelId);
 
       if (!channel) {
-        return message.reply(buildNotice(`${EMOJIS.error || "❌"} Invalid Channel`, "Please specify a valid text channel."));
+        return message.reply({
+          content: "⚠️ Please mention a valid text channel.",
+        }).catch(() => null);
       }
 
       const emojiArr = args.slice(2);
       if (emojiArr.length === 0) {
         // Remove channel reaction
         config.channelReactions = config.channelReactions.filter((cr) => cr.channelId !== channelId);
-        configManager.setGuildConfig(message.guild.id, config);
-        return message.reply(buildNotice(`${EMOJIS.success || "✅"} Channel Reactions Removed`, `Removed auto-reactions from <#${channelId}>.`));
-      }
-
-      const idx = config.channelReactions.findIndex((cr) => cr.channelId === channelId);
-      if (idx !== -1) {
-        config.channelReactions[idx].emojis = emojiArr;
       } else {
-        config.channelReactions.push({ channelId, emojis: emojiArr });
+        const idx = config.channelReactions.findIndex((cr) => cr.channelId === channelId);
+        if (idx !== -1) {
+          config.channelReactions[idx].emojis = emojiArr;
+        } else {
+          config.channelReactions.push({ channelId, emojis: emojiArr });
+        }
       }
 
       configManager.setGuildConfig(message.guild.id, config);
-      return message.reply(buildNotice(`${EMOJIS.success || "✅"} Channel Auto-Reactions Configured`, `Channel: <#${channelId}>\nEmojis: ${emojiArr.join(" ")}`));
+      const container = buildConfigurationContainer(message.guild, "reactions");
+      return message.reply({
+        components: [container],
+        flags: MessageFlags.IsComponentsV2,
+        allowedMentions: { repliedUser: false },
+      }).catch(() => null);
     }
 
-    if (sub === "list" || sub === "ls") {
-      let listStr = "";
-      if (config.reactionTriggers.length > 0) {
-        listStr += "**😀 Keyword Reactions:**\n";
-        config.reactionTriggers.forEach((rt, i) => {
-          listStr += `> ${rt.emoji} — \`${rt.trigger}\`\n`;
-        });
-        listStr += "\n";
-      }
-
-      if (config.channelReactions.length > 0) {
-        listStr += "**📸 Channel Auto-Reactions:**\n";
-        config.channelReactions.forEach((cr) => {
-          listStr += `> <#${cr.channelId}> — ${cr.emojis?.join(" ")}\n`;
-        });
-      }
-
-      if (!listStr) listStr = "*No auto-reactions configured.*";
-
-      return message.reply(buildNotice(`${EMOJIS.info || "📋"} Auto-Reactions Directory`, listStr));
+    // 4. .reaction clear
+    if (sub === "clear" || sub === "reset") {
+      config.reactionTriggers = [];
+      config.channelReactions = [];
+      configManager.setGuildConfig(message.guild.id, config);
+      const container = buildConfigurationContainer(message.guild, "reactions");
+      return message.reply({
+        components: [container],
+        flags: MessageFlags.IsComponentsV2,
+        allowedMentions: { repliedUser: false },
+      }).catch(() => null);
     }
 
-    // Default Help Notice
-    return message.reply(
-      buildNotice(
-        "😀 Reaction Trigger Commands",
-        "**Usage:**\n" +
-        "> `.reaction add <emoji> <trigger>` — Add keyword auto-react\n" +
-        "> `.reaction remove <trigger>` — Remove keyword auto-react\n" +
-        "> `.reaction messages <#channel> <emojis...>` — Set channel auto-emojis\n" +
-        "> `.reaction list` — View active reaction triggers"
-      )
-    );
+    // Default / list: Open Reactions Tab
+    const container = buildConfigurationContainer(message.guild, "reactions");
+    return message.reply({
+      components: [container],
+      flags: MessageFlags.IsComponentsV2,
+      allowedMentions: { repliedUser: false },
+    }).catch(() => null);
   },
 };

@@ -53,10 +53,10 @@ module.exports = {
     const container = new ContainerBuilder()
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.ticky_red || "🔓"} SERVER UNLOCK EXECUTED\n` +
+          `### 🔓 **Server Lockdown Lifted**\n` +
             `-# *Sending messages restored for @everyone across text channels.*\n\n` +
-            `> - **Channels Unlocked:** \`${unlockedCount}\` text channel(s)\n` +
-            `> - **Status:** Server returns to normal channel communication.`
+            `> • **Channels Unlocked:** \`${unlockedCount}\` text channel(s)\n` +
+            `> • **Status:** Server returned to normal channel communication.`
         )
       )
       .addSeparatorComponents(

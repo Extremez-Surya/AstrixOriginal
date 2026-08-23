@@ -319,6 +319,46 @@ function resetAutomod(guildId) {
   return true;
 }
 
+function addWhitelistedUser(guildId, userId) {
+  const config = getGuildAutomod(guildId);
+  if (!config.ignore) config.ignore = { channels: [], roles: [], users: [] };
+  if (!Array.isArray(config.ignore.users)) config.ignore.users = [];
+  if (!config.ignore.users.includes(userId)) {
+    config.ignore.users.push(userId);
+    setGuildAutomod(guildId, config);
+    return true;
+  }
+  return false;
+}
+
+function removeWhitelistedUser(guildId, userId) {
+  const config = getGuildAutomod(guildId);
+  if (config.ignore && Array.isArray(config.ignore.users)) {
+    const idx = config.ignore.users.indexOf(userId);
+    if (idx !== -1) {
+      config.ignore.users.splice(idx, 1);
+      setGuildAutomod(guildId, config);
+      return true;
+    }
+  }
+  return false;
+}
+
+function isWhitelistedUser(guildId, userId) {
+  const config = getGuildAutomod(guildId);
+  return Boolean(config.ignore?.users?.includes(userId));
+}
+
+function clearWhitelistedUsers(guildId) {
+  const config = getGuildAutomod(guildId);
+  if (config.ignore) {
+    config.ignore.users = [];
+    setGuildAutomod(guildId, config);
+    return true;
+  }
+  return false;
+}
+
 initCache();
 
 module.exports = {
@@ -337,5 +377,10 @@ module.exports = {
   addBadWord,
   removeBadWord,
   clearBadWords,
+  addWhitelistedUser,
+  removeWhitelistedUser,
+  isWhitelistedUser,
+  clearWhitelistedUsers,
   resetAutomod,
 };
+

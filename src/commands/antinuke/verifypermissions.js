@@ -89,7 +89,6 @@ module.exports = {
       `> 🛡️ **Criminals role is properly configured with no permissions!**\n` +
       `> 🛡️ Checking log channels permissions...\n` +
       `> 🛡️ \`antinuke-logs\` has proper security permissions!\n` +
-      `> 🛡️ \`superantinuke-logs\` has proper security permissions!\n` +
       `> 🛡️ \`mod-logs\` has proper security permissions!\n` +
       `> 🛡️ Checking role positions...\n` +
       `> 🔧 Stripping dangerous permissions from all roles except Astrix Security roles...\n` +

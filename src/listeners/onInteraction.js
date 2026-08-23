@@ -58,6 +58,16 @@ module.exports = {
     );
     if (handledAntiNuke) return;
 
+    // Handle Unified Multi-System Whitelist Interactions
+    const {
+      handleUnifiedWhitelistInteraction,
+    } = require("../lib/security/handleUnifiedWhitelist");
+    const handledUnifiedWhitelist = await handleUnifiedWhitelistInteraction(
+      client,
+      interaction,
+    );
+    if (handledUnifiedWhitelist) return;
+
     // Handle AutoMod Interactions (Dropdown Select Menus & Buttons)
     const {
       handleAutomodInteraction,

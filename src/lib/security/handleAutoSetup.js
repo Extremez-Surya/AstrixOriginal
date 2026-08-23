@@ -39,13 +39,14 @@ function findChannel(guild, predicate) {
 }
 
 /**
- * Builds the interactive Security Wall Role Selection UI (Matches Titanium Security Image 3)
+ * Builds the interactive Security Wall Role Selection UI (Standard Clean Markdown)
  */
 function buildAutoSetupWallSelectionContainer(guild, authorUser) {
   const container = new ContainerBuilder();
   const config = antinukeManager.getGuildAntinuke(guild.id);
 
-  const headerText = `### 🚀 **Auto Setup - Security Wall Role Selection**\n` +
+  const headerText =
+    `### 🚀 **Auto Setup - Security Wall Role Selection**\n` +
     `Before proceeding with automatic setup, please select a role to use as the **Security Wall**.\n\n` +
     `The Security Wall role acts as a barrier between trusted and untrusted users.\n` +
     `You can select an existing role or choose to create a new one.`;
@@ -143,7 +144,7 @@ function buildAutoSetupWallSelectionContainer(guild, authorUser) {
 }
 
 /**
- * Builds the Recommendation Prompt for `^antinuke enable` (Matches Image 2)
+ * Builds the Recommendation Prompt for `antinuke enable` (Standard Clean Markdown)
  */
 function buildEnableRecommendationContainer(guild, authorUser) {
   const container = new ContainerBuilder();
@@ -156,10 +157,10 @@ function buildEnableRecommendationContainer(guild, authorUser) {
   );
 
   const descText =
-    `Using \`autosetup\` will completely setup **SuperAntinuke**, which includes:\n\n` +
+    `Using \`autosetup\` will completely configure **Astrix Anti-Nuke**, which includes:\n\n` +
     `> • Creating and configuring an **unbypassable setup**\n` +
     `> • Automatically configuring **antivanity** and **security wall** roles\n` +
-    `> • Creating audit logging channels in a dedicated Security category (\`#antinuke-logs\`, \`#superantinuke-logs\`, \`#mod-logs\`)\n` +
+    `> • Creating audit logging channels in a dedicated Security category (\`#antinuke-logs\`, \`#mod-logs\`)\n` +
     `> • Assigning the Security Wall role to all members and bots for complete barrier security\n` +
     `> • Stripping dangerous permissions from unauthorized roles\n\n` +
     `*Are you sure you want to proceed with standard \`antinuke enable\` instead?*`;
@@ -240,14 +241,9 @@ async function executeAutoSetup(guild, authorUser, selectedRoleOrAction, replyHa
   };
 
   try {
-    // Step 1: Enable Master & SuperAntinuke
+    // Step 1: Enable Master Anti-Nuke Shield
     antinukeManager.enableMaster(guild.id);
-    const config = antinukeManager.getGuildAntinuke(guild.id);
-    config.superAntinuke = true;
-    antinukeManager.setGuildAntinuke(guild.id, config);
-
     await logStep(`🛡️ **Antinuke has been enabled!**`);
-    await logStep(`🛡️ **SuperAntinuke has been enabled!**`);
 
     // Step 2: Setup Security Roles
     await logStep(`🌀 **Setting up Security Roles...** *(Configuring hierarchy)*`);
@@ -345,7 +341,6 @@ async function executeAutoSetup(guild, authorUser, selectedRoleOrAction, replyHa
     };
 
     const anLogChan = await setupChannel("antinuke-logs", "Astrix Anti-Nuke Automated Audit Alerts");
-    const superLogChan = await setupChannel("superantinuke-logs", "Astrix SuperAntinuke High-Severity Telemetry");
     const modLogChan = await setupChannel("mod-logs", "Astrix Moderation & Security Activity Log");
 
     if (anLogChan) antinukeManager.setAntinukeLogs(guild.id, anLogChan.id);
@@ -359,7 +354,7 @@ async function executeAutoSetup(guild, authorUser, selectedRoleOrAction, replyHa
             `### 🛡️ **Astrix Security Fortress Online**\n` +
             `-# *Sub-0.1s Real-Time Zero-Bypass Server Protection*\n\n` +
             `> **Thank you for using Astrix Security!**\n` +
-            `> Anti-Nuke, SuperAntinuke, and Security Wall defense systems have been successfully initialized and configured for **${guild.name}**.\n\n` +
+            `> Anti-Nuke and Security Wall defense systems have been successfully initialized and configured for **${guild.name}**.\n\n` +
             `**🔒 Active Protections:**\n` +
             `> • **Security Wall:** ${wallRole ? `<@&${wallRole.id}>` : "Active"}\n` +
             `> • **Defense Modules:** All 10 Modules Armed & Ready\n` +
@@ -376,7 +371,7 @@ async function executeAutoSetup(guild, authorUser, selectedRoleOrAction, replyHa
       }).catch(() => null);
     }
 
-    await logStep(`🛡️ **Log channels have been setuped in category \`${category?.name || "ASTRIX SECURITY"}\`!** (\`#antinuke-logs\`, \`#superantinuke-logs\`, \`#mod-logs\`)`);
+    await logStep(`🛡️ **Log channels have been setuped in category \`${category?.name || "ASTRIX SECURITY"}\`!** (\`#antinuke-logs\`, \`#mod-logs\`)`);
 
     // Step 4: Permission Stripping across dangerous roles
     await logStep(`🔧 **Stripping administrator/manage server/kick/ban permissions from all roles (including integration roles) except Astrix Security roles...**`);
@@ -432,7 +427,7 @@ async function executeAutoSetup(guild, authorUser, selectedRoleOrAction, replyHa
     await logStep(
       `🛡️ **Astrix Security Wall role assigned to all members (users & bots)!**\n> *(Members with role: ${totalMembers}/${totalMembers}, Newly assigned: ${newlyAssigned})*`
     );
-    await logStep(`🛡️ **All security features, antinuke, and superantinuke modules have been enabled**`);
+    await logStep(`🛡️ **All security features and antinuke modules have been enabled**`);
 
     // Step 6: Final Verification Report (Matches Image 5)
     await new Promise((r) => setTimeout(r, 1000));
@@ -449,7 +444,6 @@ async function executeAutoSetup(guild, authorUser, selectedRoleOrAction, replyHa
       `> 🛡️ **Criminals role is properly configured with no permissions!**\n` +
       `> 🛡️ Checking log channels permissions...\n` +
       `> 🛡️ \`antinuke-logs\` has proper security permissions!\n` +
-      `> 🛡️ \`superantinuke-logs\` has proper security permissions!\n` +
       `> 🛡️ \`mod-logs\` has proper security permissions!\n` +
       `> 🛡️ Checking role positions...\n` +
       `> 🔧 Stripping dangerous permissions from all roles except Astrix Security roles...\n` +
@@ -539,10 +533,9 @@ async function executeAutoCleanup(guild, authorUser, replyHandler) {
   try {
     const config = antinukeManager.getGuildAntinuke(guild.id);
 
-    // Step 1: Deactivate Master Shield & SuperAntinuke
+    // Step 1: Deactivate Master Shield
     antinukeManager.disableMaster(guild.id);
     await logStep(`🔴 **Master Anti-Nuke Shield has been disabled!**`);
-    await logStep(`🔴 **SuperAntinuke protection has been deactivated!**`);
 
     // Step 2: Delete Security Roles
     await logStep(`🧹 **Deleting Astrix Security Roles...**`);

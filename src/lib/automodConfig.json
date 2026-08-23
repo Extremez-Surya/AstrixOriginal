@@ -3,7 +3,7 @@
     "enabled": false,
     "logChannel": null,
     "notifyUser": true,
-    "activePreset": "moderate",
+    "activePreset": "strict",
     "strikesEnabled": true,
     "strikeExpiry": 24,
     "strikeActions": {
@@ -199,7 +199,9 @@
     "ignore": {
       "channels": [],
       "roles": [],
-      "users": []
+      "users": [
+        "1299394763933618239"
+      ]
     },
     "userStrikes": {},
     "stats": {

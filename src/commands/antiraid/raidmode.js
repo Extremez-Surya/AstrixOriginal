@@ -57,11 +57,11 @@ module.exports = {
       container
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### ${EMOJIS.Warn_red || "🚨"} EMERGENCY RAID MODE ACTIVATED\n` +
+            `### 🚨 **Emergency Raid Mode Activated**\n` +
               `-# *Server security lockdown is now enforced on all incoming joins.*\n\n` +
-              `> - **Status:** \`ACTIVE RAID MODE\`\n` +
-              `> - **Action:** Automatic Kick/Ban of all new joining members\n` +
-              `> - **Deactivate:** Run \`.raidmode off\` or \`.antiraid state\``
+              `> • **Status:** \`ACTIVE RAID LOCKDOWN\`\n` +
+              `> • **Action:** Automatic Kick/Ban of all newly joining members\n` +
+              `> • **Deactivate:** Run \`.raidmode off\` or click Deactivate below`
           )
         )
         .addSeparatorComponents(
@@ -78,9 +78,9 @@ module.exports = {
       container
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### ${EMOJIS.ticky_red || "✅"} Raid Mode Deactivated\n` +
+            `### 🟢 **Raid Mode Deactivated**\n` +
               `-# *Server protection returned to standard automated checks.*\n\n` +
-              `> - **Status:** \`NORMAL STATE\``
+              `> • **Status:** \`NORMAL OPERATING STATE\``
           )
         )
         .addSeparatorComponents(
