@@ -1,9 +1,18 @@
 {
   "1361725951607832718": {
     "enabled": false,
+    "superAntinuke": false,
     "logChannel": null,
+    "superLogChannel": null,
+    "modLogChannel": null,
+    "securityWallRole": null,
+    "antivanityAdminRole": null,
+    "criminalsRole": null,
+    "unbypassableRole": null,
+    "wallRoles": [],
     "extraOwners": [],
     "whitelist": [],
+    "superWhitelist": [],
     "punishment": "kick",
     "threshold": 1,
     "windowMs": 60000,

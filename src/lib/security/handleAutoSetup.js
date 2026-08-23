@@ -304,10 +304,12 @@ async function executeAutoSetup(guild, authorUser, selectedRoleOrAction, replyHa
 
     await logStep(`🛡️ **Security roles have been setuped!**`);
 
-    // Step 3: Log Channels Setup (Inside Dedicated Security Category)
+    // Step 3: Log Channels Setup (Inside Dedicated Astrix Security Category)
     let category = findChannel(
       guild,
-      (c) => c.type === ChannelType.GuildCategory && (c.name.toLowerCase().includes("security") || c.name.toLowerCase().includes("astrix"))
+      (c) =>
+        c.type === ChannelType.GuildCategory &&
+        (c.name === "🛡️ ASTRIX SECURITY" || c.name.toLowerCase() === "astrix security")
     );
     if (!category) {
       category = await guild.channels.create({

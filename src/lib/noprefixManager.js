@@ -11,9 +11,6 @@ let store = {
   roles: [],
   blacklistedUsers: [],
   blacklistedServers: [],
-  stats: {
-    totalNoPrefixExecutions: 0,
-  },
 };
 
 let isInitialized = false;
@@ -31,7 +28,6 @@ function initCache() {
         roles: parsed.roles || [],
         blacklistedUsers: parsed.blacklistedUsers || [],
         blacklistedServers: parsed.blacklistedServers || [],
-        stats: parsed.stats || { totalNoPrefixExecutions: 0 },
       };
     }
   } catch (e) {
@@ -356,10 +352,7 @@ function removeBlacklistServer(guildId) {
 }
 
 function incrementExecutionCount() {
-  if (!isInitialized) initCache();
-  store.stats = store.stats || {};
-  store.stats.totalNoPrefixExecutions = (store.stats.totalNoPrefixExecutions || 0) + 1;
-  saveDiskAsync();
+  // Stats tracking removed per configuration
 }
 
 function getStore() {

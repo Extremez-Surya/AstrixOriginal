@@ -22,6 +22,11 @@ module.exports = {
   once: false,
 
   async execute(client, interaction) {
+    // 🔒 Security Guard: Only the command author (or server admin) can interact with command UI menus
+    const { enforceInteractionAuthorGuard } = require("../lib/security/interactionAuthorGuard");
+    const blocked = await enforceInteractionAuthorGuard(client, interaction);
+    if (blocked) return;
+
     // Handle Custom Roles Interactions (Dropdown Select Menus)
     const {
       handleCustomRoleInteraction,

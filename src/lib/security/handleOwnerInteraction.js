@@ -104,8 +104,7 @@ function buildOwnerContainer(client, currentTab = "overview", page = 1) {
         `> • **Memory Usage:** \`${heapUsedMB} MB\` / \`${heapTotalMB} MB\` (RSS: \`${rssMB} MB\`)\n\n` +
         `**🌐 Network Reach:**\n` +
         `> • **Connected Guilds:** \`${client.guilds.cache.size}\` servers\n` +
-        `> • **Cached Members:** \`${totalMembers.toLocaleString()}\` total members\n` +
-        `> • **No-Prefix Executions:** \`⚡ ${store.stats?.totalNoPrefixExecutions || 0}\` total triggers\n\n` +
+        `> • **Cached Members:** \`${totalMembers.toLocaleString()}\` total members\n\n` +
         `**🔒 Global Access Matrix:**\n` +
         `> • **No-Prefix Users:** \`${activeUsers.length}\` active • **Servers:** \`${activeServers.length}\` active\n` +
         `> • **Blacklisted Users:** \`${blacklistedUsers.length}\` • **Blacklisted Servers:** \`${blacklistedServers.length}\``
