@@ -192,8 +192,20 @@ async function AppSlashCommands(client) {
   }
 }
 
+async function applicationECSLoader(client) {
+  const path = require("path");
+  for (const key of Object.keys(require.cache)) {
+    if (key.includes(path.join("src", "commands")) || key.includes(path.join("src", "listeners"))) {
+      delete require.cache[key];
+    }
+  }
+  await AppMessages(client);
+  return true;
+}
+
 module.exports = {
   AppEvents,
   AppMessages,
   AppSlashCommands,
+  applicationECSLoader,
 };

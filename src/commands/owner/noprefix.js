@@ -4,36 +4,37 @@ const {
   SeparatorBuilder,
   SeparatorSpacingSize,
   MessageFlags,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
 } = require("discord.js");
 const noprefixManager = require("../../lib/noprefixManager");
-const EMOJIS = require("../../lib/emojis");
+const { buildDurationSelectionContainer } = require("../../lib/security/handleOwnerInteraction");
 
 function buildSuccessNotice(title, description) {
   return new ContainerBuilder()
     .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(`### ${EMOJIS.ticky_red || "✅"} ${title}`)
+      new TextDisplayBuilder().setContent(`### ✅ **${title}**\n\n${description}`)
     )
     .addSeparatorComponents(
       new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-    )
-    .addTextDisplayComponents(new TextDisplayBuilder().setContent(description));
+    );
 }
 
 function buildErrorNotice(title, description) {
   return new ContainerBuilder()
     .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(`### ${EMOJIS.cross || "❌"} ${title}`)
+      new TextDisplayBuilder().setContent(`### ❌ **${title}**\n\n${description}`)
     )
     .addSeparatorComponents(
       new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-    )
-    .addTextDisplayComponents(new TextDisplayBuilder().setContent(description));
+    );
 }
 
 module.exports = {
-  alias: ["noprefix", "nop", "nonprefix"],
+  alias: ["noprefix", "np", "nonprefix"],
   category: "Owner",
-  desc: "Manage no-prefix access for users, servers, or roles.",
+  desc: "Manage zero-latency No-Prefix execution access for users, servers, or roles.",
   botPermissions: [],
   userPermissions: [],
   devOnly: true,
@@ -49,7 +50,7 @@ module.exports = {
       }).catch(() => null);
     }
 
-    // Check target user shorthand: .np @User or .noprefix @User
+    // Direct User Shorthand: .np @user or .np <userId>
     let targetUser = message.mentions.users.first();
     if (!targetUser && args[0]) {
       const cleanId = args[0].replace(/[<@!>]/g, "");
@@ -63,19 +64,13 @@ module.exports = {
         targetUser = await client.users.fetch(cleanId).catch(() => null);
       }
     }
-    if (!targetUser && args[2]) {
-      const cleanId = args[2].replace(/[<@!>]/g, "");
-      if (/^\d{17,20}$/.test(cleanId)) {
-        targetUser = await client.users.fetch(cleanId).catch(() => null);
-      }
-    }
 
     const action = args[0]?.toLowerCase();
     const type = args[1]?.toLowerCase();
     const store = noprefixManager.getStore();
     const now = Date.now();
 
-    // Direct User Shorthand: .np @User or .np add @User (without explicit action/type)
+    // 1. Direct interactive duration menu if targetUser provided without duration
     if (targetUser && (action.startsWith("<@") || /^\d{17,20}$/.test(action) || action === "add")) {
       let durationArg = null;
       for (const a of args) {
@@ -86,7 +81,6 @@ module.exports = {
       }
 
       if (!durationArg) {
-        const { buildDurationSelectionContainer } = require("../../lib/security/handleOwnerInteraction");
         const selectionContainer = buildDurationSelectionContainer(targetUser);
         return message.reply({
           components: [selectionContainer],
@@ -101,26 +95,56 @@ module.exports = {
         await noprefixManager.sendNoPrefixDM(client, targetUser.id, durationLabel, true);
 
         return message.reply({
-          components: [buildSuccessNotice("No-Prefix Granted", `Granted No-Prefix access to <@${targetUser.id}> for **${durationLabel}**.\n\n-# Direct Message notification sent to user.`)],
+          components: [
+            buildSuccessNotice(
+              "No-Prefix Access Granted",
+              `> • **User:** <@${targetUser.id}> (\`${targetUser.id}\`)\n` +
+              `> • **Duration:** \`${durationLabel}\`\n` +
+              `> • **Authorizer:** <@${message.author.id}>\n\n` +
+              `-# Direct Message notification dispatched to recipient.`
+            ),
+          ],
           flags: MessageFlags.IsComponentsV2,
           allowedMentions: { repliedUser: false },
         }).catch(() => null);
       }
     }
 
-    if (!action || !["add", "remove", "list", "status"].includes(action)) {
-      const helpContainer = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.info || "📋"} NO-PREFIX SYSTEM COMMANDS\n\n` +
-            `**➕ Add Access:**\n` +
-            `\`\`\`\n.noprefix add user <@user|id> [duration|lifetime]\n.noprefix add server [id] [duration|lifetime]\n.noprefix add role <@role|id> [duration|lifetime]\n\`\`\`\n` +
-            `**➖ Remove Access:**\n` +
-            `\`\`\`\n.noprefix remove user <@user|id>\n.noprefix remove server [id]\n.noprefix remove role <@role|id>\n\`\`\`\n` +
-            `**📊 Status & List:**\n` +
-            `\`\`\`\n.noprefix list\n.noprefix status user <@user|id>\n\`\`\`\n` +
-            `> **Duration Examples:** \`30d\`, \`7d\`, \`12h\`, \`lifetime\` (default: 90d)`
+    // 2. Help Directory / Overview
+    if (!action || !["add", "remove", "list", "check", "clean"].includes(action)) {
+      const activeUsers = (store.users || []).filter((u) => u.expiresAt > now);
+      const activeServers = (store.servers || []).filter((s) => s.expiresAt > now);
+
+      const helpContainer = new ContainerBuilder()
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `### ⚡ **No-Prefix Management Suite**\n` +
+            `-# *Zero-Latency Command Invocation Without Prefix*\n\n` +
+            `**➕ Quick Grant Access:**\n` +
+            `\`\`\`\n.np @user [duration]       (Opens duration selector if omitted)\n.np add server <guildId> [duration]\n.np add role <@role|id> [duration]\n\`\`\`\n` +
+            `**➖ Revoke Access:**\n` +
+            `\`\`\`\n.np remove user <@user|id>\n.np remove server <guildId>\n.np remove role <@role|id>\n\`\`\`\n` +
+            `**📋 View Active Grants:**\n` +
+            `\`\`\`\n.np list\n\`\`\``
+          )
         )
-      );
+        .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `> • **Active Users:** \`${activeUsers.length}\`\n` +
+            `> • **Active Servers:** \`${activeServers.length}\`\n` +
+            `> • **Total Executions:** \`⚡ ${store.stats?.totalNoPrefixExecutions || 0}\` commands`
+          )
+        )
+        .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
+        .addActionRowComponents(
+          new ActionRowBuilder().addComponents(
+            new ButtonBuilder().setCustomId("owner_btn_add_user").setLabel("Grant User NP").setEmoji("⚡").setStyle(ButtonStyle.Success),
+            new ButtonBuilder().setCustomId("owner_btn_add_server").setLabel("Grant Server NP").setEmoji("🏠").setStyle(ButtonStyle.Primary),
+            new ButtonBuilder().setCustomId("owner_tab_overview_btn").setLabel("Owner Hub").setEmoji("👑").setStyle(ButtonStyle.Secondary)
+          )
+        );
+
       return message.reply({
         components: [helpContainer],
         flags: MessageFlags.IsComponentsV2,
@@ -128,198 +152,80 @@ module.exports = {
       }).catch(() => null);
     }
 
-    // List Grants
+    // 3. List active grants
     if (action === "list") {
       const activeUsers = (store.users || []).filter((u) => u.expiresAt > now);
       const activeServers = (store.servers || []).filter((s) => s.expiresAt > now);
-      const activeRoles = (store.roles || []).filter((r) => r.expiresAt > now);
 
-      let content = "";
+      const userText = activeUsers.length > 0
+        ? activeUsers.slice(0, 10).map((u, i) => `> \`${i + 1}.\` <@${u.id}> (\`${u.id}\`) — ${noprefixManager.formatExpiry(u.expiresAt)}`).join("\n")
+        : "> *No active no-prefix user grants.*";
 
-      if (activeUsers.length > 0) {
-        content += "**👤 Users**\n";
-        for (const u of activeUsers) {
-          content += `> <@${u.id}> — ${noprefixManager.formatExpiry(u.expiresAt)}\n`;
-        }
-        content += "\n";
-      }
+      const serverText = activeServers.length > 0
+        ? activeServers.slice(0, 5).map((s, i) => {
+            const g = client.guilds.cache.get(s.id);
+            return `> \`${i + 1}.\` **${g?.name || s.id}** (\`${s.id}\`) — ${noprefixManager.formatExpiry(s.expiresAt)}`;
+          }).join("\n")
+        : "> *No active no-prefix server grants.*";
 
-      if (activeServers.length > 0) {
-        content += "**🏠 Servers**\n";
-        for (const s of activeServers) {
-          const guild = client.guilds.cache.get(s.id);
-          content += `> ${guild?.name || s.id} — ${noprefixManager.formatExpiry(s.expiresAt)}\n`;
-        }
-        content += "\n";
-      }
-
-      if (activeRoles.length > 0) {
-        content += "**🎭 Roles**\n";
-        for (const r of activeRoles) {
-          const guild = client.guilds.cache.get(r.guildId);
-          const role = guild?.roles.cache.get(r.roleId);
-          content += `> ${role?.name || r.roleId} in *${guild?.name || r.guildId}* — ${noprefixManager.formatExpiry(r.expiresAt)}\n`;
-        }
-      }
-
-      if (!content) content = "*No active no-prefix grants.*";
-
-      const listContainer = new ContainerBuilder()
-        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`### 📋 **ACTIVE NO-PREFIX GRANTS**`))
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `### ⚡ **Active No-Prefix Grants Directory**\n\n` +
+            `**👤 Active Users (${activeUsers.length}):**\n` +
+            `${userText}\n\n` +
+            `**🏠 Active Servers (${activeServers.length}):**\n` +
+            `${serverText}`
+          )
+        )
         .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-        .addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(`-# Total executions logged: ${store.stats?.totalNoPrefixExecutions || 0}`)
+        );
 
       return message.reply({
-        components: [listContainer],
+        components: [container],
         flags: MessageFlags.IsComponentsV2,
         allowedMentions: { repliedUser: false },
       }).catch(() => null);
     }
 
-    // Status Check
-    if (action === "status") {
-      const targetArg = args[2] || message.author.id;
-      const userId = targetArg.replace(/[<@!>]/g, "");
+    // 4. Remove actions
+    if (action === "remove") {
+      const removeType = args[1]?.toLowerCase();
+      const entityArg = args[2] || args[1];
 
-      if (noprefixManager.isOwner(userId, client)) {
+      if (!entityArg) {
         return message.reply({
-          components: [buildSuccessNotice("Bot Owner", `<@${userId}> has **Lifetime No-Prefix** access automatically as a Bot Owner.`)],
+          components: [buildErrorNotice("Usage Error", "Usage: `.np remove <user|server|role> <id>`")],
           flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { repliedUser: false },
         }).catch(() => null);
       }
 
-      const userEntry = (store.users || []).find((u) => u.id === userId && u.expiresAt > now);
-      if (userEntry) {
+      const targetId = entityArg.replace(/[<@!&>]/g, "");
+
+      if (removeType === "server") {
+        const removed = noprefixManager.removeNoPrefixServer(targetId);
         return message.reply({
-          components: [buildSuccessNotice("No-Prefix Active", `<@${userId}> has active No-Prefix access.\n> **Expires:** ${noprefixManager.formatExpiry(userEntry.expiresAt)}`)],
+          components: [
+            removed
+              ? buildSuccessNotice("Access Revoked", `No-Prefix access removed from Server \`${targetId}\`.`)
+              : buildErrorNotice("Not Found", `Server \`${targetId}\` does not have active No-Prefix.`),
+          ],
           flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { repliedUser: false },
-        }).catch(() => null);
-      } else {
-        return message.reply({
-          components: [buildErrorNotice("No Access", `<@${userId}> does not have active No-Prefix access.`)],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { repliedUser: false },
         }).catch(() => null);
       }
-    }
 
-    // Add / Remove Operations
-    if (!type || !["user", "server", "role"].includes(type)) {
+      // Default: Remove user
+      const removed = noprefixManager.removeNoPrefixUser(targetId);
       return message.reply({
-        components: [buildErrorNotice("Invalid Type", "Type must be `user`, `server`, or `role`.")],
+        components: [
+          removed
+            ? buildSuccessNotice("Access Revoked", `No-Prefix access removed from User <@${targetId}>.`)
+            : buildErrorNotice("Not Found", `User <@${targetId}> does not have active No-Prefix.`),
+        ],
         flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { repliedUser: false },
       }).catch(() => null);
-    }
-
-    const targetArg = args[2];
-    const durationArg = args[3];
-
-    if (type === "user") {
-      if (!targetArg) {
-        return message.reply({
-          components: [buildErrorNotice("Missing User", "Please mention a user or provide their ID.")],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { repliedUser: false },
-        }).catch(() => null);
-      }
-
-      const userId = targetArg.replace(/[<@!>]/g, "");
-
-      if (action === "add") {
-        const durationMs = noprefixManager.parseDuration(durationArg) || 90 * 24 * 60 * 60 * 1000;
-        const durationLabel = noprefixManager.getDurationLabel(durationArg || durationMs);
-        noprefixManager.addNoPrefixUser(userId, durationMs, message.author.id);
-        await noprefixManager.sendNoPrefixDM(client, userId, durationLabel, true);
-
-        return message.reply({
-          components: [buildSuccessNotice("No-Prefix Granted", `Granted No-Prefix access to <@${userId}> for **${durationLabel}**.\n\n-# Direct Message notification sent to user.`)],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { repliedUser: false },
-        }).catch(() => null);
-      }
-
-      if (action === "remove") {
-        const removed = noprefixManager.removeNoPrefixUser(userId);
-        if (removed) {
-          await noprefixManager.sendNoPrefixDM(client, userId, "Expired", false);
-        }
-        return message.reply({
-          components: [
-            removed
-              ? buildSuccessNotice("No-Prefix Revoked", `<@${userId}>'s No-Prefix access has been removed.\n\n-# Direct Message notification sent to user.`)
-              : buildErrorNotice("Not Found", `<@${userId}> didn't have active No-Prefix access.`),
-          ],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { repliedUser: false },
-        }).catch(() => null);
-      }
-    }
-
-    if (type === "server") {
-      const serverId = targetArg || message.guild.id;
-
-      if (action === "add") {
-        const durationMs = noprefixManager.parseDuration(durationArg) || 90 * 24 * 60 * 60 * 1000;
-        const result = noprefixManager.addNoPrefixServer(serverId, durationMs, message.author.id);
-
-        return message.reply({
-          components: [buildSuccessNotice("No-Prefix Granted", `Granted No-Prefix access to Server \`${serverId}\` for **${noprefixManager.formatExpiry(result.expiresAt)}**.`)],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { repliedUser: false },
-        }).catch(() => null);
-      }
-
-      if (action === "remove") {
-        const removed = noprefixManager.removeNoPrefixServer(serverId);
-        return message.reply({
-          components: [
-            removed
-              ? buildSuccessNotice("No-Prefix Revoked", `Server \`${serverId}\` No-Prefix access has been removed.`)
-              : buildErrorNotice("Not Found", `Server \`${serverId}\` didn't have active No-Prefix access.`),
-          ],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { repliedUser: false },
-        }).catch(() => null);
-      }
-    }
-
-    if (type === "role") {
-      if (!targetArg) {
-        return message.reply({
-          components: [buildErrorNotice("Missing Role", "Please mention a role or provide its ID.")],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { repliedUser: false },
-        }).catch(() => null);
-      }
-
-      const roleId = targetArg.replace(/[<@&>]/g, "");
-
-      if (action === "add") {
-        const durationMs = noprefixManager.parseDuration(durationArg) || 90 * 24 * 60 * 60 * 1000;
-        const result = noprefixManager.addNoPrefixRole(message.guild.id, roleId, durationMs, message.author.id);
-
-        return message.reply({
-          components: [buildSuccessNotice("No-Prefix Granted", `Granted No-Prefix access to Role <@&${roleId}> for **${noprefixManager.formatExpiry(result.expiresAt)}**.`)],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { repliedUser: false },
-        }).catch(() => null);
-      }
-
-      if (action === "remove") {
-        const removed = noprefixManager.removeNoPrefixRole(message.guild.id, roleId);
-        return message.reply({
-          components: [
-            removed
-              ? buildSuccessNotice("No-Prefix Revoked", `Role <@&${roleId}> No-Prefix access has been removed.`)
-              : buildErrorNotice("Not Found", `Role <@&${roleId}> didn't have active No-Prefix access.`),
-          ],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { repliedUser: false },
-        }).catch(() => null);
-      }
     }
   },
 };

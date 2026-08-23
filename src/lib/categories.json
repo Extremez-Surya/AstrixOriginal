@@ -79,10 +79,6 @@
     "emoji": "📈",
     "desc": "XP leveling system, ranks, leaderboards & role rewards."
   },
-  "Logging": {
-    "emoji": "📜",
-    "desc": "Comprehensive server audit & event logging system."
-  },
   "Ticket": {
     "emoji": "🎟️",
     "desc": "Support ticket creation, management, and panel system."

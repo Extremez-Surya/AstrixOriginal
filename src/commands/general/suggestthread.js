@@ -1,16 +1,18 @@
 const {
-  ContainerBuilder,
-  TextDisplayBuilder,
-  SeparatorBuilder,
-  SeparatorSpacingSize,
   MessageFlags,
   PermissionFlagsBits,
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  ContainerBuilder,
+  TextDisplayBuilder,
 } = require("discord.js");
 const EMOJIS = require("../../lib/emojis");
 const suggestionManager = require("../../lib/suggestionManager");
+const {
+  buildSuggestionContainer,
+  buildSuggestionSubmissionCard,
+} = require("../../lib/general/handleSuggestionHubInteraction");
 
 module.exports = {
   name: "suggestthread",
@@ -18,12 +20,14 @@ module.exports = {
   category: "General",
   description: "Create suggestion threads or configure suggestion thread channels.",
   usage:
-    ".suggestthread <thread-name> | <content>\n" +
-    ".suggestthread channel #channel\n" +
+    ".suggestthread <Title> | <Content>\n" +
+    ".suggestthread channel <#channel>\n" +
     ".suggestthread enable\n" +
     ".suggestthread disable",
 
   async execute(client, message, args) {
+    if (!message.guild) return;
+
     const guildId = message.guild.id;
     const config = suggestionManager.getGuildConfig(client, guildId);
     const subcommand = args[0]?.toLowerCase();
@@ -32,69 +36,65 @@ module.exports = {
       message.member.permissions.has(PermissionFlagsBits.Administrator) ||
       message.member.permissions.has(PermissionFlagsBits.ManageGuild);
 
-    // SUBCOMMAND: channel
+    // 1. OPEN THREAD CONFIGURATION DASHBOARD
+    if (!args.length || subcommand === "config" || subcommand === "settings") {
+      if (!isAdmin) {
+        return message.reply({
+          content: "💡 **How to submit a suggestion thread:**\n*Usage:* `.suggestthread <Title> | <Details / Proposal>`",
+        }).catch(() => null);
+      }
+
+      const container = buildSuggestionContainer(message.guild, config, "threads");
+      return message.reply({
+        components: [container],
+        flags: MessageFlags.IsComponentsV2,
+        allowedMentions: { parse: [], repliedUser: false },
+      }).catch(() => null);
+    }
+
+    // 2. SUBCOMMAND: channel
     if (subcommand === "channel") {
       if (!isAdmin) {
-        const container = new ContainerBuilder().addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### ${EMOJIS.cross || "❌"} Permission Denied\n` +
-              `-# *You need **Manage Server** or **Administrator** permission to configure suggestion thread channels.*`
-          )
-        );
         return message.reply({
-          components: [container],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { parse: [], repliedUser: false },
-        });
+          content: "❌ You need **Manage Server** or **Administrator** permission to configure suggestion thread channels.",
+          flags: MessageFlags.Ephemeral,
+        }).catch(() => null);
       }
 
       const input = args[1];
       if (!input) {
-        const container = new ContainerBuilder().addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### 📌 Suggestion Thread Channel Usage\n` +
-              `-# *Syntax: \`.suggestthread channel #channel\` or \`.suggestthread channel disable\`*`
-          )
-        );
+        const container = buildSuggestionContainer(message.guild, config, "threads");
         return message.reply({
           components: [container],
           flags: MessageFlags.IsComponentsV2,
           allowedMentions: { parse: [], repliedUser: false },
-        });
+        }).catch(() => null);
       }
 
-      if (input.toLowerCase() === "disable" || input.toLowerCase() === "off") {
+      if (input.toLowerCase() === "disable" || input.toLowerCase() === "off" || input.toLowerCase() === "none") {
         suggestionManager.updateGuildConfig(client, guildId, (cfg) => {
           cfg.suggestThreadChannelId = null;
           cfg.suggestThreadEnabled = false;
           return cfg;
         });
-        const container = new ContainerBuilder().addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### ${EMOJIS.tick || "✅"} Suggestion Thread Channel Cleared\n` +
-              `-# *Suggestion threads have been disabled.*`
-          )
-        );
+
+        const freshConfig = suggestionManager.getGuildConfig(client, guildId);
+        const container = buildSuggestionContainer(message.guild, freshConfig, "threads");
         return message.reply({
           components: [container],
           flags: MessageFlags.IsComponentsV2,
           allowedMentions: { parse: [], repliedUser: false },
-        });
+        }).catch(() => null);
       }
 
-      const channelMention = message.mentions.channels.first() || message.guild.channels.cache.get(input.replace(/\D/g, ""));
+      const channelMention =
+        message.mentions.channels.first() ||
+        message.guild.channels.cache.get(input.replace(/\D/g, ""));
+
       if (!channelMention) {
-        const container = new ContainerBuilder().addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### ${EMOJIS.cross || "❌"} Invalid Channel\n` +
-              `-# *Please mention a valid channel or provide a channel ID.*`
-          )
-        );
         return message.reply({
-          components: [container],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { parse: [], repliedUser: false },
-        });
+          content: "⚠️ Please mention a valid channel or provide a channel ID.",
+        }).catch(() => null);
       }
 
       suggestionManager.updateGuildConfig(client, guildId, (cfg) => {
@@ -103,169 +103,152 @@ module.exports = {
         return cfg;
       });
 
-      const container = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.tick || "✅"} Suggestion Thread Channel Set\n` +
-            `-# *Suggestion threads will be created in <#${channelMention.id}>.*`
-        )
-      );
+      const freshConfig = suggestionManager.getGuildConfig(client, guildId);
+      const container = buildSuggestionContainer(message.guild, freshConfig, "threads");
       return message.reply({
         components: [container],
         flags: MessageFlags.IsComponentsV2,
         allowedMentions: { parse: [], repliedUser: false },
-      });
+      }).catch(() => null);
     }
 
-    // SUBCOMMAND: enable / disable
-    if (subcommand === "enable" || subcommand === "disable") {
+    // 3. SUBCOMMAND: enable / disable
+    if (subcommand === "enable" || subcommand === "on") {
       if (!isAdmin) {
-        const container = new ContainerBuilder().addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### ${EMOJIS.cross || "❌"} Permission Denied`
-          )
-        );
         return message.reply({
-          components: [container],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { parse: [], repliedUser: false },
-        });
-      }
-
-      const enable = subcommand === "enable";
-      if (enable && !config.suggestThreadChannelId) {
-        const container = new ContainerBuilder().addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### ${EMOJIS.cross || "❌"} Channel Missing\n` +
-              `-# *Set a suggestion thread channel first using \`.suggestthread channel #channel\`.*`
-          )
-        );
-        return message.reply({
-          components: [container],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { parse: [], repliedUser: false },
-        });
+          content: "❌ You need **Manage Server** or **Administrator** permission.",
+          flags: MessageFlags.Ephemeral,
+        }).catch(() => null);
       }
 
       suggestionManager.updateGuildConfig(client, guildId, (cfg) => {
-        cfg.suggestThreadEnabled = enable;
+        cfg.suggestThreadEnabled = true;
         return cfg;
       });
 
-      const container = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.tick || "✅"} Suggestion Threads ${enable ? "Enabled" : "Disabled"}\n` +
-            `-# *Members ${enable ? "can now create suggestion discussion threads." : "can no longer create suggestion threads."}*`
-        )
-      );
+      const freshConfig = suggestionManager.getGuildConfig(client, guildId);
+      const container = buildSuggestionContainer(message.guild, freshConfig, "threads");
       return message.reply({
         components: [container],
         flags: MessageFlags.IsComponentsV2,
         allowedMentions: { parse: [], repliedUser: false },
-      });
+      }).catch(() => null);
     }
 
-    // CREATE SUGGESTION THREAD
-    if (!config.suggestThreadEnabled || !config.suggestThreadChannelId) {
-      const container = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.cross || "❌"} Suggestion Threads Disabled\n` +
-            `-# *An administrator must run \`.suggestthread channel #channel\` to set up suggestion threads.*`
-        )
-      );
+    if (subcommand === "disable" || subcommand === "off") {
+      if (!isAdmin) {
+        return message.reply({
+          content: "❌ You need **Manage Server** or **Administrator** permission.",
+          flags: MessageFlags.Ephemeral,
+        }).catch(() => null);
+      }
+
+      suggestionManager.updateGuildConfig(client, guildId, (cfg) => {
+        cfg.suggestThreadEnabled = false;
+        return cfg;
+      });
+
+      const freshConfig = suggestionManager.getGuildConfig(client, guildId);
+      const container = buildSuggestionContainer(message.guild, freshConfig, "threads");
       return message.reply({
         components: [container],
         flags: MessageFlags.IsComponentsV2,
         allowedMentions: { parse: [], repliedUser: false },
-      });
+      }).catch(() => null);
     }
 
-    const fullInput = args.join(" ");
-    let threadName = "";
-    let content = "";
+    // 4. SUBMIT SUGGESTION WITH THREAD
+    const targetChannelId = config.suggestThreadChannelId || config.suggestChannelId;
+    if (!targetChannelId) {
+      return message.reply({
+        content: "⚠️ **Suggestion Threads Not Configured.** An admin must run `.suggestthread channel #channel` first.",
+      }).catch(() => null);
+    }
 
-    if (fullInput.includes("|")) {
-      const parts = fullInput.split("|").map((p) => p.trim());
-      threadName = parts[0];
-      content = parts.slice(1).join("|");
+    const targetChannel = message.guild.channels.cache.get(targetChannelId);
+    if (!targetChannel) {
+      return message.reply({
+        content: "⚠️ The configured suggestion channel no longer exists.",
+      }).catch(() => null);
+    }
+
+    const fullText = args.join(" ");
+    let title = "";
+    let description = "";
+
+    if (fullText.includes("|")) {
+      const parts = fullText.split("|").map((p) => p.trim());
+      title = parts[0];
+      description = parts[1] || "";
     } else {
-      threadName = args[0] || "New Suggestion";
-      content = args.slice(1).join(" ");
+      title = fullText.slice(0, 50);
+      description = fullText;
     }
 
-    if (!threadName || !content) {
-      const container = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.cross || "❌"} Invalid Usage\n` +
-            `-# *Syntax: \`.suggestthread <thread-name> | <content>\`*\n\n` +
-            `> **Example:** \`.suggestthread Dark Mode | Add dark mode UI for mobile users\``
-        )
-      );
+    if (!title || !description) {
       return message.reply({
-        components: [container],
-        flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { parse: [], repliedUser: false },
-      });
+        content: "⚠️ **Invalid Format.**\n*Usage:* `.suggestthread <Title> | <Details / Proposal>`",
+      }).catch(() => null);
     }
 
-    const channel = message.guild.channels.cache.get(config.suggestThreadChannelId);
-    if (!channel) {
-      const container = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.cross || "❌"} Channel Missing\n` +
-            `-# *The configured suggestion thread channel no longer exists.*`
-        )
-      );
+    const cardContainer = buildSuggestionSubmissionCard(message.author, title, description);
+
+    const voteRow = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId(`suggest_upvote_${message.id}`)
+        .setLabel("0")
+        .setEmoji(EMOJIS.upvote || "👍")
+        .setStyle(ButtonStyle.Success),
+      new ButtonBuilder()
+        .setCustomId(`suggest_downvote_${message.id}`)
+        .setLabel("0")
+        .setEmoji(EMOJIS.downvote || "👎")
+        .setStyle(ButtonStyle.Danger)
+    );
+
+    cardContainer.addActionRowComponents(voteRow);
+
+    const postedMsg = await targetChannel.send({
+      components: [cardContainer],
+      flags: MessageFlags.IsComponentsV2,
+    }).catch(() => null);
+
+    if (!postedMsg) {
       return message.reply({
-        components: [container],
-        flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { parse: [], repliedUser: false },
-      });
+        content: "❌ Failed to create suggestion card in destination channel.",
+      }).catch(() => null);
     }
 
-    try {
-      const thread = await channel.threads.create({
-        name: threadName.slice(0, 100),
-        autoArchiveDuration: 1440,
-        reason: `Suggestion thread created by ${message.author.tag}`,
-      });
+    // Start thread
+    const thread = await postedMsg.startThread({
+      name: `💡 ${title.slice(0, 80)}`,
+      autoArchiveDuration: 1440,
+      reason: `Suggestion thread by ${message.author.tag}`,
+    }).catch(() => null);
 
-      const starterContainer = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `# 🧵 Suggestion Thread: ${threadName}\n` +
-            `-# *Submitted by <@${message.author.id}>*\n\n` +
-            `**Suggestion Content:**\n${content}`
-        )
-      );
-
+    if (thread) {
       await thread.send({
-        components: [starterContainer],
-        flags: MessageFlags.IsComponentsV2,
-      });
+        content: `👋 Welcome to the discussion thread for **${title}** proposed by ${message.author}! Feel free to share your thoughts.`,
+      }).catch(() => null);
+    }
 
-      const container = new ContainerBuilder().addTextDisplayComponents(
+    if (message.channel.id !== targetChannel.id) {
+      const confirmContainer = new ContainerBuilder();
+      confirmContainer.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.tick || "✅"} Suggestion Thread Created\n` +
-            `-# *Created thread <#${thread.id}> in <#${channel.id}>!*`
+          `### 🧵 **Suggestion Discussion Thread Created!**\n` +
+          `> • 📍 **Posted in:** <#${targetChannel.id}>\n` +
+          `> • 🧵 **Thread:** ${thread ? `<#${thread.id}>` : `\`${title}\``}\n\n` +
+          `-# *Members can now join the thread and vote on the card.*`
         )
       );
-      return message.reply({
-        components: [container],
+
+      await message.reply({
+        components: [confirmContainer],
         flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { parse: [], repliedUser: false },
-      });
-    } catch (err) {
-      console.error("Error creating suggestion thread:", err);
-      const container = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.cross || "❌"} Thread Creation Failed\n` +
-            `-# *Failed to create suggestion thread. Check bot permissions.*`
-        )
-      );
-      return message.reply({
-        components: [container],
-        flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { parse: [], repliedUser: false },
-      });
+      }).catch(() => null);
+    } else {
+      await message.delete().catch(() => null);
     }
   },
 };

@@ -27,25 +27,23 @@
     }
   },
   "1526109131042459678": {
-    "enabled": true,
+    "enabled": false,
     "superAntinuke": false,
-    "logChannel": null,
+    "logChannel": "1541037729565904936",
     "superLogChannel": null,
-    "modLogChannel": null,
+    "modLogChannel": "1541037731663188078",
     "securityWallRole": null,
-    "antivanityAdminRole": null,
-    "criminalsRole": null,
-    "unbypassableRole": null,
+    "antivanityAdminRole": "1541037714072277063",
+    "criminalsRole": "1541037715838206013",
+    "unbypassableRole": "1541037718232899654",
     "wallRoles": [],
     "extraOwners": [],
-    "whitelist": [
-      "1299394763933618239"
-    ],
+    "whitelist": [],
     "superWhitelist": [],
     "punishment": "ban",
     "threshold": 3,
     "windowMs": 60000,
-    "autoRevert": false,
+    "autoRevert": true,
     "modules": {
       "channel": true,
       "role": true,

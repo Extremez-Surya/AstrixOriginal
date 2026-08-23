@@ -1,16 +1,14 @@
 const {
-  ContainerBuilder,
-  TextDisplayBuilder,
   MessageFlags,
   PermissionFlagsBits,
 } = require("discord.js");
-const EMOJIS = require("../../lib/emojis");
 const customRolesManager = require("../../lib/customRolesManager");
+const { buildCustomRolesDashboard } = require("../../lib/customroles/handleCustomRoleInteraction");
 
 module.exports = {
   alias: ["customrole", "crole", "cr", "customroles"],
   category: "Custom Roles",
-  description: "Configure and manage custom role shortcuts and alias triggers.",
+  description: "Configure and manage custom role shortcuts, alias triggers and staff security.",
   usage:
     ".customrole <alias> <role> (Toggle)\n" +
     ".customrole add <alias> <role>\n" +
@@ -19,16 +17,18 @@ module.exports = {
     ".customrole reqrole <role|off>",
 
   async execute(client, message, args) {
+    if (!message.guild) return;
+
     const crConfig = customRolesManager.getGuildConfig(client, message.guild.id);
     const subcommand = args[0]?.toLowerCase();
     const isView =
-      !subcommand || subcommand === "view" || subcommand === "list";
+      !subcommand || subcommand === "view" || subcommand === "list" || subcommand === "dashboard";
 
     const isAdminOrManager =
       message.member.permissions.has(PermissionFlagsBits.ManageGuild) ||
       message.member.permissions.has(PermissionFlagsBits.Administrator);
 
-    // VIEW / LIST DASHBOARD
+    // 1. VIEW / LIST DASHBOARD
     if (isView) {
       const hasViewPerms =
         isAdminOrManager ||
@@ -41,65 +41,42 @@ module.exports = {
         const reqStr = crConfig.reqRole
           ? `<@&${crConfig.reqRole}>`
           : "`Manage Roles`";
-        const container = new ContainerBuilder().addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### ${EMOJIS.cross || "❌"} Permission Denied\n` +
-              `-# *You need ${reqStr} or Admin permission to view custom role configuration.*`
-          )
-        );
         return message.reply({
-          components: [container],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { parse: [], repliedUser: false },
-        });
+          content: `❌ You need ${reqStr} or Admin permission to view custom role configuration.`,
+          flags: MessageFlags.Ephemeral,
+        }).catch(() => null);
       }
 
-      const container = customRolesManager.buildDashboardContainer(message.guild, crConfig);
+      let activeTab = "overview";
+      if (subcommand === "matrix" || subcommand === "list") activeTab = "matrix";
+
+      const container = buildCustomRolesDashboard(message.guild, crConfig, activeTab);
       return message.reply({
         components: [container],
         flags: MessageFlags.IsComponentsV2,
         allowedMentions: { parse: [], repliedUser: false },
-      });
+      }).catch(() => null);
     }
 
     // Admin-only management check
     if (!isAdminOrManager) {
-      const container = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.cross || "❌"} Permission Denied\n` +
-            `-# *You need **Manage Server** or **Administrator** permission to alter custom roles.*`
-        )
-      );
       return message.reply({
-        components: [container],
-        flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { parse: [], repliedUser: false },
-      });
+        content: "❌ You need **Manage Server** or **Administrator** permission to alter custom roles.",
+        flags: MessageFlags.Ephemeral,
+      }).catch(() => null);
     }
 
-    // REQUIRED ROLE (reqrole)
+    // 2. REQUIRED ROLE (reqrole)
     if (subcommand === "reqrole" || subcommand === "requiredrole") {
       const input = args[1];
 
       if (!input) {
-        const currentStr = crConfig.reqRole
-          ? `<@&${crConfig.reqRole}>`
-          : "`None` (Manage Roles default)";
-        const container = new ContainerBuilder().addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### 🔒 Required Role Configuration\n` +
-              `> - **Current ReqRole:** ${currentStr}\n\n` +
-              `**Logic Rules:**\n` +
-              `> • **When ReqRole is set:** Members require \`Admin\` OR \`Manage Server\` OR \`ReqRole\` to invoke aliases.\n` +
-              `> • **When ReqRole is disabled:** Members require \`Admin\` OR \`Manage Server\` OR \`Manage Roles\`.\n\n` +
-              `-# *Use \`.customrole reqrole <role|off>\` to change.*`
-          )
-        );
+        const container = buildCustomRolesDashboard(message.guild, crConfig, "reqrole");
         return message.reply({
           components: [container],
           flags: MessageFlags.IsComponentsV2,
           allowedMentions: { parse: [], repliedUser: false },
-        });
+        }).catch(() => null);
       }
 
       if (
@@ -111,32 +88,21 @@ module.exports = {
           cfg.reqRole = null;
           return cfg;
         });
-        const container = new ContainerBuilder().addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### ${EMOJIS.tick || "✅"} ReqRole Disabled\n` +
-              `-# *Custom role triggers now require standard **Manage Roles** permission.*`
-          )
-        );
+
+        const freshConfig = customRolesManager.getGuildConfig(client, message.guild.id);
+        const container = buildCustomRolesDashboard(message.guild, freshConfig, "reqrole");
         return message.reply({
           components: [container],
           flags: MessageFlags.IsComponentsV2,
           allowedMentions: { parse: [], repliedUser: false },
-        });
+        }).catch(() => null);
       }
 
       const role = await customRolesManager.findRole(message.guild, input, message);
       if (!role) {
-        const container = new ContainerBuilder().addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### ${EMOJIS.cross || "❌"} Invalid Role\n` +
-              `-# *Could not find role matching \`${input}\`. Please mention a role, provide a role ID, or type role name.*`
-          )
-        );
         return message.reply({
-          components: [container],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { parse: [], repliedUser: false },
-        });
+          content: "⚠️ Invalid role. Please mention a valid server role or provide a role ID.",
+        }).catch(() => null);
       }
 
       customRolesManager.updateGuildConfig(client, message.guild.id, (cfg) => {
@@ -144,185 +110,129 @@ module.exports = {
         return cfg;
       });
 
-      const container = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.tick || "✅"} ReqRole Updated\n` +
-            `-# *Members must now possess <@&${role.id}> (or Admin/Manage Server) to trigger role aliases.*`
-        )
-      );
+      const freshConfig = customRolesManager.getGuildConfig(client, message.guild.id);
+      const container = buildCustomRolesDashboard(message.guild, freshConfig, "reqrole");
       return message.reply({
         components: [container],
         flags: MessageFlags.IsComponentsV2,
         allowedMentions: { parse: [], repliedUser: false },
-      });
+      }).catch(() => null);
     }
 
-    // REMOVE ALIAS
-    if (
-      subcommand === "remove" ||
-      subcommand === "del" ||
-      subcommand === "delete"
-    ) {
-      const alias = args[1]?.toLowerCase();
-      if (!alias) {
-        const container = new ContainerBuilder().addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### ${EMOJIS.cross || "❌"} Invalid Usage\n` +
-              `-# *Syntax: \`.customrole remove <alias>\`*`
-          )
-        );
+    // 3. ADD SHORTCUT
+    if (subcommand === "add" || subcommand === "create" || subcommand === "set") {
+      const rawAlias = args[1]?.toLowerCase().replace(/^\./, "");
+      const roleInput = args.slice(2).join(" ");
+
+      if (!rawAlias || !roleInput) {
         return message.reply({
-          components: [container],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { parse: [], repliedUser: false },
-        });
+          content: "⚠️ **Invalid Format.**\n*Usage:* `.customrole add <alias> <role>`\n*Example:* `.customrole add vip @VIP`",
+        }).catch(() => null);
       }
 
-      if (!crConfig.aliases || !crConfig.aliases[alias]) {
-        const container = new ContainerBuilder().addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### ${EMOJIS.cross || "❌"} Alias Not Found\n` +
-              `-# *The custom role alias \`.${alias}\` does not exist.*`
-          )
-        );
+      if (customRolesManager.RESERVED_SUBCOMMANDS.includes(rawAlias)) {
         return message.reply({
-          components: [container],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { parse: [], repliedUser: false },
-        });
-      }
-
-      customRolesManager.updateGuildConfig(client, message.guild.id, (cfg) => {
-        delete cfg.aliases[alias];
-        return cfg;
-      });
-
-      const container = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.tick || "✅"} Alias Removed\n` +
-            `-# *Successfully deleted custom role shortcut \`.${alias}\`.*`
-        )
-      );
-      return message.reply({
-        components: [container],
-        flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { parse: [], repliedUser: false },
-      });
-    }
-
-    // ADD ALIAS
-    if (subcommand === "add") {
-      const alias = args[1]?.toLowerCase();
-      const roleInput = args[2];
-
-      if (!alias || !roleInput) {
-        const container = new ContainerBuilder().addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### ${EMOJIS.cross || "❌"} Invalid Usage\n` +
-              `-# *Syntax: \`.customrole add <alias> <roleName|@role|roleID>\`*`
-          )
-        );
-        return message.reply({
-          components: [container],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { parse: [], repliedUser: false },
-        });
-      }
-
-      if (customRolesManager.RESERVED_SUBCOMMANDS.includes(alias)) {
-        const container = new ContainerBuilder().addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### ${EMOJIS.cross || "❌"} Reserved Word\n` +
-              `-# *\`${alias}\` is a reserved system subcommand name and cannot be used as an alias.*`
-          )
-        );
-        return message.reply({
-          components: [container],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { parse: [], repliedUser: false },
-        });
+          content: `❌ \`${rawAlias}\` is a reserved command name. Please choose another alias.`,
+        }).catch(() => null);
       }
 
       const role = await customRolesManager.findRole(message.guild, roleInput, message);
       if (!role) {
-        const container = new ContainerBuilder().addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### ${EMOJIS.cross || "❌"} Invalid Role\n` +
-              `-# *Could not find role matching \`${roleInput}\`. Please mention a role, provide a role ID, or type role name.*`
-          )
-        );
         return message.reply({
-          components: [container],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { parse: [], repliedUser: false },
-        });
+          content: `⚠️ Could not find role matching \`${roleInput}\`.`,
+        }).catch(() => null);
       }
 
-      // Security Check: Dangerous Perms
       if (customRolesManager.checkDangerousPermissions(role)) {
-        const container = new ContainerBuilder().addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### 🛡️ Security Block: Unsafe Role\n` +
-              `-# *You cannot create aliases for roles with dangerous permissions (e.g., Administrator, Manage Roles, Ban Members, etc).*`
-          )
-        );
         return message.reply({
-          components: [container],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { parse: [], repliedUser: false },
-        });
+          content: "🛡️ **Security Block:** Roles with dangerous permissions (e.g. Administrator, Manage Server, Manage Roles) cannot be bound to shortcuts.",
+        }).catch(() => null);
       }
 
-      // Hierarchy Check
       const me = message.guild.members.me;
       if (role.position >= me.roles.highest.position) {
-        const container = new ContainerBuilder().addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### ${EMOJIS.cross || "❌"} Hierarchy Error\n` +
-              `-# *I cannot manage <@&${role.id}> because it is higher than or equal to my highest role.*`
-          )
-        );
         return message.reply({
-          components: [container],
-          flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { parse: [], repliedUser: false },
-        });
+          content: `❌ I cannot manage <@&${role.id}> because it is higher than or equal to my highest role.`,
+        }).catch(() => null);
       }
 
       customRolesManager.updateGuildConfig(client, message.guild.id, (cfg) => {
-        cfg.aliases = cfg.aliases || {};
-        cfg.aliases[alias] = role.id;
+        cfg.aliases[rawAlias] = role.id;
         return cfg;
       });
 
-      const container = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.tick || "✅"} Custom Role Alias Created\n` +
-            `-# *Created shortcut \`.${alias}\` ➔ <@&${role.id}>*\n\n` +
-            `> -# **Usage:** \`.${alias} <@user>\` to toggle role.`
-        )
-      );
+      const freshConfig = customRolesManager.getGuildConfig(client, message.guild.id);
+      const container = buildCustomRolesDashboard(message.guild, freshConfig, "matrix");
       return message.reply({
         components: [container],
         flags: MessageFlags.IsComponentsV2,
         allowedMentions: { parse: [], repliedUser: false },
-      });
+      }).catch(() => null);
     }
 
-    // FALLBACK HELP
-    const container = new ContainerBuilder().addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        `### 🎭 Custom Role Help & Commands\n` +
-          `> • \`.customrole add <alias> <role>\` - Create a custom role alias\n` +
-          `> • \`.customrole remove <alias>\` - Delete an existing alias\n` +
-          `> • \`.customrole view\` - View all configured aliases & dropdown menu\n` +
-          `> • \`.customrole reqrole <role|off>\` - Set required permission role`
-      )
-    );
+    // 4. REMOVE SHORTCUT
+    if (subcommand === "remove" || subcommand === "delete" || subcommand === "del") {
+      const rawAlias = args[1]?.toLowerCase().replace(/^\./, "");
+      if (!rawAlias) {
+        return message.reply({
+          content: "⚠️ Please specify an alias to remove.\n*Usage:* `.customrole remove <alias>`",
+        }).catch(() => null);
+      }
+
+      if (!crConfig.aliases || !crConfig.aliases[rawAlias]) {
+        return message.reply({
+          content: `⚠️ Alias \`.${rawAlias}\` is not configured on this server.`,
+        }).catch(() => null);
+      }
+
+      customRolesManager.updateGuildConfig(client, message.guild.id, (cfg) => {
+        delete cfg.aliases[rawAlias];
+        return cfg;
+      });
+
+      const freshConfig = customRolesManager.getGuildConfig(client, message.guild.id);
+      const container = buildCustomRolesDashboard(message.guild, freshConfig, "matrix");
+      return message.reply({
+        components: [container],
+        flags: MessageFlags.IsComponentsV2,
+        allowedMentions: { parse: [], repliedUser: false },
+      }).catch(() => null);
+    }
+
+    // 5. DIRECT ALIAS BINDING SHORTCUT: .customrole <alias> <role>
+    const directAlias = subcommand.replace(/^\./, "");
+    const directRoleInput = args.slice(1).join(" ");
+
+    if (directAlias && directRoleInput && !customRolesManager.RESERVED_SUBCOMMANDS.includes(directAlias)) {
+      const role = await customRolesManager.findRole(message.guild, directRoleInput, message);
+      if (role) {
+        if (customRolesManager.checkDangerousPermissions(role)) {
+          return message.reply({
+            content: "🛡️ **Security Block:** Roles with dangerous permissions cannot be bound to shortcuts.",
+          }).catch(() => null);
+        }
+
+        customRolesManager.updateGuildConfig(client, message.guild.id, (cfg) => {
+          cfg.aliases[directAlias] = role.id;
+          return cfg;
+        });
+
+        const freshConfig = customRolesManager.getGuildConfig(client, message.guild.id);
+        const container = buildCustomRolesDashboard(message.guild, freshConfig, "matrix");
+        return message.reply({
+          components: [container],
+          flags: MessageFlags.IsComponentsV2,
+          allowedMentions: { parse: [], repliedUser: false },
+        }).catch(() => null);
+      }
+    }
+
+    // Default: Return dashboard
+    const container = buildCustomRolesDashboard(message.guild, crConfig, "overview");
     return message.reply({
       components: [container],
       flags: MessageFlags.IsComponentsV2,
       allowedMentions: { parse: [], repliedUser: false },
-    });
+    }).catch(() => null);
   },
 };

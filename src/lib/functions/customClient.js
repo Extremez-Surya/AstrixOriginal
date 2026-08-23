@@ -5,6 +5,7 @@ try {
 const { developerIds } = require("../config.json");
 const { Client, Collection, version } = require("discord.js");
 const { initMusicManager } = require("../musicManager.js");
+const { attachOutboundProtection } = require("../security/secretShield.js");
 const { logger } = require("./common.js");
 
 module.exports.CustomClient = class CustomClient extends Client {
@@ -16,6 +17,9 @@ module.exports.CustomClient = class CustomClient extends Client {
   constructor(options) {
     super(options);
     this.manager = initMusicManager(this);
+    try {
+      attachOutboundProtection(this);
+    } catch (_) {}
   }
 
   start() {

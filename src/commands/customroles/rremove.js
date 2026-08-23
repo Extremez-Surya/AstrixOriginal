@@ -1,9 +1,10 @@
 const {
   ContainerBuilder,
   TextDisplayBuilder,
+  SeparatorBuilder,
+  SeparatorSpacingSize,
   MessageFlags,
 } = require("discord.js");
-const EMOJIS = require("../../lib/emojis");
 const customRolesManager = require("../../lib/customRolesManager");
 
 module.exports = {
@@ -13,6 +14,8 @@ module.exports = {
   usage: ".rremove <@user> <@role>",
 
   async execute(client, message, args) {
+    if (!message.guild) return;
+
     const crConfig = customRolesManager.getGuildConfig(client, message.guild.id);
     const hasPerm = customRolesManager.hasCustomRolePermission(
       message.member,
@@ -23,87 +26,73 @@ module.exports = {
       const reqStr = crConfig.reqRole
         ? `<@&${crConfig.reqRole}>`
         : "`Manage Roles`";
-      const container = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.cross || "❌"} Permission Denied\n` +
-            `-# *You need ${reqStr} to revoke roles.*`
-        )
-      );
       return message.reply({
-        components: [container],
-        flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { parse: [], repliedUser: false },
-      });
+        content: `❌ You need ${reqStr} permission to revoke roles.`,
+        flags: MessageFlags.Ephemeral,
+      }).catch(() => null);
     }
 
     const userInput = args[0];
-    const roleInput = args[1];
+    const roleInput = args.slice(1).join(" ");
 
     if (!userInput || !roleInput) {
-      const container = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.cross || "❌"} Invalid Usage\n` +
-            `-# *Syntax: \`.rremove <@user> <@role>\`*`
-        )
-      );
       return message.reply({
-        components: [container],
-        flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { parse: [], repliedUser: false },
-      });
+        content: "⚠️ **Invalid Usage.**\n*Syntax:* `.rremove <@user> <@role>`\n*Example:* `.rremove @user @VIP`",
+      }).catch(() => null);
     }
 
     const targetId = userInput.replace(/\D/g, "");
-    const roleId = roleInput.replace(/\D/g, "");
-
     let targetMember = null;
     try {
       targetMember = await message.guild.members.fetch(targetId);
     } catch {}
 
-    const role = message.guild.roles.cache.get(roleId);
+    const role = await customRolesManager.findRole(message.guild, roleInput, message);
 
     if (!targetMember || !role) {
-      const container = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.cross || "❌"} Invalid Member or Role\n` +
-            `-# *Please specify a valid server member and role.*`
-        )
-      );
       return message.reply({
-        components: [container],
-        flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { parse: [], repliedUser: false },
-      });
+        content: "⚠️ Please specify a valid server member and role.",
+      }).catch(() => null);
     }
 
     const me = message.guild.members.me;
     if (role.position >= me.roles.highest.position) {
-      const container = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.cross || "❌"} Hierarchy Error\n` +
-            `-# *I cannot manage <@&${role.id}> because it is higher than or equal to my highest role.*`
-        )
-      );
       return message.reply({
-        components: [container],
-        flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { parse: [], repliedUser: false },
-      });
+        content: `❌ I cannot manage <@&${role.id}> because it is higher than or equal to my highest role.`,
+      }).catch(() => null);
     }
 
     await targetMember.roles.remove(role, `Role revoked via .rremove by ${message.author.tag}`).catch(() => null);
 
-    const container = new ContainerBuilder().addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        `### ${EMOJIS.tick || "✅"} Role Revoked\n` +
-          `-# *Successfully revoked <@&${role.id}> from ${targetMember.user}.*`
-      )
+    const container = new ContainerBuilder();
+
+    const headerText =
+      `### 🎭 **Role Revoked • Custom Role Action**\n` +
+      `-# *Role has been successfully stripped from target member.*`;
+    container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
+
+    container.addSeparatorComponents(
+      new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
     );
+
+    const details =
+      `> • 👤 **Target Member:** <@${targetMember.id}> (\`${targetMember.user.tag}\`)\n` +
+      `> • 🎭 **Role Revoked:** <@&${role.id}>\n` +
+      `> • 🛡️ **Revoked By:** <@${message.author.id}>`;
+    container.addTextDisplayComponents(new TextDisplayBuilder().setContent(details));
+
+    container.addSeparatorComponents(
+      new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+    );
+
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Custom Role Engine`)
+    );
+
     return message.reply({
       components: [container],
       flags: MessageFlags.IsComponentsV2,
       allowedMentions: { parse: [], repliedUser: false },
-    });
+    }).catch(() => null);
   },
 };

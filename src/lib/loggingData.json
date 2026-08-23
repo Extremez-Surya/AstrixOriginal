@@ -1,0 +1,1270 @@
+{
+  "1526109131042459678": [
+    {
+      "id": "1787481603873_k9ba6",
+      "timestamp": 1787481603873,
+      "eventType": "roleAdd",
+      "category": "member",
+      "data": {
+        "target": {
+          "id": "559426966151757824",
+          "bot": true,
+          "system": false,
+          "flags": 65536,
+          "username": "NQN",
+          "globalName": null,
+          "discriminator": "3454",
+          "avatar": "c7c54eb85e591ced4c2f0864b7ea4e3e",
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1553448182381,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/4.png",
+          "tag": "NQN#3454",
+          "avatarURL": "https://cdn.discordapp.com/avatars/559426966151757824/c7c54eb85e591ced4c2f0864b7ea4e3e.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/559426966151757824/c7c54eb85e591ced4c2f0864b7ea4e3e.webp",
+          "guildTagBadgeURL": null
+        },
+        "role": {
+          "guild": "1526109131042459678",
+          "icon": null,
+          "unicodeEmoji": null,
+          "id": "1541034252190093312",
+          "name": "Astrix Security Wall",
+          "color": 3718648,
+          "colors": {
+            "primaryColor": 3718648,
+            "secondaryColor": null,
+            "tertiaryColor": null
+          },
+          "hoist": false,
+          "rawPosition": 1,
+          "permissions": "2222085186637377",
+          "managed": false,
+          "mentionable": false,
+          "flags": 0,
+          "tags": null,
+          "createdTimestamp": 1787481596754
+        },
+        "details": "Role assigned: <@&1541034252190093312> (`Astrix Security Wall`)"
+      }
+    },
+    {
+      "id": "1787481604349_7dr3l",
+      "timestamp": 1787481604349,
+      "eventType": "roleAdd",
+      "category": "member",
+      "data": {
+        "target": {
+          "id": "984409270344908872",
+          "bot": false,
+          "system": false,
+          "flags": 64,
+          "username": "kumar_vinay",
+          "globalName": "! Alone💔",
+          "discriminator": "0",
+          "avatar": "3a66f258bd62f6972ff0399e34e9fde8",
+          "avatarDecoration": null,
+          "avatarDecorationData": {
+            "asset": "a_7c29485d405c05c5bf16e003faf0e70c",
+            "skuId": "1516523989927858267"
+          },
+          "collectibles": {
+            "nameplate": {
+              "skuId": "1447654090736799915",
+              "asset": "nameplates/zodiac/taurus/",
+              "label": "COLLECTIBLES_ZODIAC_TAURUS_NP_A11Y",
+              "palette": "forest"
+            }
+          },
+          "primaryGuild": {
+            "identityGuildId": "1510944202337550396",
+            "identityEnabled": true,
+            "tag": "DZ",
+            "badge": "8d61abb8b5da075befaff858861dba54"
+          },
+          "createdTimestamp": 1654771859490,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/0.png",
+          "tag": "kumar_vinay",
+          "avatarURL": "https://cdn.discordapp.com/avatars/984409270344908872/3a66f258bd62f6972ff0399e34e9fde8.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/984409270344908872/3a66f258bd62f6972ff0399e34e9fde8.webp",
+          "guildTagBadgeURL": "https://cdn.discordapp.com/guild-tag-badges/1510944202337550396/8d61abb8b5da075befaff858861dba54.webp"
+        },
+        "role": {
+          "guild": "1526109131042459678",
+          "icon": null,
+          "unicodeEmoji": null,
+          "id": "1541034252190093312",
+          "name": "Astrix Security Wall",
+          "color": 3718648,
+          "colors": {
+            "primaryColor": 3718648,
+            "secondaryColor": null,
+            "tertiaryColor": null
+          },
+          "hoist": false,
+          "rawPosition": 1,
+          "permissions": "2222085186637377",
+          "managed": false,
+          "mentionable": false,
+          "flags": 0,
+          "tags": null,
+          "createdTimestamp": 1787481596754
+        },
+        "details": "Role assigned: <@&1541034252190093312> (`Astrix Security Wall`)"
+      }
+    },
+    {
+      "id": "1787481604785_xwmlq",
+      "timestamp": 1787481604785,
+      "eventType": "roleAdd",
+      "category": "member",
+      "data": {
+        "target": {
+          "id": "1526903059857543218",
+          "bot": true,
+          "system": false,
+          "flags": 0,
+          "username": "Astrix",
+          "globalName": null,
+          "discriminator": "5356",
+          "avatar": "9192dff668877297527c4427055c964b",
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1784112457957,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/1.png",
+          "tag": "Astrix#5356",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1526903059857543218/9192dff668877297527c4427055c964b.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1526903059857543218/9192dff668877297527c4427055c964b.webp",
+          "guildTagBadgeURL": null
+        },
+        "role": {
+          "guild": "1526109131042459678",
+          "icon": null,
+          "unicodeEmoji": null,
+          "id": "1541034252190093312",
+          "name": "Astrix Security Wall",
+          "color": 3718648,
+          "colors": {
+            "primaryColor": 3718648,
+            "secondaryColor": null,
+            "tertiaryColor": null
+          },
+          "hoist": false,
+          "rawPosition": 1,
+          "permissions": "2222085186637377",
+          "managed": false,
+          "mentionable": false,
+          "flags": 0,
+          "tags": null,
+          "createdTimestamp": 1787481596754
+        },
+        "details": "Role assigned: <@&1541034252190093312> (`Astrix Security Wall`)"
+      }
+    },
+    {
+      "id": "1787481605220_21jit",
+      "timestamp": 1787481605220,
+      "eventType": "roleAdd",
+      "category": "member",
+      "data": {
+        "target": {
+          "id": "1530151019357409403",
+          "bot": true,
+          "system": false,
+          "flags": 0,
+          "username": "Adore Me™",
+          "globalName": null,
+          "discriminator": "7506",
+          "avatar": "328dc049ebed547ab5dff452cece37ce",
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1784886831846,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/1.png",
+          "tag": "Adore Me™#7506",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1530151019357409403/328dc049ebed547ab5dff452cece37ce.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1530151019357409403/328dc049ebed547ab5dff452cece37ce.webp",
+          "guildTagBadgeURL": null
+        },
+        "role": {
+          "guild": "1526109131042459678",
+          "icon": null,
+          "unicodeEmoji": null,
+          "id": "1541034252190093312",
+          "name": "Astrix Security Wall",
+          "color": 3718648,
+          "colors": {
+            "primaryColor": 3718648,
+            "secondaryColor": null,
+            "tertiaryColor": null
+          },
+          "hoist": false,
+          "rawPosition": 1,
+          "permissions": "2222085186637377",
+          "managed": false,
+          "mentionable": false,
+          "flags": 0,
+          "tags": null,
+          "createdTimestamp": 1787481596754
+        },
+        "details": "Role assigned: <@&1541034252190093312> (`Astrix Security Wall`)"
+      }
+    },
+    {
+      "id": "1787481865303_rddao",
+      "timestamp": 1787481865303,
+      "eventType": "serverUpdate",
+      "category": "server",
+      "data": {
+        "executor": null,
+        "details": "Name changed: `Astrix Dev` ➔ `Astrix Development Official`",
+        "before": "Astrix Dev",
+        "after": "Astrix Development Official"
+      }
+    },
+    {
+      "id": "1787481898084_1xdgl",
+      "timestamp": 1787481898084,
+      "eventType": "serverUpdate",
+      "category": "server",
+      "data": {
+        "executor": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "details": "Name changed: `Astrix Dev` ➔ `Astrix Development`",
+        "before": "Astrix Dev",
+        "after": "Astrix Development"
+      }
+    },
+    {
+      "id": "1787481925385_g8cyc",
+      "timestamp": 1787481925385,
+      "eventType": "channelCreate",
+      "category": "channel",
+      "data": {
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [],
+          "messages": [],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1541035659823939614",
+          "name": "g",
+          "rawPosition": 11,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": null,
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787481932360
+        },
+        "details": "Channel created: <#1541035659823939614> (`g`) • Type: `0`"
+      }
+    },
+    {
+      "id": "1787481930474_yurs8",
+      "timestamp": 1787481930474,
+      "eventType": "channelDelete",
+      "category": "channel",
+      "data": {
+        "details": "Channel deleted: `#g` (`1541035659823939614`)"
+      }
+    },
+    {
+      "id": "1787481997891_kvo3x",
+      "timestamp": 1787481997891,
+      "eventType": "channelCreate",
+      "category": "channel",
+      "data": {
+        "channel": {
+          "type": 4,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1526109358474264686"
+          ],
+          "flags": 0,
+          "id": "1541035964020035685",
+          "name": "AUDIT LOGS",
+          "rawPosition": 2,
+          "parentId": null,
+          "createdTimestamp": 1787482004886
+        },
+        "details": "Channel created: <#1541035964020035685> (`AUDIT LOGS`) • Type: `4`"
+      }
+    },
+    {
+      "id": "1787481998350_cl9hw",
+      "timestamp": 1787481998350,
+      "eventType": "channelCreate",
+      "category": "channel",
+      "data": {
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1526109358474264686"
+          ],
+          "messages": [],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1541035966033170512",
+          "name": "msg-logs",
+          "rawPosition": 11,
+          "parentId": "1541035964020035685",
+          "topic": "Audit logs for message events • Powered by Astrix",
+          "lastMessageId": null,
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787482005366
+        },
+        "details": "Channel created: <#1541035966033170512> (`msg-logs`) • Type: `0`"
+      }
+    },
+    {
+      "id": "1787481998864_2j3nu",
+      "timestamp": 1787481998864,
+      "eventType": "channelCreate",
+      "category": "channel",
+      "data": {
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1526109358474264686"
+          ],
+          "messages": [],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1541035967761096805",
+          "name": "member-logs",
+          "rawPosition": 12,
+          "parentId": "1541035964020035685",
+          "topic": "Audit logs for member events • Powered by Astrix",
+          "lastMessageId": null,
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787482005778
+        },
+        "details": "Channel created: <#1541035967761096805> (`member-logs`) • Type: `0`"
+      }
+    },
+    {
+      "id": "1787481999349_csytc",
+      "timestamp": 1787481999349,
+      "eventType": "channelCreate",
+      "category": "channel",
+      "data": {
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1526109358474264686"
+          ],
+          "messages": [],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1541035970265088070",
+          "name": "mod-logs",
+          "rawPosition": 13,
+          "parentId": "1541035964020035685",
+          "topic": "Audit logs for mod events • Powered by Astrix",
+          "lastMessageId": null,
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787482006375
+        },
+        "details": "Channel created: <#1541035970265088070> (`mod-logs`) • Type: `0`"
+      }
+    },
+    {
+      "id": "1787481999764_jxhzb",
+      "timestamp": 1787481999764,
+      "eventType": "channelCreate",
+      "category": "channel",
+      "data": {
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1526109358474264686"
+          ],
+          "messages": [],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1541035972043612190",
+          "name": "server-logs",
+          "rawPosition": 14,
+          "parentId": "1541035964020035685",
+          "topic": "Audit logs for server events • Powered by Astrix",
+          "lastMessageId": null,
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787482006799
+        },
+        "details": "Channel created: <#1541035972043612190> (`server-logs`) • Type: `0`"
+      }
+    },
+    {
+      "id": "1787482000256_cnd5z",
+      "timestamp": 1787482000256,
+      "eventType": "channelCreate",
+      "category": "channel",
+      "data": {
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1526109358474264686"
+          ],
+          "messages": [],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1541035974052806667",
+          "name": "voice-logs",
+          "rawPosition": 15,
+          "parentId": "1541035964020035685",
+          "topic": "Audit logs for voice events • Powered by Astrix",
+          "lastMessageId": null,
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787482007278
+        },
+        "details": "Channel created: <#1541035974052806667> (`voice-logs`) • Type: `0`"
+      }
+    },
+    {
+      "id": "1787482000754_3gyzq",
+      "timestamp": 1787482000754,
+      "eventType": "channelCreate",
+      "category": "channel",
+      "data": {
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1526109358474264686"
+          ],
+          "messages": [],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1541035976015614044",
+          "name": "role-logs",
+          "rawPosition": 16,
+          "parentId": "1541035964020035685",
+          "topic": "Audit logs for role events • Powered by Astrix",
+          "lastMessageId": null,
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787482007746
+        },
+        "details": "Channel created: <#1541035976015614044> (`role-logs`) • Type: `0`"
+      }
+    },
+    {
+      "id": "1787482001225_hlipa",
+      "timestamp": 1787482001225,
+      "eventType": "channelCreate",
+      "category": "channel",
+      "data": {
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1526109358474264686"
+          ],
+          "messages": [],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1541035978012102747",
+          "name": "channel-logs",
+          "rawPosition": 17,
+          "parentId": "1541035964020035685",
+          "topic": "Audit logs for channel events • Powered by Astrix",
+          "lastMessageId": null,
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787482008222
+        },
+        "details": "Channel created: <#1541035978012102747> (`channel-logs`) • Type: `0`"
+      }
+    },
+    {
+      "id": "1787482001692_xskpz",
+      "timestamp": 1787482001692,
+      "eventType": "channelCreate",
+      "category": "channel",
+      "data": {
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1526109358474264686"
+          ],
+          "messages": [],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1541035979954069525",
+          "name": "emoji-logs",
+          "rawPosition": 18,
+          "parentId": "1541035964020035685",
+          "topic": "Audit logs for emoji events • Powered by Astrix",
+          "lastMessageId": null,
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787482008685
+        },
+        "details": "Channel created: <#1541035979954069525> (`emoji-logs`) • Type: `0`"
+      }
+    },
+    {
+      "id": "1787482011962_lhk3i",
+      "timestamp": 1787482011962,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1541035856381485067",
+            "1541035867114831962",
+            "1541035937331552256",
+            "1541035961796788335"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1539688827013046313",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1541036017233035295",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787160822395
+        },
+        "content": "f",
+        "details": "Deleted message sent at <t:1787482017:T>"
+      }
+    },
+    {
+      "id": "1787482373934_npi7c",
+      "timestamp": 1787482373934,
+      "eventType": "roleRemove",
+      "category": "member",
+      "data": {
+        "target": {
+          "id": "559426966151757824",
+          "bot": true,
+          "system": false,
+          "flags": 65536,
+          "username": "NQN",
+          "globalName": null,
+          "discriminator": "3454",
+          "avatar": "c7c54eb85e591ced4c2f0864b7ea4e3e",
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1553448182381,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/4.png",
+          "tag": "NQN#3454",
+          "avatarURL": "https://cdn.discordapp.com/avatars/559426966151757824/c7c54eb85e591ced4c2f0864b7ea4e3e.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/559426966151757824/c7c54eb85e591ced4c2f0864b7ea4e3e.webp",
+          "guildTagBadgeURL": null
+        },
+        "role": {
+          "guild": "1526109131042459678",
+          "icon": null,
+          "unicodeEmoji": null,
+          "id": "1541034252190093312",
+          "name": "Astrix Security Wall",
+          "color": 3718648,
+          "colors": {
+            "primaryColor": 3718648,
+            "secondaryColor": null,
+            "tertiaryColor": null
+          },
+          "hoist": false,
+          "rawPosition": 1,
+          "permissions": "2222085186637377",
+          "managed": false,
+          "mentionable": false,
+          "flags": 0,
+          "tags": {},
+          "createdTimestamp": 1787481596754
+        },
+        "details": "Role removed: <@&1541034252190093312> (`Astrix Security Wall`)"
+      }
+    },
+    {
+      "id": "1787482374071_sg9gt",
+      "timestamp": 1787482374071,
+      "eventType": "roleRemove",
+      "category": "member",
+      "data": {
+        "target": {
+          "id": "984409270344908872",
+          "bot": false,
+          "system": false,
+          "flags": 64,
+          "username": "kumar_vinay",
+          "globalName": "! Alone💔",
+          "discriminator": "0",
+          "avatar": "3a66f258bd62f6972ff0399e34e9fde8",
+          "avatarDecoration": null,
+          "avatarDecorationData": {
+            "asset": "a_7c29485d405c05c5bf16e003faf0e70c",
+            "skuId": "1516523989927858267"
+          },
+          "collectibles": {
+            "nameplate": {
+              "skuId": "1447654090736799915",
+              "asset": "nameplates/zodiac/taurus/",
+              "label": "COLLECTIBLES_ZODIAC_TAURUS_NP_A11Y",
+              "palette": "forest"
+            }
+          },
+          "primaryGuild": {
+            "identityGuildId": "1510944202337550396",
+            "identityEnabled": true,
+            "tag": "DZ",
+            "badge": "8d61abb8b5da075befaff858861dba54"
+          },
+          "createdTimestamp": 1654771859490,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/0.png",
+          "tag": "kumar_vinay",
+          "avatarURL": "https://cdn.discordapp.com/avatars/984409270344908872/3a66f258bd62f6972ff0399e34e9fde8.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/984409270344908872/3a66f258bd62f6972ff0399e34e9fde8.webp",
+          "guildTagBadgeURL": "https://cdn.discordapp.com/guild-tag-badges/1510944202337550396/8d61abb8b5da075befaff858861dba54.webp"
+        },
+        "role": {
+          "guild": "1526109131042459678",
+          "icon": null,
+          "unicodeEmoji": null,
+          "id": "1541034252190093312",
+          "name": "Astrix Security Wall",
+          "color": 3718648,
+          "colors": {
+            "primaryColor": 3718648,
+            "secondaryColor": null,
+            "tertiaryColor": null
+          },
+          "hoist": false,
+          "rawPosition": 1,
+          "permissions": "2222085186637377",
+          "managed": false,
+          "mentionable": false,
+          "flags": 0,
+          "tags": {},
+          "createdTimestamp": 1787481596754
+        },
+        "details": "Role removed: <@&1541034252190093312> (`Astrix Security Wall`)"
+      }
+    },
+    {
+      "id": "1787482374161_7p8d4",
+      "timestamp": 1787482374161,
+      "eventType": "roleRemove",
+      "category": "member",
+      "data": {
+        "target": {
+          "id": "1526903059857543218",
+          "bot": true,
+          "system": false,
+          "flags": 0,
+          "username": "Astrix",
+          "globalName": null,
+          "discriminator": "5356",
+          "avatar": "9192dff668877297527c4427055c964b",
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1784112457957,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/1.png",
+          "tag": "Astrix#5356",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1526903059857543218/9192dff668877297527c4427055c964b.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1526903059857543218/9192dff668877297527c4427055c964b.webp",
+          "guildTagBadgeURL": null
+        },
+        "role": {
+          "guild": "1526109131042459678",
+          "icon": null,
+          "unicodeEmoji": null,
+          "id": "1541034252190093312",
+          "name": "Astrix Security Wall",
+          "color": 3718648,
+          "colors": {
+            "primaryColor": 3718648,
+            "secondaryColor": null,
+            "tertiaryColor": null
+          },
+          "hoist": false,
+          "rawPosition": 1,
+          "permissions": "2222085186637377",
+          "managed": false,
+          "mentionable": false,
+          "flags": 0,
+          "tags": {},
+          "createdTimestamp": 1787481596754
+        },
+        "details": "Role removed: <@&1541034252190093312> (`Astrix Security Wall`)"
+      }
+    },
+    {
+      "id": "1787482374243_gu2op",
+      "timestamp": 1787482374243,
+      "eventType": "roleRemove",
+      "category": "member",
+      "data": {
+        "target": {
+          "id": "1530151019357409403",
+          "bot": true,
+          "system": false,
+          "flags": 0,
+          "username": "Adore Me™",
+          "globalName": null,
+          "discriminator": "7506",
+          "avatar": "328dc049ebed547ab5dff452cece37ce",
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1784886831846,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/1.png",
+          "tag": "Adore Me™#7506",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1530151019357409403/328dc049ebed547ab5dff452cece37ce.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1530151019357409403/328dc049ebed547ab5dff452cece37ce.webp",
+          "guildTagBadgeURL": null
+        },
+        "role": {
+          "guild": "1526109131042459678",
+          "icon": null,
+          "unicodeEmoji": null,
+          "id": "1541034252190093312",
+          "name": "Astrix Security Wall",
+          "color": 3718648,
+          "colors": {
+            "primaryColor": 3718648,
+            "secondaryColor": null,
+            "tertiaryColor": null
+          },
+          "hoist": false,
+          "rawPosition": 1,
+          "permissions": "2222085186637377",
+          "managed": false,
+          "mentionable": false,
+          "flags": 0,
+          "tags": {},
+          "createdTimestamp": 1787481596754
+        },
+        "details": "Role removed: <@&1541034252190093312> (`Astrix Security Wall`)"
+      }
+    },
+    {
+      "id": "1787482374281_wzzne",
+      "timestamp": 1787482374281,
+      "eventType": "roleDelete",
+      "category": "role",
+      "data": {
+        "details": "Role deleted: `@Astrix Security Wall` (`1541034252190093312`)"
+      }
+    },
+    {
+      "id": "1787482374912_vc2e1",
+      "timestamp": 1787482374912,
+      "eventType": "roleDelete",
+      "category": "role",
+      "data": {
+        "details": "Role deleted: `@Astrix Antivanity Admin` (`1541034254371127408`)"
+      }
+    },
+    {
+      "id": "1787482375480_mxsv0",
+      "timestamp": 1787482375480,
+      "eventType": "roleDelete",
+      "category": "role",
+      "data": {
+        "details": "Role deleted: `@Criminals` (`1541034256116097087`)"
+      }
+    },
+    {
+      "id": "1787482375899_zhrw5",
+      "timestamp": 1787482375899,
+      "eventType": "roleDelete",
+      "category": "role",
+      "data": {
+        "details": "Role deleted: `@Astrix Un-Bypassable Setup` (`1541034258049667212`)"
+      }
+    },
+    {
+      "id": "1787482380530_eosgr",
+      "timestamp": 1787482380530,
+      "eventType": "channelDelete",
+      "category": "channel",
+      "data": {
+        "details": "Channel deleted: `#antinuke-logs` (`1541034266849452104`)"
+      }
+    },
+    {
+      "id": "1787482380985_nbq12",
+      "timestamp": 1787482380985,
+      "eventType": "channelDelete",
+      "category": "channel",
+      "data": {
+        "details": "Channel deleted: `#mod-logs` (`1541034268803735596`)"
+      }
+    },
+    {
+      "id": "1787482381468_hgwz9",
+      "timestamp": 1787482381468,
+      "eventType": "channelDelete",
+      "category": "channel",
+      "data": {
+        "details": "Channel deleted: `#channel-logs` (`1541034271509057609`)"
+      }
+    },
+    {
+      "id": "1787482381910_u4ff5",
+      "timestamp": 1787482381910,
+      "eventType": "channelDelete",
+      "category": "channel",
+      "data": {
+        "details": "Channel deleted: `#role-logs` (`1541034273589567509`)"
+      }
+    },
+    {
+      "id": "1787482382579_7qx3l",
+      "timestamp": 1787482382579,
+      "eventType": "channelDelete",
+      "category": "channel",
+      "data": {
+        "details": "Channel deleted: `#server-logs` (`1541034276101955705`)"
+      }
+    },
+    {
+      "id": "1787482383035_wuat6",
+      "timestamp": 1787482383035,
+      "eventType": "channelDelete",
+      "category": "channel",
+      "data": {
+        "details": "Channel deleted: `#member-logs` (`1541035967761096805`)"
+      }
+    },
+    {
+      "id": "1787482383481_hoij9",
+      "timestamp": 1787482383482,
+      "eventType": "channelDelete",
+      "category": "channel",
+      "data": {
+        "details": "Channel deleted: `#mod-logs` (`1541035970265088070`)"
+      }
+    },
+    {
+      "id": "1787482384011_yoyjr",
+      "timestamp": 1787482384011,
+      "eventType": "channelDelete",
+      "category": "channel",
+      "data": {
+        "details": "Channel deleted: `#server-logs` (`1541035972043612190`)"
+      }
+    },
+    {
+      "id": "1787482384458_qrrn7",
+      "timestamp": 1787482384458,
+      "eventType": "channelDelete",
+      "category": "channel",
+      "data": {
+        "details": "Channel deleted: `#voice-logs` (`1541035974052806667`)"
+      }
+    },
+    {
+      "id": "1787482384943_3v2pg",
+      "timestamp": 1787482384943,
+      "eventType": "channelDelete",
+      "category": "channel",
+      "data": {
+        "details": "Channel deleted: `#role-logs` (`1541035976015614044`)"
+      }
+    },
+    {
+      "id": "1787482431800_4cvej",
+      "timestamp": 1787482431800,
+      "eventType": "roleAdd",
+      "category": "member",
+      "data": {
+        "target": {
+          "id": "559426966151757824",
+          "bot": true,
+          "system": false,
+          "flags": 65536,
+          "username": "NQN",
+          "globalName": null,
+          "discriminator": "3454",
+          "avatar": "c7c54eb85e591ced4c2f0864b7ea4e3e",
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1553448182381,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/4.png",
+          "tag": "NQN#3454",
+          "avatarURL": "https://cdn.discordapp.com/avatars/559426966151757824/c7c54eb85e591ced4c2f0864b7ea4e3e.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/559426966151757824/c7c54eb85e591ced4c2f0864b7ea4e3e.webp",
+          "guildTagBadgeURL": null
+        },
+        "role": {
+          "guild": "1526109131042459678",
+          "icon": null,
+          "unicodeEmoji": null,
+          "id": "1541037712155480144",
+          "name": "Astrix Security Wall",
+          "color": 3718648,
+          "colors": {
+            "primaryColor": 3718648,
+            "secondaryColor": null,
+            "tertiaryColor": null
+          },
+          "hoist": false,
+          "rawPosition": 1,
+          "permissions": "2222085186637377",
+          "managed": false,
+          "mentionable": false,
+          "flags": 0,
+          "tags": null,
+          "createdTimestamp": 1787482421674
+        },
+        "details": "Role assigned: <@&1541037712155480144> (`Astrix Security Wall`)"
+      }
+    },
+    {
+      "id": "1787482432222_usjtq",
+      "timestamp": 1787482432222,
+      "eventType": "roleAdd",
+      "category": "member",
+      "data": {
+        "target": {
+          "id": "984409270344908872",
+          "bot": false,
+          "system": false,
+          "flags": 64,
+          "username": "kumar_vinay",
+          "globalName": "! Alone💔",
+          "discriminator": "0",
+          "avatar": "3a66f258bd62f6972ff0399e34e9fde8",
+          "avatarDecoration": null,
+          "avatarDecorationData": {
+            "asset": "a_7c29485d405c05c5bf16e003faf0e70c",
+            "skuId": "1516523989927858267"
+          },
+          "collectibles": {
+            "nameplate": {
+              "skuId": "1447654090736799915",
+              "asset": "nameplates/zodiac/taurus/",
+              "label": "COLLECTIBLES_ZODIAC_TAURUS_NP_A11Y",
+              "palette": "forest"
+            }
+          },
+          "primaryGuild": {
+            "identityGuildId": "1510944202337550396",
+            "identityEnabled": true,
+            "tag": "DZ",
+            "badge": "8d61abb8b5da075befaff858861dba54"
+          },
+          "createdTimestamp": 1654771859490,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/0.png",
+          "tag": "kumar_vinay",
+          "avatarURL": "https://cdn.discordapp.com/avatars/984409270344908872/3a66f258bd62f6972ff0399e34e9fde8.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/984409270344908872/3a66f258bd62f6972ff0399e34e9fde8.webp",
+          "guildTagBadgeURL": "https://cdn.discordapp.com/guild-tag-badges/1510944202337550396/8d61abb8b5da075befaff858861dba54.webp"
+        },
+        "role": {
+          "guild": "1526109131042459678",
+          "icon": null,
+          "unicodeEmoji": null,
+          "id": "1541037712155480144",
+          "name": "Astrix Security Wall",
+          "color": 3718648,
+          "colors": {
+            "primaryColor": 3718648,
+            "secondaryColor": null,
+            "tertiaryColor": null
+          },
+          "hoist": false,
+          "rawPosition": 1,
+          "permissions": "2222085186637377",
+          "managed": false,
+          "mentionable": false,
+          "flags": 0,
+          "tags": null,
+          "createdTimestamp": 1787482421674
+        },
+        "details": "Role assigned: <@&1541037712155480144> (`Astrix Security Wall`)"
+      }
+    },
+    {
+      "id": "1787482432637_zdnzp",
+      "timestamp": 1787482432637,
+      "eventType": "roleAdd",
+      "category": "member",
+      "data": {
+        "target": {
+          "id": "1526903059857543218",
+          "bot": true,
+          "system": false,
+          "flags": 0,
+          "username": "Astrix",
+          "globalName": null,
+          "discriminator": "5356",
+          "avatar": "9192dff668877297527c4427055c964b",
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1784112457957,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/1.png",
+          "tag": "Astrix#5356",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1526903059857543218/9192dff668877297527c4427055c964b.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1526903059857543218/9192dff668877297527c4427055c964b.webp",
+          "guildTagBadgeURL": null
+        },
+        "role": {
+          "guild": "1526109131042459678",
+          "icon": null,
+          "unicodeEmoji": null,
+          "id": "1541037712155480144",
+          "name": "Astrix Security Wall",
+          "color": 3718648,
+          "colors": {
+            "primaryColor": 3718648,
+            "secondaryColor": null,
+            "tertiaryColor": null
+          },
+          "hoist": false,
+          "rawPosition": 1,
+          "permissions": "2222085186637377",
+          "managed": false,
+          "mentionable": false,
+          "flags": 0,
+          "tags": null,
+          "createdTimestamp": 1787482421674
+        },
+        "details": "Role assigned: <@&1541037712155480144> (`Astrix Security Wall`)"
+      }
+    },
+    {
+      "id": "1787482433075_e3in6",
+      "timestamp": 1787482433075,
+      "eventType": "roleAdd",
+      "category": "member",
+      "data": {
+        "target": {
+          "id": "1530151019357409403",
+          "bot": true,
+          "system": false,
+          "flags": 0,
+          "username": "Adore Me™",
+          "globalName": null,
+          "discriminator": "7506",
+          "avatar": "328dc049ebed547ab5dff452cece37ce",
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1784886831846,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/1.png",
+          "tag": "Adore Me™#7506",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1530151019357409403/328dc049ebed547ab5dff452cece37ce.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1530151019357409403/328dc049ebed547ab5dff452cece37ce.webp",
+          "guildTagBadgeURL": null
+        },
+        "role": {
+          "guild": "1526109131042459678",
+          "icon": null,
+          "unicodeEmoji": null,
+          "id": "1541037712155480144",
+          "name": "Astrix Security Wall",
+          "color": 3718648,
+          "colors": {
+            "primaryColor": 3718648,
+            "secondaryColor": null,
+            "tertiaryColor": null
+          },
+          "hoist": false,
+          "rawPosition": 1,
+          "permissions": "2222085186637377",
+          "managed": false,
+          "mentionable": false,
+          "flags": 0,
+          "tags": null,
+          "createdTimestamp": 1787482421674
+        },
+        "details": "Role assigned: <@&1541037712155480144> (`Astrix Security Wall`)"
+      }
+    },
+    {
+      "id": "1787483741813_logvl",
+      "timestamp": 1787483741813,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1541041934208991432",
+            "1541041936880898048",
+            "1541042001590616116",
+            "1541042004048351312",
+            "1541042080762044466",
+            "1541042091415834694",
+            "1541042142854520903",
+            "1541042143160696933",
+            "1541042144884559975",
+            "1541042198429302865",
+            "1541042199196864522",
+            "1541042200656216114",
+            "1541042309246877736",
+            "1541042309641011263",
+            "1541042311218331689",
+            "1541042406915313736",
+            "1541042407779475536",
+            "1541042410023419995",
+            "1541042423407444109",
+            "1541042424007229471",
+            "1541042427299889216"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1539688827013046313",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1541042605952081940",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787160822395
+        },
+        "content": "eval message.channel.send(process.env.DISCORD_TOKEN)",
+        "details": "Deleted message sent at <t:1787483587:T>"
+      }
+    }
+  ]
+}

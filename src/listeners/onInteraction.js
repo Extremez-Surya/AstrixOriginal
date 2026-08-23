@@ -32,11 +32,20 @@ module.exports = {
     );
     if (handledCustomRole) return;
 
-    // Handle Suggestion System Interactions (Upvote & Downvote Buttons)
+    // Handle Suggestion System Interactions (Upvote & Downvote Buttons & Hub)
     const suggestionManager = require("../lib/suggestionManager");
     const handledSuggestion =
       await suggestionManager.handleSuggestionInteraction(client, interaction);
     if (handledSuggestion) return;
+
+    const {
+      handleSuggestionHubInteraction,
+    } = require("../lib/general/handleSuggestionHubInteraction");
+    const handledSugHub = await handleSuggestionHubInteraction(
+      client,
+      interaction
+    );
+    if (handledSugHub) return;
 
     // Handle Anti-Raid Interactions (Buttons, Control Panels & Confirmation Dialogs)
     const {

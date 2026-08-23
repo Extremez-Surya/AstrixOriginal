@@ -162,7 +162,7 @@ module.exports = {
 
     // Disable master switch & purge all created assets
     if (subcommand === "disable" || subcommand === "off" || subcommand === "cleanup" || subcommand === "reset") {
-      const { executeAutoCleanup } = require("../../lib/security/handleAutoSetup");
+      const { executeAutoCleanup, buildLoadingNotice } = require("../../lib/security/handleAutoSetup");
       const initNotice = buildLoadingNotice("Deactivating Anti-Nuke", "Purging all security roles, log channels, and resetting protection...");
       const msg = await message.reply({
         components: [initNotice],

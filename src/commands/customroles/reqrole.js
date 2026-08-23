@@ -1,11 +1,6 @@
-const {
-  ContainerBuilder,
-  TextDisplayBuilder,
-  MessageFlags,
-  PermissionFlagsBits,
-} = require("discord.js");
-const EMOJIS = require("../../lib/emojis");
+const { MessageFlags, PermissionFlagsBits } = require("discord.js");
 const customRolesManager = require("../../lib/customRolesManager");
+const { buildCustomRolesDashboard } = require("../../lib/customroles/handleCustomRoleInteraction");
 
 module.exports = {
   alias: ["reqrole", "crreq", "crrequired"],
@@ -14,6 +9,8 @@ module.exports = {
   usage: ".reqrole <@role|off>",
 
   async execute(client, message, args) {
+    if (!message.guild) return;
+
     const crConfig = customRolesManager.getGuildConfig(client, message.guild.id);
     const isAdminOrManager =
       message.member.permissions.has(PermissionFlagsBits.ManageGuild) ||
@@ -22,38 +19,19 @@ module.exports = {
     const input = args[0];
 
     if (!input) {
-      const currentStr = crConfig.reqRole
-        ? `<@&${crConfig.reqRole}>`
-        : "`None` (Manage Roles default)";
-      const container = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### 🔒 Required Role Status\n` +
-            `> - **Current ReqRole:** ${currentStr}\n\n` +
-            `**Logic Rules:**\n` +
-            `> • **With ReqRole:** Users need Admin, Manage Server, or <@&${crConfig.reqRole || "Role"}>.\n` +
-            `> • **Without ReqRole:** Users need Admin, Manage Server, or Manage Roles permission.\n\n` +
-            `-# *Syntax to change: \`.reqrole <@role|off>\`*`
-        )
-      );
+      const container = buildCustomRolesDashboard(message.guild, crConfig, "reqrole");
       return message.reply({
         components: [container],
         flags: MessageFlags.IsComponentsV2,
         allowedMentions: { parse: [], repliedUser: false },
-      });
+      }).catch(() => null);
     }
 
     if (!isAdminOrManager) {
-      const container = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.cross || "❌"} Permission Denied\n` +
-            `-# *You need **Manage Server** or **Administrator** permission to change required roles.*`
-        )
-      );
       return message.reply({
-        components: [container],
-        flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { parse: [], repliedUser: false },
-      });
+        content: "❌ You need **Manage Server** or **Administrator** permission to change required roles.",
+        flags: MessageFlags.Ephemeral,
+      }).catch(() => null);
     }
 
     if (
@@ -65,34 +43,21 @@ module.exports = {
         cfg.reqRole = null;
         return cfg;
       });
-      const container = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.tick || "✅"} ReqRole Disabled\n` +
-            `-# *Custom role triggers now require standard **Manage Roles** permission.*`
-        )
-      );
+
+      const freshConfig = customRolesManager.getGuildConfig(client, message.guild.id);
+      const container = buildCustomRolesDashboard(message.guild, freshConfig, "reqrole");
       return message.reply({
         components: [container],
         flags: MessageFlags.IsComponentsV2,
         allowedMentions: { parse: [], repliedUser: false },
-      });
+      }).catch(() => null);
     }
 
-    const role =
-      message.mentions.roles.first() ||
-      message.guild.roles.cache.get(input.replace(/\D/g, ""));
+    const role = await customRolesManager.findRole(message.guild, input, message);
     if (!role) {
-      const container = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.cross || "❌"} Invalid Role\n` +
-            `-# *Please mention a valid server role or provide a role ID.*`
-        )
-      );
       return message.reply({
-        components: [container],
-        flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { parse: [], repliedUser: false },
-      });
+        content: "⚠️ Invalid role. Please mention a valid server role or provide a role ID.",
+      }).catch(() => null);
     }
 
     customRolesManager.updateGuildConfig(client, message.guild.id, (cfg) => {
@@ -100,16 +65,12 @@ module.exports = {
       return cfg;
     });
 
-    const container = new ContainerBuilder().addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        `### ${EMOJIS.tick || "✅"} ReqRole Updated\n` +
-          `-# *Members must now possess <@&${role.id}> (or Admin/Manage Server) to trigger custom role shortcuts.*`
-      )
-    );
+    const freshConfig = customRolesManager.getGuildConfig(client, message.guild.id);
+    const container = buildCustomRolesDashboard(message.guild, freshConfig, "reqrole");
     return message.reply({
       components: [container],
       flags: MessageFlags.IsComponentsV2,
       allowedMentions: { parse: [], repliedUser: false },
-    });
+    }).catch(() => null);
   },
 };

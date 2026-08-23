@@ -3,9 +3,9 @@ const { MessageFlags } = require("discord.js");
 const noprefixManager = require("../../lib/noprefixManager");
 
 module.exports = {
-  alias: ["owner", "ownerpanel", "ownerdashboard"],
+  alias: ["owner", "ownerpanel", "ownerdashboard", "op", "dev"],
   category: "Owner",
-  desc: "Bot Owner Control Center dashboard.",
+  desc: "Astrix Bot Owner Control Center & Master Telemetry Dashboard.",
   botPermissions: [],
   userPermissions: [],
   devOnly: true,
@@ -15,7 +15,7 @@ module.exports = {
       return message.reply("❌ Access Denied: Only Bot Owners can access the Owner Control Center.").catch(() => null);
     }
 
-    const panel = buildOwnerContainer(client);
+    const panel = buildOwnerContainer(client, "overview", 1);
 
     return message.reply({
       components: [panel],

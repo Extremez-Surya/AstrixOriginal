@@ -4,36 +4,26 @@ const {
   SeparatorBuilder,
   SeparatorSpacingSize,
   MessageFlags,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
 } = require("discord.js");
 const noprefixManager = require("../../lib/noprefixManager");
-const EMOJIS = require("../../lib/emojis");
 
-function buildSuccessNotice(title, description) {
+function buildNotice(emoji, title, description) {
   return new ContainerBuilder()
     .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(`### ${EMOJIS.ticky_red || "✅"} ${title}`)
+      new TextDisplayBuilder().setContent(`### ${emoji} **${title}**\n\n${description}`)
     )
     .addSeparatorComponents(
       new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-    )
-    .addTextDisplayComponents(new TextDisplayBuilder().setContent(description));
-}
-
-function buildErrorNotice(title, description) {
-  return new ContainerBuilder()
-    .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(`### ${EMOJIS.cross || "❌"} ${title}`)
-    )
-    .addSeparatorComponents(
-      new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-    )
-    .addTextDisplayComponents(new TextDisplayBuilder().setContent(description));
+    );
 }
 
 module.exports = {
-  alias: ["blacklist", "bl", "unblacklist"],
+  alias: ["blacklist", "bl", "unblacklist", "unbl"],
   category: "Owner",
-  desc: "Blacklist or unblacklist users or servers from Astrix.",
+  desc: "Global blacklist quarantine management for users and servers.",
   botPermissions: [],
   userPermissions: [],
   devOnly: true,
@@ -41,28 +31,50 @@ module.exports = {
   async execute(client, message, args) {
     if (!noprefixManager.isOwner(message.author.id, client)) {
       return message.reply({
-        components: [buildErrorNotice("Access Denied", "Only bot owners can manage global blacklists.")],
+        components: [buildNotice("❌", "Access Denied", "Only bot owners can manage global blacklists.")],
         flags: MessageFlags.IsComponentsV2,
         allowedMentions: { repliedUser: false },
       }).catch(() => null);
     }
 
     const action = args[0]?.toLowerCase();
-    const targetArg = args[1];
-    const reason = args.slice(2).join(" ") || "Violated terms of service.";
 
-    if (!action || !["add", "remove", "list"].includes(action)) {
-      const helpContainer = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### 🚫 **GLOBAL BLACKLIST SYSTEM**\n\n` +
+    // Default: Help Menu & Action Hub
+    if (!action || !["add", "remove", "list", "show"].includes(action)) {
+      const store = noprefixManager.getStore();
+      const users = store.blacklistedUsers || [];
+      const servers = store.blacklistedServers || [];
+
+      const helpContainer = new ContainerBuilder()
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `### 🚫 **Global Blacklist Quarantine Suite**\n` +
+            `-# *Permanent Network-Wide Command & Feature Lockdown*\n\n` +
             `**➕ Add Blacklist:**\n` +
             `\`\`\`\n.blacklist add user <@user|id> [reason]\n.blacklist add server <id> [reason]\n\`\`\`\n` +
             `**➖ Remove Blacklist:**\n` +
             `\`\`\`\n.blacklist remove user <@user|id>\n.blacklist remove server <id>\n\`\`\`\n` +
-            `**📋 List Directory:**\n` +
+            `**📋 View Blacklist Directory:**\n` +
             `\`\`\`\n.blacklist list\n\`\`\``
+          )
         )
-      );
+        .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `> • **Blacklisted Users:** \`${users.length}\`\n` +
+            `> • **Blacklisted Servers:** \`${servers.length}\``
+          )
+        )
+        .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
+        .addActionRowComponents(
+          new ActionRowBuilder().addComponents(
+            new ButtonBuilder().setCustomId("owner_btn_blacklist").setLabel("Blacklist User").setEmoji("🚫").setStyle(ButtonStyle.Danger),
+            new ButtonBuilder().setCustomId("owner_btn_unblacklist_user").setLabel("Unblacklist User").setEmoji("🔓").setStyle(ButtonStyle.Success),
+            new ButtonBuilder().setCustomId("owner_btn_blacklist_server").setLabel("Blacklist Server").setEmoji("⛔").setStyle(ButtonStyle.Danger),
+            new ButtonBuilder().setCustomId("owner_tab_overview_btn").setLabel("Owner Hub").setEmoji("👑").setStyle(ButtonStyle.Secondary)
+          )
+        );
+
       return message.reply({
         components: [helpContainer],
         flags: MessageFlags.IsComponentsV2,
@@ -72,17 +84,33 @@ module.exports = {
 
     const store = noprefixManager.getStore();
 
-    if (action === "list") {
+    // List Action
+    if (action === "list" || action === "show") {
       const users = store.blacklistedUsers || [];
       const servers = store.blacklistedServers || [];
 
-      let userText = users.length > 0 ? users.map((u, i) => `\`${i + 1}.\` <@${u.id}> (\`${u.id}\`) — Reason: ${u.reason}`).join("\n") : "*No blacklisted users.*";
-      let serverText = servers.length > 0 ? servers.map((s, i) => `\`${i + 1}.\` ID: \`${s.id}\` — Reason: ${s.reason}`).join("\n") : "*No blacklisted servers.*";
+      const userText = users.length > 0
+        ? users.slice(0, 10).map((u, i) => `> \`${i + 1}.\` <@${u.id}> (\`${u.id}\`)\n> 📝 *Reason: ${u.reason}*`).join("\n")
+        : "> *No blacklisted users.*";
+
+      const serverText = servers.length > 0
+        ? servers.slice(0, 5).map((s, i) => `> \`${i + 1}.\` ID: \`${s.id}\` — Reason: *${s.reason}*`).join("\n")
+        : "> *No blacklisted servers.*";
 
       const container = new ContainerBuilder()
-        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`### 🚫 **GLOBAL BLACKLIST DIRECTORY**`))
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `### 🚫 **Global Blacklist Directory**\n\n` +
+            `**👤 Blacklisted Users (${users.length}):**\n` +
+            `${userText}\n\n` +
+            `**🏠 Blacklisted Servers (${servers.length}):**\n` +
+            `${serverText}`
+          )
+        )
         .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`**👤 Blacklisted Users:**\n${userText}\n\n**🏠 Blacklisted Servers:**\n${serverText}`));
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security Quarantine Directory`)
+        );
 
       return message.reply({
         components: [container],
@@ -92,33 +120,40 @@ module.exports = {
     }
 
     const targetType = args[1]?.toLowerCase();
-    const entityArg = args[2];
+    const entityArg = args[2] || (["user", "server"].includes(targetType) ? null : args[1]);
+    const reason = args.slice(3).join(" ") || "Violated bot terms of service.";
 
-    if (!targetType || !["user", "server"].includes(targetType) || !entityArg) {
+    if (!entityArg) {
       return message.reply({
-        components: [buildErrorNotice("Invalid Usage", "Usage: `.blacklist add <user|server> <id> [reason]`")],
+        components: [buildNotice("❌", "Invalid Usage", "Usage: `.blacklist add <user|server> <id> [reason]`")],
         flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { repliedUser: false },
       }).catch(() => null);
     }
 
     const targetId = entityArg.replace(/[<@!>]/g, "");
 
-    if (targetType === "user") {
+    // User Blacklisting
+    if (targetType === "user" || !["user", "server"].includes(targetType)) {
       if (action === "add") {
         if (noprefixManager.isOwner(targetId, client)) {
           return message.reply({
-            components: [buildErrorNotice("Action Blocked", "You cannot blacklist a Bot Owner.")],
+            components: [buildNotice("❌", "Action Blocked", "You cannot blacklist a Bot Owner.")],
             flags: MessageFlags.IsComponentsV2,
-            allowedMentions: { repliedUser: false },
           }).catch(() => null);
         }
 
         noprefixManager.addBlacklistUser(targetId, reason, message.author.id);
         return message.reply({
-          components: [buildSuccessNotice("User Blacklisted", `User <@${targetId}> has been blacklisted from using Astrix.\n> **Reason:** ${reason}`)],
+          components: [
+            buildNotice(
+              "🚫",
+              "User Blacklisted Globally",
+              `> • **User:** <@${targetId}> (\`${targetId}\`)\n` +
+              `> • **Reason:** *${reason}*\n` +
+              `> • **Authorizer:** <@${message.author.id}>`
+            ),
+          ],
           flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { repliedUser: false },
         }).catch(() => null);
       }
 
@@ -127,22 +162,29 @@ module.exports = {
         return message.reply({
           components: [
             removed
-              ? buildSuccessNotice("Blacklist Revoked", `User <@${targetId}> has been unblacklisted.`)
-              : buildErrorNotice("Not Found", `User <@${targetId}> is not in the blacklist directory.`),
+              ? buildNotice("✅", "Blacklist Revoked", `User <@${targetId}> has been unblacklisted from Astrix.`)
+              : buildNotice("❌", "Not Found", `User <@${targetId}> is not in the blacklist directory.`),
           ],
           flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { repliedUser: false },
         }).catch(() => null);
       }
     }
 
+    // Server Blacklisting
     if (targetType === "server") {
       if (action === "add") {
         noprefixManager.addBlacklistServer(targetId, reason, message.author.id);
         return message.reply({
-          components: [buildSuccessNotice("Server Blacklisted", `Server \`${targetId}\` has been blacklisted.\n> **Reason:** ${reason}`)],
+          components: [
+            buildNotice(
+              "⛔",
+              "Server Blacklisted Globally",
+              `> • **Server ID:** \`${targetId}\`\n` +
+              `> • **Reason:** *${reason}*\n` +
+              `> • **Authorizer:** <@${message.author.id}>`
+            ),
+          ],
           flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { repliedUser: false },
         }).catch(() => null);
       }
 
@@ -151,11 +193,10 @@ module.exports = {
         return message.reply({
           components: [
             removed
-              ? buildSuccessNotice("Blacklist Revoked", `Server \`${targetId}\` has been unblacklisted.`)
-              : buildErrorNotice("Not Found", `Server \`${targetId}\` is not in the blacklist directory.`),
+              ? buildNotice("✅", "Blacklist Revoked", `Server \`${targetId}\` has been unblacklisted.`)
+              : buildNotice("❌", "Not Found", `Server \`${targetId}\` is not in the blacklist directory.`),
           ],
           flags: MessageFlags.IsComponentsV2,
-          allowedMentions: { repliedUser: false },
         }).catch(() => null);
       }
     }

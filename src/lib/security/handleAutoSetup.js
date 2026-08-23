@@ -13,6 +13,7 @@ const {
   ChannelType,
 } = require("discord.js");
 const antinukeManager = require("../antinukeManager");
+const loggingManager = require("../loggingManager");
 const EMOJIS = require("../emojis");
 
 const DANGEROUS_PERMS = [
@@ -241,6 +242,8 @@ async function executeAutoSetup(guild, authorUser, selectedRoleOrAction, replyHa
   };
 
   try {
+    const config = antinukeManager.getGuildAntinuke(guild.id);
+
     // Step 1: Enable Master Anti-Nuke Shield
     antinukeManager.enableMaster(guild.id);
     await logStep(`🛡️ **Antinuke has been enabled!**`);
@@ -341,37 +344,173 @@ async function executeAutoSetup(guild, authorUser, selectedRoleOrAction, replyHa
     };
 
     const anLogChan = await setupChannel("antinuke-logs", "Astrix Anti-Nuke Automated Audit Alerts");
-    const modLogChan = await setupChannel("mod-logs", "Astrix Moderation & Security Activity Log");
+    const modLogChan = await setupChannel("mod-logs", "Astrix Moderation & Punishments Feed");
+    const msgLogChan = await setupChannel("message-logs", "Astrix Message Lifecycle & Edit Feed");
+    const memberLogChan = await setupChannel("member-logs", "Astrix Member Joins, Leaves & Identity Feed");
+    const voiceLogChan = await setupChannel("voice-logs", "Astrix Voice Channel Activity Feed");
+    const chanLogChan = await setupChannel("channel-logs", "Astrix Channel Structure & Permission Feed");
+    const roleLogChan = await setupChannel("role-logs", "Astrix Role & Hierarchy Audit Feed");
+    const serverLogChan = await setupChannel("server-logs", "Astrix Server, Vanity & Invite Feed");
 
     if (anLogChan) antinukeManager.setAntinukeLogs(guild.id, anLogChan.id);
     if (modLogChan) antinukeManager.setModLogs(guild.id, modLogChan.id);
 
-    // Send Welcome / Initialized Message in antinuke-logs
-    if (anLogChan) {
-      const welcomeLog = new ContainerBuilder()
+    try {
+      const loggingConfig = loggingManager.getGuildLogging(guild.id);
+      loggingConfig.enabled = true;
+      loggingConfig.channels.mod = modLogChan ? modLogChan.id : null;
+      loggingConfig.channels.message = msgLogChan ? msgLogChan.id : null;
+      loggingConfig.channels.member = memberLogChan ? memberLogChan.id : null;
+      loggingConfig.channels.voice = voiceLogChan ? voiceLogChan.id : null;
+      loggingConfig.channels.channel = chanLogChan ? chanLogChan.id : null;
+      loggingConfig.channels.role = roleLogChan ? roleLogChan.id : null;
+      loggingConfig.channels.server = serverLogChan ? serverLogChan.id : null;
+      loggingManager.setGuildLogging(guild.id, loggingConfig);
+    } catch (_) {}
+
+    // Send Specialized Welcome / Thank You Message in each of the 8 Log Channels
+    const sendWelcomeCard = async (chan, title, subtitle, desc, bulletTitle, bullets) => {
+      if (!chan) return;
+      const card = new ContainerBuilder()
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### 🛡️ **Astrix Security Fortress Online**\n` +
-            `-# *Sub-0.1s Real-Time Zero-Bypass Server Protection*\n\n` +
-            `> **Thank you for using Astrix Security!**\n` +
-            `> Anti-Nuke and Security Wall defense systems have been successfully initialized and configured for **${guild.name}**.\n\n` +
-            `**🔒 Active Protections:**\n` +
-            `> • **Security Wall:** ${wallRole ? `<@&${wallRole.id}>` : "Active"}\n` +
-            `> • **Defense Modules:** All 10 Modules Armed & Ready\n` +
-            `> • **Auto-Revert:** Enabled (Restores channels, roles & unbans victims)\n` +
-            `> • **Telemetry:** High-speed audit interception active\n\n` +
-            `-# ASTRIXCODE™ Security • System Ready • <t:${Math.floor(Date.now() / 1000)}:F>`
+            `### 🛡️ **${title}**\n` +
+            `-# *${subtitle}*\n\n` +
+            `> **${desc}**\n\n` +
+            `**${bulletTitle}**\n` +
+            bullets.map((b) => `> • ${b}`).join("\n") +
+            `\n\n-# ASTRIXCODE™ High-Speed Logging Engine • Initialized <t:${Math.floor(Date.now() / 1000)}:F>`
           )
         )
         .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
 
-      await anLogChan.send({
-        components: [welcomeLog],
+      await chan.send({
+        components: [card],
         flags: MessageFlags.IsComponentsV2,
       }).catch(() => null);
-    }
+    };
 
-    await logStep(`🛡️ **Log channels have been setuped in category \`${category?.name || "ASTRIX SECURITY"}\`!** (\`#antinuke-logs\`, \`#mod-logs\`)`);
+    // 1. Anti-Nuke Logs
+    await sendWelcomeCard(
+      anLogChan,
+      "Astrix Anti-Nuke Sentinel Online",
+      "Zero-Bypass Real-Time Server Defense",
+      `Thank you for securing ${guild.name} with Astrix Security! This channel records real-time anti-nuke defense triggers, instant quarantine actions, and zero-bypass breaches.`,
+      "🔒 Active Protection Safeguards:",
+      [
+        `**Security Wall:** ${wallRole ? `<@&${wallRole.id}>` : "Active"}`,
+        `**Defense Modules:** All 10 Anti-Nuke Modules Armed & Ready`,
+        `**Auto-Revert:** Automatic restoration for deleted channels & roles`,
+        `**Un-Bypassable Engine:** Sub-0.1s privilege interception active`,
+      ]
+    );
+
+    // 2. Moderation Logs
+    await sendWelcomeCard(
+      modLogChan,
+      "Astrix Moderation & Member Audit Feed",
+      "Member Sanctions & Disciplinary Enforcement",
+      `Thank you for setting up Astrix Moderation! This channel records all staff moderation commands, automated sanctions (Kicks, Bans, Timeouts, Mutes), and member security alerts.`,
+      "⚖️ Tracked Member Actions:",
+      [
+        `**Member Sanctions:** Kicks, Bans, Unbans, Timeouts & Warnings`,
+        `**Staff Audits:** Moderator tag, target ID & provided reason`,
+        `**Quarantine Records:** Automated anti-abuse member lockdowns`,
+        `**Disciplinary Records:** Persistent moderation action history`,
+      ]
+    );
+
+    // 3. Message Logs
+    await sendWelcomeCard(
+      msgLogChan,
+      "Astrix Message & Chat Audit Feed",
+      "Message Deletions, Edits & Purge Records",
+      `Thank you for enabling Message Tracking! This channel records deleted messages, edited message history, bulk purge operations, and pinned messages.`,
+      "💬 Tracked Message Events:",
+      [
+        `**Message Deletes:** Author, channel & original message content`,
+        `**Message Edits:** Before and after comparative diff`,
+        `**Bulk Purges:** Moderator clear commands & message count`,
+        `**Pin Actions:** Messages pinned or unpinned in channels`,
+      ]
+    );
+
+    // 4. Member Logs
+    await sendWelcomeCard(
+      memberLogChan,
+      "Astrix Member & Identity Audit Feed",
+      "Member Joins, Departures & Profile Changes",
+      `Thank you for enabling Member Tracking! This channel records member joins, leaves, bot additions, nickname updates, avatar changes, and role assignments.`,
+      "👥 Tracked Member Events:",
+      [
+        `**Member Gate:** Member joins, account age & departures`,
+        `**Identity Updates:** Nickname & server avatar modifications`,
+        `**Bot Ingestion:** New bot invites & integrator authorizations`,
+        `**Role Updates:** Direct roles granted or revoked from members`,
+      ]
+    );
+
+    // 5. Voice Logs
+    await sendWelcomeCard(
+      voiceLogChan,
+      "Astrix Voice Activity & Session Feed",
+      "Voice Channel Connections & State Changes",
+      `Thank you for enabling Voice Tracking! This channel records voice joins, leaves, channel switches, and server mute/deafen states.`,
+      "🎙️ Tracked Voice Events:",
+      [
+        `**Voice Lifecycle:** Joined, Left & Switched voice channels`,
+        `**Session Time:** Time spent in active audio rooms`,
+        `**Audio State:** Server Mute & Deafen toggles`,
+        `**Stream & Video:** Screen sharing & video camera updates`,
+      ]
+    );
+
+    // 6. Channel Logs
+    await sendWelcomeCard(
+      chanLogChan,
+      "Astrix Channel & Structure Audit Feed",
+      "Channel Modifications & Permission Tracking",
+      `Thank you for enabling Channel Monitoring! This channel records all channel creations, deletions, name/topic changes, and permission override modifications.`,
+      "📂 Tracked Channel Events:",
+      [
+        `**Channel Lifecycle:** Channels Created, Deleted, Cloned & Restored`,
+        `**Permission Overwrites:** ViewChannel, SendMessages & Role syncs`,
+        `**Topic & Name Changes:** Live channel metadata audits`,
+        `**Thread Tracking:** Public and private thread lifecycles`,
+      ]
+    );
+
+    // 7. Role Logs
+    await sendWelcomeCard(
+      roleLogChan,
+      "Astrix Role & Hierarchy Audit Feed",
+      "Role Lifecycle, Permissions & Assignment Tracking",
+      `Thank you for enabling Role Monitoring! This channel records role creations, deletions, dangerous permission grants, and role assignments across server members.`,
+      "🎭 Tracked Role Events:",
+      [
+        `**Role Lifecycle:** Roles Created, Deleted, Renamed & Reordered`,
+        `**Permission Audits:** Administrator & Manage Server permission grants`,
+        `**Member Roles:** Custom role assignments & staff role grants`,
+        `**Hierarchy Tracking:** Role color, hoist & mentionable updates`,
+      ]
+    );
+
+    // 8. Server Logs
+    await sendWelcomeCard(
+      serverLogChan,
+      "Astrix Server, Vanity & Invite Feed",
+      "Guild Settings, Vanity URL & Integration Tracking",
+      `Thank you for enabling Server Tracking! This channel records server setting updates, vanity URL alterations, server boost events, invite links, and custom emojis/stickers.`,
+      "🌐 Tracked Server Events:",
+      [
+        `**Guild Settings:** Server Name, Icon, Banner & Verification Level`,
+        `**Vanity & Invites:** Invite creation, deletion & vanity URL defense`,
+        `**Server Boosts:** Member boosts added & boost tier changes`,
+        `**Custom Assets:** Emojis & stickers uploaded, edited or deleted`,
+      ]
+    );
+
+    await logStep(`🛡️ **Dedicated log channels have been setuped in category \`${category?.name || "ASTRIX SECURITY"}\`!** (\`#antinuke-logs\`, \`#mod-logs\`, \`#message-logs\`, \`#member-logs\`, \`#voice-logs\`, \`#channel-logs\`, \`#role-logs\`, \`#server-logs\`)`);
 
     // Step 4: Permission Stripping across dangerous roles
     await logStep(`🔧 **Stripping administrator/manage server/kick/ban permissions from all roles (including integration roles) except Astrix Security roles...**`);
@@ -445,6 +584,12 @@ async function executeAutoSetup(guild, authorUser, selectedRoleOrAction, replyHa
       `> 🛡️ Checking log channels permissions...\n` +
       `> 🛡️ \`antinuke-logs\` has proper security permissions!\n` +
       `> 🛡️ \`mod-logs\` has proper security permissions!\n` +
+      `> 🛡️ \`message-logs\` has proper security permissions!\n` +
+      `> 🛡️ \`member-logs\` has proper security permissions!\n` +
+      `> 🛡️ \`voice-logs\` has proper security permissions!\n` +
+      `> 🛡️ \`channel-logs\` has proper security permissions!\n` +
+      `> 🛡️ \`role-logs\` has proper security permissions!\n` +
+      `> 🛡️ \`server-logs\` has proper security permissions!\n` +
       `> 🛡️ Checking role positions...\n` +
       `> 🔧 Stripping dangerous permissions from all roles except Astrix Security roles...\n` +
       `> 🛡️ **Stripped the requested permissions from roles. Failed: ${failedCount}**\n\n` +
@@ -576,12 +721,21 @@ async function executeAutoCleanup(guild, authorUser, replyHandler) {
     const channelIdsToDelete = new Set([
       config.logChannel,
       config.modLogChannel,
+      config.chanLogChannel,
+      config.roleLogChannel,
+      config.serverLogChannel,
     ].filter(Boolean));
 
     const securityChannelNames = [
       "antinuke-logs",
       "superantinuke-logs",
       "mod-logs",
+      "message-logs",
+      "member-logs",
+      "voice-logs",
+      "channel-logs",
+      "role-logs",
+      "server-logs",
     ];
 
     const channelsCache = Array.from(guild.channels.cache.values());
@@ -647,7 +801,18 @@ async function executeAutoCleanup(guild, authorUser, replyHandler) {
   return true;
 }
 
+function buildLoadingNotice(title = "Processing Action", description = "Please wait while your request is processed...") {
+  const container = new ContainerBuilder();
+  container.addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(
+      `### ⏳ **${title}**\n> ${description}`
+    )
+  );
+  return container;
+}
+
 module.exports = {
+  buildLoadingNotice,
   buildAutoSetupWallSelectionContainer,
   buildEnableRecommendationContainer,
   executeAutoSetup,
