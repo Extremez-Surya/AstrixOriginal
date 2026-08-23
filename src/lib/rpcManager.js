@@ -60,13 +60,12 @@ function replacePlaceholders(text, client) {
   const prefix = client.clientPrefix || client.prefix || cfgPrefix || "-";
 
   return text
-    .replace(/\{guilds\}/gi, totalGuilds)
-    .replace(/\{servers\}/gi, totalGuilds)
-    .replace(/\{members\}/gi, totalMembers)
-    .replace(/\{users\}/gi, totalMembers)
+    .replace(/\{guilds?\}/gi, totalGuilds)
+    .replace(/\{servers?\}/gi, totalGuilds)
+    .replace(/\{members?\}/gi, totalMembers)
+    .replace(/\{users?\}/gi, totalMembers)
     .replace(/\{ping\}/gi, `${ping}ms`)
-    .replace(/\{clientprefix\}/gi, prefix)
-    .replace(/\{prefix\}/gi, prefix);
+    .replace(/\{(?:client)?prefix\}/gi, prefix);
 }
 
 function applyPresence(client, config, activityItem) {

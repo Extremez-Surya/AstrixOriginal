@@ -1,8 +1,6 @@
 const {
   ContainerBuilder,
   TextDisplayBuilder,
-  SeparatorBuilder,
-  SeparatorSpacingSize,
   MessageFlags,
 } = require("discord.js");
 const noprefixManager = require("../../lib/noprefixManager");
@@ -12,7 +10,7 @@ const util = require("util");
 module.exports = {
   alias: ["eval", "ev", "e", "js", "execjs"],
   category: "Owner",
-  desc: "Executes arbitrary JavaScript code on the Node.js runtime with execution timing and memory diff.",
+  desc: "Executes arbitrary JavaScript code on the Node.js runtime with minimal clean output.",
   botPermissions: [],
   userPermissions: [],
   devOnly: true,
@@ -67,7 +65,6 @@ module.exports = {
       },
     });
 
-    const startMemory = process.memoryUsage().heapUsed;
     const startTime = process.hrtime();
 
     try {
@@ -89,9 +86,8 @@ module.exports = {
 
       const diffTime = process.hrtime(startTime);
       const executionMs = ((diffTime[0] * 1e9 + diffTime[1]) / 1e6).toFixed(2);
-      const memDiff = ((process.memoryUsage().heapUsed - startMemory) / 1024).toFixed(1);
 
-      let output = typeof evaled !== "string" ? util.inspect(evaled, { depth: 1 }) : evaled;
+      let output = typeof evaled !== "string" ? util.inspect(evaled, { depth: 0 }) : evaled;
 
       // 🔒 Deep Multi-Layer Secret Sanitization
       output = sanitizeString(output);
@@ -99,21 +95,15 @@ module.exports = {
       const type = typeof evaled;
 
       if (output.length > 1800) {
-        output = output.slice(0, 1800) + "\n... [Output Truncated]";
+        output = output.slice(0, 1800) + "\n... [Truncated]";
       }
 
-      const container = new ContainerBuilder()
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### ⚡ **JavaScript REPL Execution**\n` +
-            `-# *Type: \`${type}\` • Time: \`${executionMs}ms\` • Mem: \`${memDiff} KB\`*\n\n` +
-            `\`\`\`js\n${output || "undefined"}\n\`\`\``
-          )
+      const container = new ContainerBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `### ⚡ **Eval Output** • \`${executionMs}ms\` • \`${type}\`\n` +
+          `\`\`\`js\n${output || "undefined"}\n\`\`\``
         )
-        .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Hardened Runtime • Evaluated <t:${Math.floor(Date.now() / 1000)}:R>`)
-        );
+      );
 
       return message.reply({
         components: [container],
@@ -124,21 +114,16 @@ module.exports = {
       const diffTime = process.hrtime(startTime);
       const executionMs = ((diffTime[0] * 1e9 + diffTime[1]) / 1e6).toFixed(2);
 
-      let errorText = err.stack || err.message || String(err);
+      // Clean concise error without huge internal discord.js stack trace
+      let errorText = err.message ? `${err.name || "Error"}: ${err.message}` : String(err);
       errorText = sanitizeString(errorText);
 
-      const errorContainer = new ContainerBuilder()
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### ❌ **Evaluation Exception**\n` +
-            `-# *Execution halted after ${executionMs}ms*\n\n` +
-            `\`\`\`js\n${errorText}\n\`\`\``
-          )
+      const errorContainer = new ContainerBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `### ❌ **Eval Error** • \`${executionMs}ms\`\n` +
+          `\`\`\`js\n${errorText}\n\`\`\``
         )
-        .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Runtime Error Trap`)
-        );
+      );
 
       return message.reply({
         components: [errorContainer],

@@ -1,11 +1,15 @@
 {
   "enabled": true,
-  "status": "online",
+  "status": "dnd",
   "rotateInterval": 15000,
   "activities": [
     {
       "type": "CUSTOM",
       "state": "Use {clientPrefix}help | use /help"
+    },
+    {
+      "type": "CUSTOM",
+      "state": "{guild} Servers | {member} Members"
     }
   ]
 }
