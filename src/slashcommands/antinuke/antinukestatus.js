@@ -23,7 +23,7 @@ module.exports = {
     if (!interaction.guild) return;
 
     const config = antinukeManager.getGuildAntinuke(interaction.guild.id);
-    const panel = buildAntinukeContainer(config);
+    const panel = buildAntinukeContainer(config, interaction.guild);
 
     return interaction.reply({
       components: [panel],

@@ -9,11 +9,20 @@ let saveTimer = null;
 function getDefaultConfig() {
   return {
     enabled: false,
+    superAntinuke: false,
     logChannel: null,
+    superLogChannel: null,
+    modLogChannel: null,
+    securityWallRole: null,
+    antivanityAdminRole: null,
+    criminalsRole: null,
+    unbypassableRole: null,
+    wallRoles: [],
     extraOwners: [],
     whitelist: [],
+    superWhitelist: [],
     punishment: "ban", // "ban" | "kick" | "strip" | "timeout" | "quarantine"
-    threshold: 1, // Default 1 for zero-tolerance sub-0.1s instant interception
+    threshold: 3, // Default 3 actions (with rapid sub-second burst detection)
     windowMs: 60000,
     autoRevert: true,
     modules: {
@@ -79,8 +88,10 @@ function getGuildAntinuke(guildId) {
     ...defaultConfig,
     ...raw,
     modules: { ...defaultConfig.modules, ...(raw.modules || {}) },
+    wallRoles: Array.isArray(raw.wallRoles) ? raw.wallRoles : (raw.securityWallRole ? [raw.securityWallRole] : []),
     extraOwners: Array.isArray(raw.extraOwners) ? raw.extraOwners : [],
     whitelist: Array.isArray(raw.whitelist) ? raw.whitelist : [],
+    superWhitelist: Array.isArray(raw.superWhitelist) ? raw.superWhitelist : [],
     stats: { ...defaultConfig.stats, ...(raw.stats || {}) },
   };
 }
@@ -164,6 +175,7 @@ function isWhitelisted(client, guild, userId) {
   const config = getGuildAntinuke(guild.id);
   if (config.extraOwners && config.extraOwners.includes(userId)) return true;
   if (config.whitelist && config.whitelist.includes(userId)) return true;
+  if (config.superWhitelist && config.superWhitelist.includes(userId)) return true;
 
   return false;
 }
@@ -195,6 +207,34 @@ function clearWhitelist(guildId) {
   return true;
 }
 
+function addSuperWhitelist(guildId, userId) {
+  const config = getGuildAntinuke(guildId);
+  if (!config.superWhitelist) config.superWhitelist = [];
+  if (!config.superWhitelist.includes(userId)) {
+    config.superWhitelist.push(userId);
+    setGuildAntinuke(guildId, config);
+    return true;
+  }
+  return false;
+}
+
+function removeSuperWhitelist(guildId, userId) {
+  const config = getGuildAntinuke(guildId);
+  if (config.superWhitelist && config.superWhitelist.includes(userId)) {
+    config.superWhitelist = config.superWhitelist.filter((id) => id !== userId);
+    setGuildAntinuke(guildId, config);
+    return true;
+  }
+  return false;
+}
+
+function clearSuperWhitelist(guildId) {
+  const config = getGuildAntinuke(guildId);
+  config.superWhitelist = [];
+  setGuildAntinuke(guildId, config);
+  return true;
+}
+
 function addExtraOwner(guildId, userId) {
   const config = getGuildAntinuke(guildId);
   if (!config.extraOwners.includes(userId)) {
@@ -213,6 +253,56 @@ function removeExtraOwner(guildId, userId) {
     return true;
   }
   return false;
+}
+
+function setSecurityWallRole(guildId, roleId) {
+  const config = getGuildAntinuke(guildId);
+  config.securityWallRole = roleId;
+  if (!config.wallRoles) config.wallRoles = [];
+  if (roleId && !config.wallRoles.includes(roleId)) {
+    config.wallRoles.push(roleId);
+  }
+  setGuildAntinuke(guildId, config);
+  return true;
+}
+
+function addWallRole(guildId, roleId) {
+  const config = getGuildAntinuke(guildId);
+  if (!config.wallRoles) config.wallRoles = [];
+  if (!config.wallRoles.includes(roleId)) {
+    config.wallRoles.push(roleId);
+    if (!config.securityWallRole) config.securityWallRole = roleId;
+    setGuildAntinuke(guildId, config);
+    return true;
+  }
+  return false;
+}
+
+function removeWallRole(guildId, roleId) {
+  const config = getGuildAntinuke(guildId);
+  if (config.wallRoles && config.wallRoles.includes(roleId)) {
+    config.wallRoles = config.wallRoles.filter((id) => id !== roleId);
+    if (config.securityWallRole === roleId) {
+      config.securityWallRole = config.wallRoles[0] || null;
+    }
+    setGuildAntinuke(guildId, config);
+    return true;
+  }
+  return false;
+}
+
+function setAntinukeLogs(guildId, channelId) {
+  const config = getGuildAntinuke(guildId);
+  config.logChannel = channelId;
+  setGuildAntinuke(guildId, config);
+  return true;
+}
+
+function setModLogs(guildId, channelId) {
+  const config = getGuildAntinuke(guildId);
+  config.modLogChannel = channelId;
+  setGuildAntinuke(guildId, config);
+  return true;
 }
 
 function incrementStats(guildId, key, count = 1) {
@@ -253,8 +343,16 @@ module.exports = {
   addWhitelist,
   removeWhitelist,
   clearWhitelist,
+  addSuperWhitelist,
+  removeSuperWhitelist,
+  clearSuperWhitelist,
   addExtraOwner,
   removeExtraOwner,
+  setSecurityWallRole,
+  addWallRole,
+  removeWallRole,
+  setAntinukeLogs,
+  setModLogs,
   incrementStats,
   resetAntinuke,
 };

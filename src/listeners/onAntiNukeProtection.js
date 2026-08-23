@@ -89,6 +89,54 @@ function logAntinukeAsync(guild, config, title, description) {
 }
 
 /**
+ * Sends a direct message to the punished user explaining the enforcement action
+ */
+async function sendPunishmentDMFast(guild, member, punishment, reason) {
+  try {
+    const actionLabel = (punishment || "ban").toUpperCase();
+    const serverName = guild?.name || "the server";
+    const dmContainer = new ContainerBuilder()
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `### 🛡️ **Astrix Anti-Nuke Security Alert**\n` +
+          `You have received an automated security enforcement action in **${serverName}**.`
+        )
+      )
+      .addSeparatorComponents(
+        new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+      )
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `> • **Server:** \`${serverName}\` (\`${guild.id}\`)\n` +
+          `> • **Enforcement Action:** \`${actionLabel}\`\n` +
+          `> • **Violation:** ${reason}\n` +
+          `> • **Security Policy:** Zero-Bypass Real-Time Server Defense\n\n` +
+          `-# *If you are an administrator of this server, contact the Server Owner (<@${guild.ownerId}>) to add your account to the Anti-Nuke Whitelist (` + "`" + `.antinuke whitelist add @user` + "`" + `).*`
+        )
+      )
+      .addSeparatorComponents(
+        new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+      )
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `-# ASTRIXCODE™ Security • Automated Anti-Nuke Protection`
+        )
+      );
+
+    await member.send({
+      components: [dmContainer],
+      flags: MessageFlags.IsComponentsV2,
+    }).catch(async () => {
+      await member.send(
+        `🛡️ **[Astrix Anti-Nuke Alert]** You received a **${actionLabel}** in **${serverName}**.\n` +
+        `**Reason:** ${reason}\n` +
+        `*If you are an administrator, ask the Server Owner (<@${guild.ownerId}>) to whitelist you.*`
+      ).catch(() => null);
+    });
+  } catch (_) {}
+}
+
+/**
  * Super-fast punishment executor with hierarchy-fallback role stripping & quarantine
  */
 async function punishExecutorFast(guild, executorId, punishment, reason) {
@@ -96,6 +144,9 @@ async function punishExecutorFast(guild, executorId, punishment, reason) {
   try {
     const member = await guild.members.fetch(executorId).catch(() => null);
     if (!member) return false;
+
+    // Send DM notification to the user before expulsion/ban
+    await sendPunishmentDMFast(guild, member, punishment, reason);
 
     // Direct Ban (Most common & most secure)
     if (punishment === "ban" && member.bannable) {
@@ -139,7 +190,7 @@ async function punishExecutorFast(guild, executorId, punishment, reason) {
 /**
  * Ultra-Fast Strike Handler (Sub-0.1s response)
  */
-function handleStrikeFast(client, guild, executor, moduleKey, eventTitle, details, revertFn = null) {
+function handleStrikeFast(client, guild, executor, moduleKey, eventTitle, details, revertFn = null, customThreshold = null) {
   if (!guild || !executor || executor.id === client.user.id) return;
   const startTime = Date.now();
   const config = antinukeManager.getGuildAntinuke(guild.id);
@@ -152,7 +203,7 @@ function handleStrikeFast(client, guild, executor, moduleKey, eventTitle, detail
   const userId = executor.id;
   const now = Date.now();
   const windowMs = config.windowMs || 60000;
-  const threshold = config.threshold || 1; // Default 1 for zero tolerance
+  const threshold = customThreshold !== null ? customThreshold : (config.threshold || 3);
 
   if (!strikeCache.has(guildId)) strikeCache.set(guildId, new Map());
   const gStrikes = strikeCache.get(guildId);
@@ -162,12 +213,30 @@ function handleStrikeFast(client, guild, executor, moduleKey, eventTitle, detail
 
   if (!uStrikes[moduleKey]) uStrikes[moduleKey] = [];
   uStrikes[moduleKey] = uStrikes[moduleKey].filter((t) => now - t < windowMs);
+
+  const prevTimestamps = [...uStrikes[moduleKey]];
   uStrikes[moduleKey].push(now);
 
   const strikeCount = uStrikes[moduleKey].length;
 
-  // 1. Parallel Auto-Revert (Dispatched in <1ms)
-  if (config.autoRevert && typeof revertFn === "function") {
+  // Real-Time Nuke / Rapid Burst Detection (e.g. 2 actions under 3000ms, or hitting 3+ threshold)
+  let isNukeTriggered = false;
+  let triggerReason = "";
+
+  if (strikeCount >= threshold) {
+    isNukeTriggered = true;
+    triggerReason = `Exceeded threshold limit (${strikeCount}/${threshold} actions in 60s)`;
+  } else if (strikeCount >= 2 && prevTimestamps.length > 0) {
+    const lastActionTime = prevTimestamps[prevTimestamps.length - 1];
+    const diffMs = now - lastActionTime;
+    if (diffMs <= 3000) {
+      isNukeTriggered = true;
+      triggerReason = `High-speed automated burst detected (${strikeCount} actions in ${diffMs}ms)`;
+    }
+  }
+
+  // 1. Parallel Auto-Revert (Dispatched immediately if nuke triggered)
+  if (config.autoRevert && typeof revertFn === "function" && isNukeTriggered) {
     setImmediate(async () => {
       try {
         await revertFn();
@@ -177,10 +246,10 @@ function handleStrikeFast(client, guild, executor, moduleKey, eventTitle, detail
   }
 
   // 2. Parallel Punishment Execution
-  if (strikeCount >= threshold) {
+  if (isNukeTriggered) {
     uStrikes[moduleKey] = [];
     const punishment = config.punishment || "ban";
-    const reason = `Anti-Nuke Triggered: ${moduleKey} violation (${strikeCount}/${threshold})`;
+    const reason = `Anti-Nuke: ${moduleKey} violation — ${triggerReason}`;
 
     punishExecutorFast(guild, executor.id, punishment, reason).then((punished) => {
       const latencyMs = Date.now() - startTime;
@@ -193,14 +262,15 @@ function handleStrikeFast(client, guild, executor, moduleKey, eventTitle, detail
         config,
         `🚨 NUKE INTERCEPTED - ${eventTitle}`,
         `> - **Offender:** <@${executor.id}> (\`${executor.tag || executor.id}\`)\n` +
-          `> - **Violation:** Unauthorized ${moduleKey} modification (${strikeCount}/${threshold} actions)\n` +
-          `> - **Punishment Executed:** \`${punishment.toUpperCase()}\` (Sub-0.1s Enforcement)\n` +
+          `> - **Trigger Condition:** ${triggerReason}\n` +
+          `> - **Punishment Executed:** \`${punishment.toUpperCase()}\` (Instant Enforcement)\n` +
           `> - **Auto-Revert State:** \`${config.autoRevert ? "REVERTED" : "DISABLED"}\`\n` +
           `> - **Reaction Latency:** \`${latencyMs}ms\`\n` +
           `> - **Details:** ${details}`
       );
     });
   } else {
+    // Single normal action (1 action / below threshold): DO NOT BAN, log warning notice
     const latencyMs = Date.now() - startTime;
     logAntinukeAsync(
       guild,
@@ -208,6 +278,7 @@ function handleStrikeFast(client, guild, executor, moduleKey, eventTitle, detail
       `⚠️ Anti-Nuke Strike Warning (${strikeCount}/${threshold})`,
       `> - **User:** <@${executor.id}> (\`${executor.tag || executor.id}\`)\n` +
         `> - **Module:** \`${moduleKey}\`\n` +
+        `> - **Notice:** First action recorded. Repeat rapid actions will trigger automated enforcement.\n` +
         `> - **Reaction Latency:** \`${latencyMs}ms\`\n` +
         `> - **Details:** ${details}`
     );
@@ -277,6 +348,8 @@ module.exports = {
       if (!channel.guild) return;
       const entry = await getAuditLogFast(channel.guild, AuditLogEvent.ChannelDelete, channel.id);
       if (!entry || !entry.executor) return;
+      if (processedAuditLogs.has(entry.id)) return;
+      processedAuditLogs.add(entry.id);
 
       handleStrikeFast(
         client,
@@ -307,6 +380,8 @@ module.exports = {
       if (!channel.guild) return;
       const entry = await getAuditLogFast(channel.guild, AuditLogEvent.ChannelCreate, channel.id);
       if (!entry || !entry.executor) return;
+      if (processedAuditLogs.has(entry.id)) return;
+      processedAuditLogs.add(entry.id);
 
       handleStrikeFast(
         client,
@@ -332,6 +407,8 @@ module.exports = {
 
       const entry = await getAuditLogFast(newChannel.guild, AuditLogEvent.ChannelUpdate, newChannel.id);
       if (!entry || !entry.executor) return;
+      if (processedAuditLogs.has(entry.id)) return;
+      processedAuditLogs.add(entry.id);
 
       handleStrikeFast(
         client,
@@ -353,6 +430,8 @@ module.exports = {
     client.on(Events.GuildRoleDelete, async (role) => {
       const entry = await getAuditLogFast(role.guild, AuditLogEvent.RoleDelete, role.id);
       if (!entry || !entry.executor) return;
+      if (processedAuditLogs.has(entry.id)) return;
+      processedAuditLogs.add(entry.id);
 
       handleStrikeFast(
         client,
@@ -377,6 +456,8 @@ module.exports = {
     client.on(Events.GuildRoleCreate, async (role) => {
       const entry = await getAuditLogFast(role.guild, AuditLogEvent.RoleCreate, role.id);
       if (!entry || !entry.executor) return;
+      if (processedAuditLogs.has(entry.id)) return;
+      processedAuditLogs.add(entry.id);
 
       handleStrikeFast(
         client,
@@ -400,6 +481,8 @@ module.exports = {
 
       const entry = await getAuditLogFast(newRole.guild, AuditLogEvent.RoleUpdate, newRole.id);
       if (!entry || !entry.executor) return;
+      if (processedAuditLogs.has(entry.id)) return;
+      processedAuditLogs.add(entry.id);
 
       handleStrikeFast(
         client,
@@ -418,6 +501,8 @@ module.exports = {
     client.on(Events.GuildBanAdd, async (ban) => {
       const entry = await getAuditLogFast(ban.guild, AuditLogEvent.MemberBanAdd, ban.user.id);
       if (!entry || !entry.executor) return;
+      if (processedAuditLogs.has(entry.id)) return;
+      processedAuditLogs.add(entry.id);
 
       handleStrikeFast(
         client,
@@ -437,6 +522,8 @@ module.exports = {
       if (!member.guild) return;
       const entry = await getAuditLogFast(member.guild, AuditLogEvent.MemberKick, member.id);
       if (!entry || !entry.executor) return;
+      if (processedAuditLogs.has(entry.id)) return;
+      processedAuditLogs.add(entry.id);
 
       handleStrikeFast(
         client,
@@ -455,6 +542,8 @@ module.exports = {
       if (!channel.guild) return;
       const entry = await getAuditLogFast(channel.guild, AuditLogEvent.WebhookCreate);
       if (!entry || !entry.executor) return;
+      if (processedAuditLogs.has(entry.id)) return;
+      processedAuditLogs.add(entry.id);
 
       handleStrikeFast(
         client,
@@ -473,6 +562,8 @@ module.exports = {
       if (!member.guild || !member.user.bot) return;
       const entry = await getAuditLogFast(member.guild, AuditLogEvent.BotAdd, member.id);
       if (!entry || !entry.executor) return;
+      if (processedAuditLogs.has(entry.id)) return;
+      processedAuditLogs.add(entry.id);
 
       handleStrikeFast(
         client,
@@ -500,6 +591,8 @@ module.exports = {
 
       const entry = await getAuditLogFast(newGuild, AuditLogEvent.GuildUpdate);
       if (!entry || !entry.executor) return;
+      if (processedAuditLogs.has(entry.id)) return;
+      processedAuditLogs.add(entry.id);
 
       handleStrikeFast(
         client,
@@ -526,6 +619,8 @@ module.exports = {
 
       const entry = await getAuditLogFast(newMember.guild, AuditLogEvent.MemberRoleUpdate, newMember.id);
       if (!entry || !entry.executor) return;
+      if (processedAuditLogs.has(entry.id)) return;
+      processedAuditLogs.add(entry.id);
 
       handleStrikeFast(
         client,
@@ -546,6 +641,8 @@ module.exports = {
       if (!guild) return;
       const entry = await getAuditLogFast(guild, AuditLogEvent.EmojiDelete);
       if (!entry || !entry.executor) return;
+      if (processedAuditLogs.has(entry.id)) return;
+      processedAuditLogs.add(entry.id);
 
       handleStrikeFast(
         client,
@@ -562,6 +659,8 @@ module.exports = {
       if (!guild) return;
       const entry = await getAuditLogFast(guild, AuditLogEvent.StickerDelete);
       if (!entry || !entry.executor) return;
+      if (processedAuditLogs.has(entry.id)) return;
+      processedAuditLogs.add(entry.id);
 
       handleStrikeFast(
         client,

@@ -20,7 +20,7 @@ module.exports = {
 
   async execute(client, message, args) {
     const currentPrefix = prefixManager.getPrefix(message.guild.id);
-    const isCustom = currentPrefix !== (clientPrefix || ".");
+    const isCustom = currentPrefix !== (clientPrefix || "-");
 
     const container = new ContainerBuilder()
       .addTextDisplayComponents(

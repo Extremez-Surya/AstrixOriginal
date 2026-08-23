@@ -4,6 +4,9 @@ const {
   SeparatorBuilder,
   SeparatorSpacingSize,
   MessageFlags,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
 } = require("discord.js");
 const antinukeManager = require("../../lib/antinukeManager");
 const { buildAntinukeContainer } = require("../../lib/security/handleAntiNukeInteraction");
@@ -29,6 +32,58 @@ function buildErrorNotice(title, description) {
       new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
     )
     .addTextDisplayComponents(new TextDisplayBuilder().setContent(description));
+}
+
+function buildCommandDirectoryContainer() {
+  const container = new ContainerBuilder();
+
+  container.addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(
+      `### 🛡️ **Antinuke Commands**\n\n` +
+      `🛡️ **Core Antinuke**\n` +
+      `\`antinuke\` , \`antinuke enable\` , \`antinuke disable\` , \`antinuke info\` , \`antinuke settings\` , \`autosetup\` , \`setantinukelogs\` , \`setmodlogs\` , \`wallroles\` , \`wallrole_add\` , \`wallrole_remove\` , \`verify_permissions\`\n\n` +
+      `> \`antinuke\` **aliases -** \`an\`\n\n` +
+      `🚀 **Whitelist**\n` +
+      `\`antinuke whitelist add <user>\` , \`antinuke whitelist remove <user>\` , \`antinuke whitelist reset <user>\` , \`antinuke whitelist show\`\n\n` +
+      `> \`antinuke\` **aliases -** \`an\`\n` +
+      `> \`whitelist\` **aliases -** \`wl\`\n\n` +
+      `• \`Note:\` \`Both antinuke and superantinuke have their own separate whitelist systems.\`\n\n` +
+      `Use the commands above to manage all antinuke features.`
+    )
+  );
+
+  container.addSeparatorComponents(
+    new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+  );
+
+  const btnPanel = new ButtonBuilder()
+    .setCustomId("antinuke_nav_overview")
+    .setLabel("Control Center")
+    .setEmoji("🛡️")
+    .setStyle(ButtonStyle.Primary);
+
+  const btnAutoSetup = new ButtonBuilder()
+    .setCustomId("antinuke_nav_autosetup")
+    .setLabel("Auto Setup")
+    .setEmoji("🚀")
+    .setStyle(ButtonStyle.Success);
+
+  const btnWhitelist = new ButtonBuilder()
+    .setCustomId("antinuke_nav_trust")
+    .setLabel("Whitelist")
+    .setEmoji("📋")
+    .setStyle(ButtonStyle.Secondary);
+
+  const btnSettings = new ButtonBuilder()
+    .setCustomId("antinuke_nav_settings")
+    .setLabel("Settings")
+    .setEmoji("⚙️")
+    .setStyle(ButtonStyle.Secondary);
+
+  const row = new ActionRowBuilder().addComponents(btnPanel, btnAutoSetup, btnWhitelist, btnSettings);
+  container.addActionRowComponents(row);
+
+  return container;
 }
 
 module.exports = {
@@ -64,9 +119,19 @@ module.exports = {
     const guildId = message.guild.id;
     const subcommand = args[0]?.toLowerCase();
 
-    // Default: Open Dashboard Container
-    if (!subcommand || subcommand === "config" || subcommand === "panel" || subcommand === "status") {
-      const panel = buildAntinukeContainer(config);
+    // Default: Open Command Directory Menu (Matches Image 1)
+    if (!subcommand || subcommand === "help" || subcommand === "cmds" || subcommand === "commands") {
+      const dirContainer = buildCommandDirectoryContainer();
+      return message.reply({
+        components: [dirContainer],
+        flags: MessageFlags.IsComponentsV2,
+        allowedMentions: { repliedUser: false },
+      }).catch(() => null);
+    }
+
+    // Dashboard Container panel
+    if (subcommand === "config" || subcommand === "panel" || subcommand === "status" || subcommand === "info" || subcommand === "settings") {
+      const panel = buildAntinukeContainer(config, message.guild);
       return message.reply({
         components: [panel],
         flags: MessageFlags.IsComponentsV2,
@@ -74,28 +139,41 @@ module.exports = {
       }).catch(() => null);
     }
 
-    // Enable master switch
+    // Enable master switch (Shows recommendation prompt matching Image 2)
     if (subcommand === "enable" || subcommand === "on") {
-      antinukeManager.enableMaster(guildId);
+      const { buildEnableRecommendationContainer } = require("../../lib/security/handleAutoSetup");
+      const promptContainer = buildEnableRecommendationContainer(message.guild, message.author);
       return message.reply({
-        components: [
-          buildSuccessNotice("Anti-Nuke Activated", "Master Anti-Nuke protection system is now **ENABLED** (Sub-0.1s Zero-Bypass Engine Active)."),
-        ],
+        components: [promptContainer],
         flags: MessageFlags.IsComponentsV2,
         allowedMentions: { repliedUser: false },
       }).catch(() => null);
     }
 
-    // Disable master switch
-    if (subcommand === "disable" || subcommand === "off") {
-      antinukeManager.disableMaster(guildId);
+    // Auto Setup Subcommand (Matches Image 3)
+    if (subcommand === "autosetup" || subcommand === "setup") {
+      const { buildAutoSetupWallSelectionContainer } = require("../../lib/security/handleAutoSetup");
+      const view = buildAutoSetupWallSelectionContainer(message.guild, message.author);
       return message.reply({
-        components: [
-          buildSuccessNotice("Anti-Nuke Deactivated", "Master Anti-Nuke protection system is now **DISABLED**."),
-        ],
+        components: [view],
         flags: MessageFlags.IsComponentsV2,
         allowedMentions: { repliedUser: false },
       }).catch(() => null);
+    }
+
+    // Disable master switch & purge all created assets
+    if (subcommand === "disable" || subcommand === "off" || subcommand === "cleanup" || subcommand === "reset") {
+      const { executeAutoCleanup } = require("../../lib/security/handleAutoSetup");
+      const initNotice = buildLoadingNotice("Deactivating Anti-Nuke", "Purging all security roles, log channels, and resetting protection...");
+      const msg = await message.reply({
+        components: [initNotice],
+        flags: MessageFlags.IsComponentsV2,
+        allowedMentions: { repliedUser: false },
+      }).catch(() => null);
+      if (msg) {
+        await executeAutoCleanup(message.guild, message.author, msg);
+      }
+      return;
     }
 
     // Punishment Action Config
@@ -121,6 +199,36 @@ module.exports = {
           buildSuccessNotice(
             "Punishment Action Updated",
             `Anti-Nuke punishment policy set to \`${action.toUpperCase()}\`.`
+          ),
+        ],
+        flags: MessageFlags.IsComponentsV2,
+        allowedMentions: { repliedUser: false },
+      }).catch(() => null);
+    }
+
+    // Threshold Action Limit Config
+    if (subcommand === "threshold" || subcommand === "limit") {
+      const limit = parseInt(args[1], 10);
+      if (isNaN(limit) || limit < 1 || limit > 10) {
+        return message.reply({
+          components: [
+            buildErrorNotice(
+              "Invalid Threshold Limit",
+              "Please provide a valid number between `1` and `10` (e.g. `.antinuke threshold 3`)."
+            ),
+          ],
+          flags: MessageFlags.IsComponentsV2,
+          allowedMentions: { repliedUser: false },
+        }).catch(() => null);
+      }
+
+      config.threshold = limit;
+      antinukeManager.setGuildAntinuke(guildId, config);
+      return message.reply({
+        components: [
+          buildSuccessNotice(
+            "Threshold Limit Updated",
+            `Anti-Nuke action strike threshold set to \`${limit}\` action${limit > 1 ? "s" : ""} per 60 seconds.`
           ),
         ],
         flags: MessageFlags.IsComponentsV2,
@@ -179,6 +287,46 @@ module.exports = {
         flags: MessageFlags.IsComponentsV2,
         allowedMentions: { repliedUser: false },
       }).catch(() => null);
+    }
+
+    // Whitelist Subcommand (.antinuke whitelist <add|remove|reset|show> [user])
+    if (subcommand === "whitelist" || subcommand === "wl") {
+      const wlCmd = require("./antinukewhitelist");
+      return wlCmd.execute(client, message, args.slice(1));
+    }
+
+    // Set Antinuke Logs
+    if (subcommand === "setantinukelogs" || subcommand === "setanlogs" || subcommand === "logchannel") {
+      const logsCmd = require("./setantinukelogs");
+      return logsCmd.execute(client, message, args.slice(1));
+    }
+
+    // Set Mod Logs
+    if (subcommand === "setmodlogs" || subcommand === "setmodlog" || subcommand === "modlogs") {
+      const modCmd = require("./setmodlogs");
+      return modCmd.execute(client, message, args.slice(1));
+    }
+
+    // Wall Roles
+    if (subcommand === "wallroles" || subcommand === "wallrole") {
+      const wallCmd = require("./wallroles");
+      return wallCmd.execute(client, message, args.slice(1));
+    }
+
+    if (subcommand === "wallrole_add" || subcommand === "wallroleadd" || subcommand === "addwallrole") {
+      const wallAddCmd = require("./wallroleadd");
+      return wallAddCmd.execute(client, message, args.slice(1));
+    }
+
+    if (subcommand === "wallrole_remove" || subcommand === "wallroleremove" || subcommand === "removewallrole") {
+      const wallRemCmd = require("./wallroleremove");
+      return wallRemCmd.execute(client, message, args.slice(1));
+    }
+
+    // Verify Permissions
+    if (subcommand === "verify_permissions" || subcommand === "verifypermissions" || subcommand === "verify") {
+      const verifyCmd = require("./verifypermissions");
+      return verifyCmd.execute(client, message, args.slice(1));
     }
 
     // Extra Owners Subcommand
@@ -336,6 +484,7 @@ module.exports = {
           `> - \`.antinuke config\` - Open interactive control dashboard\n` +
           `> - \`.antinuke enable/disable\` - Toggle anti-nuke master system\n` +
           `> - \`.antinuke punishment <ban|kick|strip|timeout>\` - Set punishment action\n` +
+          `> - \`.antinuke threshold <1-10>\` - Set action strike threshold limit\n` +
           `> - \`.antinuke module <name> <on|off>\` - Toggle specific protection module\n` +
           `> - \`.antinuke revert\` - Toggle auto-reversion of deleted channels/roles\n` +
           `> - \`.antinuke extraowner <add|remove|view> [user]\` - Manage immune extra owners\n` +

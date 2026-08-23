@@ -331,7 +331,9 @@ async function handleMessageXp(client, message) {
   if (content.length < (config.xp.minMsgLength || 3)) return;
 
   // Command message check
-  if (!config.xp.countCommands && (content.startsWith(".") || content.startsWith("!"))) {
+  const prefixManager = require("./prefixManager");
+  const guildPrefix = prefixManager.getPrefix(guildId);
+  if (!config.xp.countCommands && (content.startsWith(guildPrefix) || (client.user?.id && (content.startsWith(`<@!${client.user.id}>`) || content.startsWith(`<@${client.user.id}>`))))) {
     return;
   }
 

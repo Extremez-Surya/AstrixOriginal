@@ -79,6 +79,21 @@ module.exports = {
       ],
     },
     {
+      name: "threshold",
+      description: "Set the action limit strike threshold before punishment is triggered.",
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: "limit",
+          description: "Number of unauthorized actions within 60s before triggering punishment (1-10).",
+          type: ApplicationCommandOptionType.Integer,
+          required: true,
+          min_value: 1,
+          max_value: 10,
+        },
+      ],
+    },
+    {
       name: "module",
       description: "Toggle a specific Anti-Nuke defense module.",
       type: ApplicationCommandOptionType.Subcommand,
@@ -212,7 +227,7 @@ module.exports = {
     const subcommand = interaction.options.getSubcommand();
 
     if (subcommand === "config") {
-      const panel = buildAntinukeContainer(config);
+      const panel = buildAntinukeContainer(config, interaction.guild);
       return interaction.reply({
         components: [panel],
         flags: MessageFlags.IsComponentsV2,
@@ -220,9 +235,10 @@ module.exports = {
     }
 
     if (subcommand === "enable") {
-      antinukeManager.enableMaster(guildId);
+      const { buildEnableRecommendationContainer } = require("../../lib/security/handleAutoSetup");
+      const promptContainer = buildEnableRecommendationContainer(interaction.guild, interaction.user);
       return interaction.reply({
-        components: [buildSuccessNotice("Anti-Nuke Activated", "Master Anti-Nuke system is now **ENABLED** (Sub-0.1s Zero-Bypass Engine Active).")],
+        components: [promptContainer],
         flags: MessageFlags.IsComponentsV2,
       }).catch(() => null);
     }
@@ -241,6 +257,16 @@ module.exports = {
       antinukeManager.setGuildAntinuke(guildId, config);
       return interaction.reply({
         components: [buildSuccessNotice("Punishment Updated", `Anti-Nuke punishment action set to \`${action.toUpperCase()}\`.`)],
+        flags: MessageFlags.IsComponentsV2,
+      }).catch(() => null);
+    }
+
+    if (subcommand === "threshold") {
+      const limit = interaction.options.getInteger("limit");
+      config.threshold = limit;
+      antinukeManager.setGuildAntinuke(guildId, config);
+      return interaction.reply({
+        components: [buildSuccessNotice("Threshold Updated", `Anti-Nuke action strike threshold set to \`${limit}\` action${limit > 1 ? "s" : ""} per 60s.`)],
         flags: MessageFlags.IsComponentsV2,
       }).catch(() => null);
     }

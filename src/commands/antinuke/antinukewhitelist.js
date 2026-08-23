@@ -72,10 +72,18 @@ module.exports = {
       }).catch(() => null);
     }
 
-    if (action === "clear") {
+    if (action === "clear" || action === "reset") {
+      if (targetUser) {
+        antinukeManager.removeWhitelist(guildId, targetUser.id);
+        return message.reply({
+          components: [buildSuccessNotice("Whitelist Reset", `<@${targetUser.id}> removed from the anti-nuke whitelist.`)],
+          flags: MessageFlags.IsComponentsV2,
+          allowedMentions: { repliedUser: false },
+        }).catch(() => null);
+      }
       antinukeManager.clearWhitelist(guildId);
       return message.reply({
-        components: [buildSuccessNotice("Whitelist Cleared", "All users removed from anti-nuke whitelist.")],
+        components: [buildSuccessNotice("Whitelist Reset", "All users removed from anti-nuke whitelist.")],
         flags: MessageFlags.IsComponentsV2,
         allowedMentions: { repliedUser: false },
       }).catch(() => null);

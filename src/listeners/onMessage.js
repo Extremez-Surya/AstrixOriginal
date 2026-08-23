@@ -262,19 +262,6 @@ module.exports = {
     } else if (mentionPrefixPattern.test(message.content)) {
       const match = message.content.match(mentionPrefixPattern);
       usedPrefix = match[0];
-    } else if (message.content.startsWith(".")) {
-      const potentialAlias = contentTrimmed
-        .slice(1)
-        .split(/ +/g)[0]
-        ?.toLowerCase();
-      if (
-        potentialAlias &&
-        (crAliases.includes(potentialAlias) ||
-          client.messageCommands.get(potentialAlias) ||
-          client.messageCommands.find((c) => c.alias?.includes(potentialAlias)))
-      ) {
-        usedPrefix = ".";
-      }
     } else if (userHasNoPrefix) {
       if (firstWordRaw) {
         const potentialCmd =

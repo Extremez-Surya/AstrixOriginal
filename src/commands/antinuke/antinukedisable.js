@@ -38,26 +38,27 @@ module.exports = {
       }).catch(() => null);
     }
 
-    antinukeManager.disableMaster(message.guild.id);
+    const { executeAutoCleanup } = require("../../lib/security/handleAutoSetup");
 
-    const container = new ContainerBuilder()
+    const loadingContainer = new ContainerBuilder()
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.cross || "🔴"} Anti-Nuke System Deactivated\n` +
-            `-# Master anti-nuke protection system is now **DISABLED**.`
+          `### 🛑 **Deactivating Anti-Nuke...**\n` +
+            `-# Purging security roles, log channels, category, and resetting configuration.`
         )
       )
       .addSeparatorComponents(
         new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-      )
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(`-# Server shields offline`)
       );
 
-    return message.reply({
-      components: [container],
+    const msg = await message.reply({
+      components: [loadingContainer],
       flags: MessageFlags.IsComponentsV2,
       allowedMentions: { repliedUser: false },
     }).catch(() => null);
+
+    if (msg) {
+      await executeAutoCleanup(message.guild, message.author, msg);
+    }
   },
 };

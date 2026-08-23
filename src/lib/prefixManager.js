@@ -25,9 +25,9 @@ function savePrefixes(data) {
 }
 
 function getPrefix(guildId) {
-  if (!guildId) return clientPrefix || ".";
+  if (!guildId) return clientPrefix || "-";
   const prefixes = loadPrefixes();
-  return prefixes[guildId] || clientPrefix || ".";
+  return prefixes[guildId] || clientPrefix || "-";
 }
 
 function setPrefix(guildId, newPrefix) {

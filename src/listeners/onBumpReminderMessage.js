@@ -16,8 +16,9 @@ module.exports = {
 
       // 1. Auto-Clean non-bump messages sent in bump channel
       if (config.autoClean && message.author.id !== bumpReminderManager.DISBOARD_BOT_ID && message.author.id !== client.user.id) {
-        const clientPrefix = client.config?.clientPrefix || "-";
-        if (!message.content.startsWith(clientPrefix) && !message.content.startsWith(".")) {
+        const prefixManager = require("../lib/prefixManager");
+        const activePrefix = prefixManager.getPrefix(message.guild.id);
+        if (!message.content.startsWith(activePrefix)) {
           setTimeout(() => {
             message.delete().catch(() => null);
           }, 3000);

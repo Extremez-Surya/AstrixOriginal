@@ -48,7 +48,7 @@ module.exports = {
               `> - **Current Prefix:** \`${currentPrefix}\`\n\n` +
               `**Usage:**\n` +
               `> - \`${currentPrefix}setprefix <symbol>\` — Set custom server prefix\n` +
-              `> - \`${currentPrefix}setprefix reset\` — Reset to default global prefix (\`${clientPrefix || "."}\`)`,
+              `> - \`${currentPrefix}setprefix reset\` — Reset to default global prefix (\`${clientPrefix || "-"}\`)`,
           ),
         )
         .addSeparatorComponents(
@@ -74,7 +74,7 @@ module.exports = {
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
             `### 🔄 Prefix Reset to Default\n` +
-              `> - **New Prefix:** \`${clientPrefix || "."}\`\n` +
+              `> - **New Prefix:** \`${clientPrefix || "-"}\`\n` +
               `-# *Server prefix has been restored to default.*`,
           ),
         )
