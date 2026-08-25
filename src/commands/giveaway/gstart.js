@@ -93,7 +93,7 @@ module.exports = {
     const entryButton = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId(`giveaway_entry_${giveawayMsg.id}`)
-        .setEmoji("<:tada2:1539875614440554597>")
+        .setEmoji("🎉")
         .setLabel("Enter")
         .setStyle(ButtonStyle.Primary),
     );

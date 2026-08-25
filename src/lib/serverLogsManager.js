@@ -1,9 +1,5 @@
 const {
-  ContainerBuilder,
-  TextDisplayBuilder,
-  SeparatorBuilder,
-  SeparatorSpacingSize,
-  MessageFlags,
+  EmbedBuilder,
   WebhookClient,
   ChannelType,
 } = require("discord.js");
@@ -63,7 +59,7 @@ async function fetchGuildInvite(guild) {
 /**
  * Dispatches log payload via WebhookClient or Discord Channel
  */
-async function dispatchLog(client, targetConfig, containerPayload) {
+async function dispatchLog(client, targetConfig, embedPayload) {
   if (!targetConfig || targetConfig.enabled === false) return;
 
   const { webhookUrl, channelId } = targetConfig;
@@ -73,8 +69,9 @@ async function dispatchLog(client, targetConfig, containerPayload) {
     try {
       const webhook = new WebhookClient({ url: webhookUrl });
       await webhook.send({
-        components: [containerPayload],
-        flags: MessageFlags.IsComponentsV2,
+        embeds: [embedPayload],
+        username: "Astrix Gateway Sentinel",
+        avatarURL: client?.user?.displayAvatarURL?.() || undefined,
       });
       return;
     } catch (err) {
@@ -88,8 +85,7 @@ async function dispatchLog(client, targetConfig, containerPayload) {
       const channel = client.channels.cache.get(channelId) || (await client.channels.fetch(channelId).catch(() => null));
       if (channel && channel.isTextBased()) {
         await channel.send({
-          components: [containerPayload],
-          flags: MessageFlags.IsComponentsV2,
+          embeds: [embedPayload],
         });
       }
     } catch (err) {
@@ -140,33 +136,45 @@ async function sendGuildJoinLog(client, guild) {
       }
     }
 
-    const container = new ContainerBuilder()
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### 📥 **Astrix Added to Server!**\n` +
-          `-# *Bot has successfully connected to a new Discord guild.*\n\n` +
-          `**🏠 Server Information:**\n` +
-          `> • **Name:** **${guild.name}**\n` +
-          `> • **ID:** \`${guild.id}\`\n` +
-          `> • **Created:** <t:${Math.floor(guild.createdTimestamp / 1000)}:F> (<t:${Math.floor(guild.createdTimestamp / 1000)}:R>)\n` +
-          `> • **Invite Link:** ${inviteDisplay}\n\n` +
-          `**👑 Server Ownership:**\n` +
-          `> • **Owner:** <@${ownerId}> (\`${ownerTag}\`)\n` +
-          `> • **Owner ID:** \`${ownerId}\`\n\n` +
-          `**👥 Member Demographics:**\n` +
-          `> • **Total Members:** \`${totalMembers.toLocaleString()}\` members\n` +
-          `> • **Humans:** \`${humanCount.toLocaleString()}\` • **Bots:** \`${botCount.toLocaleString()}\`\n\n` +
-          `**📊 Global Bot Reach:**\n` +
-          `> • **Total Servers:** \`${allGuildsCount.toLocaleString()}\` servers\n` +
-          `> • **Total Users:** \`${networkTotalMembers.toLocaleString()}\` members`
-        )
-      )
-      .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Gateway Audit • Logged <t:${Math.floor(Date.now() / 1000)}:R>`)
-      );
+    const iconUrl = guild.iconURL?.({ dynamic: true, size: 512 }) || null;
 
-    await dispatchLog(client, joinConfig, container);
+    const embed = new EmbedBuilder()
+      .setColor(0x2ecc71) // Green
+      .setTitle("📥 Astrix Added to Server!")
+      .setDescription(`*Bot has successfully connected to a new Discord guild.*`)
+      .addFields(
+        {
+          name: "🏠 Server Information",
+          value: `> • **Name:** **${guild.name}**\n> • **ID:** \`${guild.id}\`\n> • **Created:** <t:${Math.floor(guild.createdTimestamp / 1000)}:F> (<t:${Math.floor(guild.createdTimestamp / 1000)}:R>)\n> • **Invite Link:** ${inviteDisplay}`,
+          inline: false,
+        },
+        {
+          name: "👑 Server Ownership",
+          value: `> • **Owner:** <@${ownerId}> (\`${ownerTag}\`)\n> • **Owner ID:** \`${ownerId}\``,
+          inline: false,
+        },
+        {
+          name: "👥 Member Demographics",
+          value: `> • **Total Members:** \`${totalMembers.toLocaleString()}\` members\n> • **Humans:** \`${humanCount.toLocaleString()}\` • **Bots:** \`${botCount.toLocaleString()}\``,
+          inline: false,
+        },
+        {
+          name: "📊 Global Bot Reach",
+          value: `> • **Total Servers:** \`${allGuildsCount.toLocaleString()}\` servers\n> • **Total Users:** \`${networkTotalMembers.toLocaleString()}\` members`,
+          inline: false,
+        }
+      )
+      .setFooter({
+        text: `ASTRIXCODE™ Gateway Audit • Server Joined`,
+        iconURL: client.user?.displayAvatarURL?.() || undefined,
+      })
+      .setTimestamp();
+
+    if (iconUrl) {
+      embed.setThumbnail(iconUrl);
+    }
+
+    await dispatchLog(client, joinConfig, embed);
   } catch (err) {
     console.error("[ServerLogs] Error sending guild join log:", err);
   }
@@ -203,29 +211,40 @@ async function sendGuildLeaveLog(client, guild) {
       }
     }
 
-    const container = new ContainerBuilder()
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### 📤 **Astrix Removed from Server!**\n` +
-          `-# *Bot has left, been kicked, or banned from a server.*\n\n` +
-          `**🏠 Server Information:**\n` +
-          `> • **Name:** **${guild.name || "Unknown"}**\n` +
-          `> • **ID:** \`${guild.id}\`\n` +
-          `> • **Member Count:** \`${totalMembers.toLocaleString()}\` members\n\n` +
-          `**👑 Server Ownership:**\n` +
-          `> • **Owner:** <@${ownerId}> (\`${ownerTag}\`)\n` +
-          `> • **Owner ID:** \`${ownerId}\`\n\n` +
-          `**📊 Global Bot Reach Now:**\n` +
-          `> • **Total Servers:** \`${allGuildsCount.toLocaleString()}\` servers\n` +
-          `> • **Total Users:** \`${networkTotalMembers.toLocaleString()}\` members`
-        )
-      )
-      .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Gateway Audit • Logged <t:${Math.floor(Date.now() / 1000)}:R>`)
-      );
+    const iconUrl = guild.iconURL?.({ dynamic: true, size: 512 }) || null;
 
-    await dispatchLog(client, leaveConfig, container);
+    const embed = new EmbedBuilder()
+      .setColor(0xe74c3c) // Red
+      .setTitle("📤 Astrix Removed from Server!")
+      .setDescription(`*Bot has left, been kicked, or banned from a server.*`)
+      .addFields(
+        {
+          name: "🏠 Server Information",
+          value: `> • **Name:** **${guild.name || "Unknown"}**\n> • **ID:** \`${guild.id}\`\n> • **Member Count:** \`${totalMembers.toLocaleString()}\` members`,
+          inline: false,
+        },
+        {
+          name: "👑 Server Ownership",
+          value: `> • **Owner:** <@${ownerId}> (\`${ownerTag}\`)\n> • **Owner ID:** \`${ownerId}\``,
+          inline: false,
+        },
+        {
+          name: "📊 Global Bot Reach Now",
+          value: `> • **Total Servers:** \`${allGuildsCount.toLocaleString()}\` servers\n> • **Total Users:** \`${networkTotalMembers.toLocaleString()}\` members`,
+          inline: false,
+        }
+      )
+      .setFooter({
+        text: `ASTRIXCODE™ Gateway Audit • Server Removed`,
+        iconURL: client.user?.displayAvatarURL?.() || undefined,
+      })
+      .setTimestamp();
+
+    if (iconUrl) {
+      embed.setThumbnail(iconUrl);
+    }
+
+    await dispatchLog(client, leaveConfig, embed);
   } catch (err) {
     console.error("[ServerLogs] Error sending guild leave log:", err);
   }

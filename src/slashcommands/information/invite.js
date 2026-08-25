@@ -38,13 +38,13 @@ module.exports = {
     const mediaGallery = new MediaGalleryBuilder().addItems(mediaItem);
 
     const inviteButton = new ButtonBuilder()
-      .setEmoji("<:invite:1539875370248052736>")
+      .setEmoji("➕")
       .setLabel("Invite")
       .setStyle(ButtonStyle.Link)
       .setURL(inviteUrl);
 
     const supportButton = new ButtonBuilder()
-      .setEmoji("<:discord:1539875375981797596>")
+      .setEmoji("💬")
       .setLabel("Support")
       .setStyle(ButtonStyle.Link)
       .setURL("https://discord.gg/FR9pXG2Mwb");

@@ -163,7 +163,7 @@ async function endGiveaway(client, messageId) {
           new ButtonBuilder()
             .setCustomId(`giveaway_ended_${g.messageId}`)
             .setLabel(`Giveaway Ended (${entries.length} Entries)`)
-            .setEmoji("<:tada2:1539875614440554597>")
+            .setEmoji("🎉")
             .setStyle(ButtonStyle.Secondary)
             .setDisabled(true),
         );

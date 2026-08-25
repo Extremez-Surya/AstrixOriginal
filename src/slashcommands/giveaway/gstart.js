@@ -107,7 +107,7 @@ module.exports = {
       new ButtonBuilder()
         .setCustomId(`giveaway_entry_${giveawayMsg.id}`)
         .setLabel("Enter")
-        .setEmoji("<:tada2:1539875614440554597>")
+        .setEmoji("🎉")
         .setStyle(ButtonStyle.Primary),
     );
 

@@ -229,19 +229,19 @@ module.exports = {
         .setDisabled(disableComponents)
         .addOptions(
           new StringSelectMenuOptionBuilder()
-            .setEmoji("<:members:1539875392532512808>")
+            .setEmoji("👥")
             .setLabel("Profile Overview")
             .setValue("0")
             .setDescription("General user details, registration and timelines.")
             .setDefault(pageIndex === 0),
           new StringSelectMenuOptionBuilder()
-            .setEmoji("<:Servericon:1539875445166702592>")
+            .setEmoji("🌐")
             .setLabel("Roles & Permissions")
             .setValue("1")
             .setDescription("Server nickname, roles listing and permissions.")
             .setDefault(pageIndex === 1),
           new StringSelectMenuOptionBuilder()
-            .setEmoji("<:stats:1539875420256866314>")
+            .setEmoji("📊")
             .setLabel("Activity & Status")
             .setValue("2")
             .setDescription("Client presence status, activities and badges.")

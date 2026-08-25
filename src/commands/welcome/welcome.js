@@ -380,13 +380,13 @@ module.exports = {
     const mediaGallery = new MediaGalleryBuilder().addItems(mediaItem);
 
     const websiteButton = new ButtonBuilder()
-      .setEmoji("<:website:1539875380159184977>")
+      .setEmoji("🌐")
       .setLabel("Website")
       .setStyle(ButtonStyle.Link)
       .setURL("https://extremez.vercel.app/");
 
     const supportButton = new ButtonBuilder()
-      .setEmoji("<:discord:1539875375981797596>")
+      .setEmoji("💬")
       .setLabel("Support")
       .setStyle(ButtonStyle.Link)
       .setURL("https://discord.gg/FR9pXG2Mwb");

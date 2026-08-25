@@ -107,15 +107,15 @@ module.exports = {
         const creationTime = Math.floor(client.user.createdTimestamp / 1000);
 
         content = [
-          `### <:Servericon:1539875445166702592> Astrix Overview`,
+          `### 🌐 Astrix Overview`,
           `-# *Primary identity panel and network reach metrics.*`,
           "",
-          `> <:bote:1539875512757911643> **Identity**`,
+          `> 🤖 **Identity**`,
           `> - **Tag:** \`${client.user.tag}\` | **ID:** \`${client.user.id}\``,
           `> - **Created:** <t:${creationTime}:f> (<t:${creationTime}:R>)`,
           `> - **Process Uptime:** \`${uptimeString}\``,
           "",
-          `> <:website:1539875380159184977> **Network Reach**`,
+          `> 📊 **Network Reach**`,
           `> - **Total Servers:** \`${serversCount.toLocaleString()}\``,
           `> - **Total Users:** \`${membersCount.toLocaleString()}\``,
           `> - **Total Channels:** \`${channelsCount.toLocaleString()}\``,
@@ -132,15 +132,15 @@ module.exports = {
         const hostPlatform = `${process.platform} / ${process.arch}`;
 
         content = [
-          `### <:RedGear:1539875503039578193> Engine Performance`,
+          `### ⚙️ Engine Performance`,
           `-# *Low-level process memory, Node runtime, and machine host statistics.*`,
           "",
-          `> <:stats:1539875420256866314> **V8 Telemetry**`,
+          `> 📈 **V8 Telemetry**`,
           `> - **Heap Allocation:** \`${heapUsed} MB\` / \`${heapTotal} MB\``,
           `> - **Resident Set Size:** \`${rss} MB\``,
           `> - **External Heap:** \`${external} MB\``,
           "",
-          `> <:discord:1539875375981797596> **Runtime Environment**`,
+          `> 💻 **Runtime Environment**`,
           `> - **Node Version:** \`Node.js ${process.version}\``,
           `> - **Wrapper:** \`Discord.js v${require("discord.js").version}\``,
           `> - **Host Platform:** \`${hostPlatform}\``,
@@ -150,10 +150,10 @@ module.exports = {
         // Page 3: Team
         const teamLines = fetchedTeam.map(
           (member) =>
-            `> <:badge:1539875454725521488> **${member.role}** ─ ${member.username} (\`${member.id}\`)`,
+            `> 👑 **${member.role}** ─ ${member.username} (\`${member.id}\`)`,
         );
         content = [
-          `### <:members:1539875392532512808> Astrix Developer Team`,
+          `### 👥 Astrix Developer Team`,
           `-# *Profiles and credentials of the development team.*`,
           "",
           ...teamLines,
@@ -163,7 +163,7 @@ module.exports = {
         const inviteUrl = `https://discord.com/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot%20applications.commands`;
 
         content = [
-          `### <:linkRed:1539875517132705832> Official Connections & Links`,
+          `### 🔗 Official Connections & Links`,
           `-# *Resource portals and connection hubs.*`,
           "",
           `> - **Website Portal** ─ [Click Here](https://extremez.vercel.app/)`,
@@ -183,7 +183,7 @@ module.exports = {
         .setDisabled(disableAll)
         .addOptions(
           new StringSelectMenuOptionBuilder()
-            .setEmoji("<:Servericon:1539875445166702592>")
+            .setEmoji("🌐")
             .setLabel("Overview")
             .setValue("0")
             .setDescription(
@@ -191,7 +191,7 @@ module.exports = {
             )
             .setDefault(pageIndex === 0),
           new StringSelectMenuOptionBuilder()
-            .setEmoji("<:RedGear:1539875503039578193>")
+            .setEmoji("⚙️")
             .setLabel("Performance")
             .setValue("1")
             .setDescription(
@@ -199,7 +199,7 @@ module.exports = {
             )
             .setDefault(pageIndex === 1),
           new StringSelectMenuOptionBuilder()
-            .setEmoji("<:members:1539875392532512808>")
+            .setEmoji("👥")
             .setLabel("Team")
             .setValue("2")
             .setDescription(
@@ -207,7 +207,7 @@ module.exports = {
             )
             .setDefault(pageIndex === 2),
           new StringSelectMenuOptionBuilder()
-            .setEmoji("<:linkRed:1539875517132705832>")
+            .setEmoji("🔗")
             .setLabel("Links")
             .setValue("3")
             .setDescription(
@@ -222,13 +222,13 @@ module.exports = {
       const inviteUrl = `https://discord.com/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot%20applications.commands`;
 
       const inviteBtn = new ButtonBuilder()
-        .setEmoji("<:invite:1539875370248052736>")
+        .setEmoji("🤖")
         .setLabel("Add Bot")
         .setStyle(ButtonStyle.Link)
         .setURL(inviteUrl);
 
       const supportBtn = new ButtonBuilder()
-        .setEmoji("<:discord:1539875375981797596>")
+        .setEmoji("💬")
         .setLabel("Support Hub")
         .setStyle(ButtonStyle.Link)
         .setURL("https://discord.gg/FR9pXG2Mwb");
@@ -253,7 +253,7 @@ module.exports = {
         )
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `-# *<:astrix:1539875362945900574> Live Ping: \`${client.ws.ping}ms\` • Powered by ASTRIXCODE™ • © 2026*`,
+            `-# *⚡ Live Ping: \`${client.ws.ping}ms\` • Powered by ASTRIXCODE™ • © 2026*`,
           ),
         )
         .addActionRowComponents(selectRow)

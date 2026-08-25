@@ -108,7 +108,7 @@ module.exports = {
             .setCustomId(`goodbye_test_${message.author.id}`)
             .setLabel("Live Test Send")
             .setStyle(ButtonStyle.Primary)
-            .setEmoji("<:astrix:1539875362945900574>")
+            .setEmoji("✨")
         )
       );
 
@@ -325,7 +325,7 @@ module.exports = {
 
         container.addActionRowComponents(
           new ActionRowBuilder().addComponents(
-            new ButtonBuilder().setCustomId(`goodbye_testch_${channelId}_${message.author.id}`).setLabel("Test Channel").setStyle(ButtonStyle.Primary).setEmoji("<:astrix:1539875362945900574>")
+            new ButtonBuilder().setCustomId(`goodbye_testch_${channelId}_${message.author.id}`).setLabel("Test Channel").setStyle(ButtonStyle.Primary).setEmoji("✨")
           )
         );
 

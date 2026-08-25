@@ -142,13 +142,13 @@ module.exports = {
         .setDisabled(disableComponents)
         .addOptions(
           new StringSelectMenuOptionBuilder()
-            .setEmoji("<:list:1539875411780042802>")
+            .setEmoji("📋")
             .setLabel("Role Overview")
             .setValue("0")
             .setDescription("General role settings, color and membership list.")
             .setDefault(pageIndex === 0),
           new StringSelectMenuOptionBuilder()
-            .setEmoji("<:rshield:1539875466939338773>")
+            .setEmoji("🛡️")
             .setLabel("Role Permissions")
             .setValue("1")
             .setDescription(

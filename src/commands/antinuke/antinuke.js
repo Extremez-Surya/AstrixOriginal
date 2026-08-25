@@ -41,7 +41,7 @@ function buildCommandDirectoryContainer() {
     new TextDisplayBuilder().setContent(
       `### 🛡️ **Antinuke Commands**\n\n` +
       `🛡️ **Core Antinuke**\n` +
-      `\`antinuke\` , \`antinuke enable\` , \`antinuke disable\` , \`antinuke info\` , \`antinuke settings\` , \`autosetup\` , \`setantinukelogs\` , \`setmodlogs\` , \`wallroles\` , \`wallrole_add\` , \`wallrole_remove\` , \`verify_permissions\`\n\n` +
+      `\`antinuke\` , \`antinuke enable\` , \`antinuke disable\` , \`antinuke info\` , \`antinuke settings\` , \`autosetup\` , \`setantinukelogs\` , \`setmodlogs\` , \`wallroles\` , \`wallroles add\` , \`wallroles remove\` , \`wallroles reset\` , \`verify_permissions\`\n\n` +
       `> \`antinuke\` **aliases -** \`an\`\n\n` +
       `🚀 **Whitelist**\n` +
       `\`antinuke whitelist add <user>\` , \`antinuke whitelist remove <user>\` , \`antinuke whitelist reset <user>\` , \`antinuke whitelist show\`\n\n` +

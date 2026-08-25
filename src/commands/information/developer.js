@@ -381,7 +381,7 @@ module.exports = {
 
       // Support server link
       const supportBtn = new ButtonBuilder()
-        .setEmoji("<:discord:1539875375981797596>")
+        .setEmoji("💬")
         .setLabel("Support Server")
         .setStyle(ButtonStyle.Link)
         .setURL("https://discord.gg/FR9pXG2Mwb");

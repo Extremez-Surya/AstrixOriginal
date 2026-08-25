@@ -34,12 +34,12 @@ module.exports = {
         new ActionRowBuilder().addComponents(
           new ButtonBuilder()
             .setCustomId("afk_global")
-            .setEmoji("<:server:1528311049726591006>")
+            .setEmoji("🌐")
             .setLabel("Global AFK")
             .setStyle(ButtonStyle.Primary),
           new ButtonBuilder()
             .setCustomId("afk_server")
-            .setEmoji("<:website:1539875380159184977>")
+            .setEmoji("🌐")
             .setLabel("Server AFK")
             .setStyle(ButtonStyle.Success),
         ),

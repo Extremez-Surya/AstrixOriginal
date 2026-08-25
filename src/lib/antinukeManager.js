@@ -291,6 +291,14 @@ function removeWallRole(guildId, roleId) {
   return false;
 }
 
+function clearWallRoles(guildId) {
+  const config = getGuildAntinuke(guildId);
+  config.wallRoles = [];
+  config.securityWallRole = null;
+  setGuildAntinuke(guildId, config);
+  return true;
+}
+
 function setAntinukeLogs(guildId, channelId) {
   const config = getGuildAntinuke(guildId);
   config.logChannel = channelId;
@@ -351,6 +359,7 @@ module.exports = {
   setSecurityWallRole,
   addWallRole,
   removeWallRole,
+  clearWallRoles,
   setAntinukeLogs,
   setModLogs,
   incrementStats,

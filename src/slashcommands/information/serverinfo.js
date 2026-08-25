@@ -284,25 +284,25 @@ module.exports = {
         .setDisabled(disableComponents)
         .addOptions(
           new StringSelectMenuOptionBuilder()
-            .setEmoji("<:Servericon:1539875445166702592>")
+            .setEmoji("🌐")
             .setLabel("Overview & Members")
             .setValue("0")
             .setDescription("General details, owner, locale, and populations.")
             .setDefault(pageIndex === 0),
           new StringSelectMenuOptionBuilder()
-            .setEmoji("<:rmessage:1539875489601036298>")
+            .setEmoji("💬")
             .setLabel("Channel Breakdown")
             .setValue("1")
             .setDescription("Channels statistics, categories, and bitrate.")
             .setDefault(pageIndex === 1),
           new StringSelectMenuOptionBuilder()
-            .setEmoji("<:rshield:1539875466939338773>")
+            .setEmoji("🛡️")
             .setLabel("Security & Settings")
             .setValue("2")
             .setDescription("Verification, filters, AFK, and system channels.")
             .setDefault(pageIndex === 2),
           new StringSelectMenuOptionBuilder()
-            .setEmoji("<:red_boost:1539875476255023157>")
+            .setEmoji("🚀")
             .setLabel("Boosts & Features")
             .setValue("3")
             .setDescription(
@@ -310,7 +310,7 @@ module.exports = {
             )
             .setDefault(pageIndex === 3),
           new StringSelectMenuOptionBuilder()
-            .setEmoji("<:members:1539875392532512808>")
+            .setEmoji("👥")
             .setLabel("Roles & Emojis")
             .setValue("4")
             .setDescription("Server roles list, emojis, and stickers count.")

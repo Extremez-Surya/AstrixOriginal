@@ -240,7 +240,7 @@ module.exports = {
           const updatedButton = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
               .setCustomId(`giveaway_entry_${messageId}`)
-              .setEmoji("<:tada2:1539875614440554597>")
+              .setEmoji("🎉")
               .setLabel(`Enter (${res.totalEntries} Entries)`)
               .setStyle(ButtonStyle.Primary),
           );
