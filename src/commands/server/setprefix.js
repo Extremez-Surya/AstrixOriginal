@@ -1,12 +1,7 @@
-const {
-  ContainerBuilder,
-  TextDisplayBuilder,
-  SeparatorBuilder,
-  SeparatorSpacingSize,
-  MessageFlags,
-} = require("discord.js");
+const { MessageFlags, PermissionFlagsBits } = require("discord.js");
 const prefixManager = require("../../lib/prefixManager");
-const { clientPrefix } = require("../../lib/config.json");
+const noprefixManager = require("../../lib/noprefixManager");
+const { buildConfigurationContainer } = require("../../lib/security/handleConfigurationInteraction");
 
 /** @type {import('../../lib/types/index.ts').MessageCommand} */
 module.exports = {
@@ -19,133 +14,43 @@ module.exports = {
   devOnly: false,
 
   async execute(client, message, args) {
+    if (!message.guild) return;
+
     const isOwner = message.author.id === message.guild.ownerId;
-    const isAdmin = message.member.permissions.has("Administrator");
-    const isDev = client.developer?.includes(message.author.id);
+    const isAdmin = message.member?.permissions.has(PermissionFlagsBits.Administrator);
+    const isDev = noprefixManager.isOwner(message.author.id, client);
 
     if (!isOwner && !isAdmin && !isDev) {
-      const container = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### <:red_star:1539875482680696834> Permission Denied\n` +
-            `-# *You need Administrator permissions to change the server prefix.*`,
-        ),
-      );
       return message.reply({
-        components: [container],
-        flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { parse: [], repliedUser: false },
-      });
+        content: "❌ You need **Administrator** permissions to change the server prefix.",
+        flags: MessageFlags.Ephemeral,
+      }).catch(() => null);
     }
 
-    const currentPrefix = prefixManager.getPrefix(message.guild.id);
-    const newPrefix = args[0];
-
-    if (!newPrefix) {
-      const container = new ContainerBuilder()
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### ⚙️ Set Server Prefix\n` +
-              `> - **Current Prefix:** \`${currentPrefix}\`\n\n` +
-              `**Usage:**\n` +
-              `> - \`${currentPrefix}setprefix <symbol>\` — Set custom server prefix\n` +
-              `> - \`${currentPrefix}setprefix reset\` — Reset to default global prefix (\`${clientPrefix || "-"}\`)`,
-          ),
-        )
-        .addSeparatorComponents(
-          new SeparatorBuilder()
-            .setSpacing(SeparatorSpacingSize.Small)
-            .setDivider(true),
-        )
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(`-# *ASTRIXCODE™ Server Customization*`),
-        );
-
-      return message.reply({
-        components: [container],
-        flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { parse: [], repliedUser: false },
-      });
+    const newPrefix = args[0]?.trim();
+    if (newPrefix) {
+      if (newPrefix.toLowerCase() === "reset") {
+        prefixManager.resetPrefix(message.guild.id);
+      } else {
+        if (newPrefix.length > 5) {
+          return message.reply({
+            content: "⚠️ Prefix must be 5 characters or less.",
+          }).catch(() => null);
+        }
+        if (newPrefix.includes(" ")) {
+          return message.reply({
+            content: "⚠️ Prefix cannot contain spaces.",
+          }).catch(() => null);
+        }
+        prefixManager.setPrefix(message.guild.id, newPrefix);
+      }
     }
 
-    if (newPrefix.toLowerCase() === "reset") {
-      prefixManager.resetPrefix(message.guild.id);
-
-      const container = new ContainerBuilder()
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### 🔄 Prefix Reset to Default\n` +
-              `> - **New Prefix:** \`${clientPrefix || "-"}\`\n` +
-              `-# *Server prefix has been restored to default.*`,
-          ),
-        )
-        .addSeparatorComponents(
-          new SeparatorBuilder()
-            .setSpacing(SeparatorSpacingSize.Small)
-            .setDivider(true),
-        )
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(`-# *ASTRIXCODE™ Server Customization*`),
-        );
-
-      return message.reply({
-        components: [container],
-        flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { parse: [], repliedUser: false },
-      });
-    }
-
-    if (newPrefix.length > 5) {
-      const container = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### <:red_star:1539875482680696834> Invalid Prefix\n` +
-            `-# *Prefix must be 5 characters or less.*`,
-        ),
-      );
-      return message.reply({
-        components: [container],
-        flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { parse: [], repliedUser: false },
-      });
-    }
-
-    if (newPrefix.includes(" ")) {
-      const container = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### <:red_star:1539875482680696834> Invalid Prefix\n` +
-            `-# *Prefix cannot contain whitespace or spaces.*`,
-        ),
-      );
-      return message.reply({
-        components: [container],
-        flags: MessageFlags.IsComponentsV2,
-        allowedMentions: { parse: [], repliedUser: false },
-      });
-    }
-
-    prefixManager.setPrefix(message.guild.id, newPrefix);
-
-    const container = new ContainerBuilder()
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### 🌐 Server Prefix Updated\n` +
-            `> - **New Prefix:** \`${newPrefix}\`\n` +
-            `> - **Example Command:** \`${newPrefix}help\`\n` +
-            `-# *Updated by <@${message.author.id}>.*`,
-        ),
-      )
-      .addSeparatorComponents(
-        new SeparatorBuilder()
-          .setSpacing(SeparatorSpacingSize.Small)
-          .setDivider(true),
-      )
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(`-# *ASTRIXCODE™ Server Customization*`),
-      );
-
+    const container = buildConfigurationContainer(message.guild, "prefix");
     return message.reply({
       components: [container],
       flags: MessageFlags.IsComponentsV2,
-      allowedMentions: { parse: [], repliedUser: false },
-    });
+      allowedMentions: { repliedUser: false },
+    }).catch(() => null);
   },
 };

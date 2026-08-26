@@ -81,17 +81,15 @@ function initCache() {
 }
 
 function saveDiskAsync() {
-  setImmediate(() => {
-    try {
-      const obj = { guilds: {} };
-      for (const [guildId, cfg] of configCache.entries()) {
-        obj.guilds[guildId] = cfg;
-      }
-      fs.writeFileSync(DATA_FILE, JSON.stringify(obj, null, 2), "utf8");
-    } catch (e) {
-      console.error("[CustomRolesManager] Save disk error:", e);
+  try {
+    const obj = { guilds: {} };
+    for (const [guildId, cfg] of configCache.entries()) {
+      if (cfg) obj.guilds[guildId] = cfg;
     }
-  });
+    fs.writeFileSync(DATA_FILE, JSON.stringify(obj, null, 2), "utf8");
+  } catch (e) {
+    console.error("[CustomRolesManager] Save disk error:", e);
+  }
 }
 
 function getGuildConfig(client, guildId) {
@@ -117,7 +115,9 @@ function updateGuildConfig(client, guildId, updateFn) {
   if (!guildId) return getDefaultGuildConfig();
 
   const current = getGuildConfig(client, guildId);
-  const updated = updateFn({ ...current });
+  const draft = { ...current };
+  let updated = updateFn(draft);
+  if (!updated) updated = draft;
 
   configCache.set(guildId, updated);
   if (client) {

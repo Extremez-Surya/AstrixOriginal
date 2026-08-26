@@ -151,7 +151,7 @@ function buildAntiraidOverviewView(config, guild) {
   // 2. Global Navigation Dropdown
   const navRow = new ActionRowBuilder().addComponents(buildAntiraidNavMenu("overview"));
 
-  // 3. Minimal 2-button control row
+  // 3. Minimal 3-button control row
   const refreshBtn = new ButtonBuilder()
     .setCustomId("antiraid_btn_refresh")
     .setLabel("Refresh")
@@ -272,7 +272,7 @@ function buildAntiraidNameFilterView(config, guild) {
 
   const isEnabled = config.enabled && nf.enabled;
   const content =
-    `> **Module Status:** ${isEnabled ? "🟢 `ARMED & ACTIVE`" : "🔴 `DISABLED`"} • **Action:** \`${(nf.action || "ban").toUpperCase()}\`\n` +
+    `> **Module Status:** ${isEnabled ? "🟢 \`ARMED & ACTIVE\`" : "🔴 \`DISABLED\`"} • **Action:** \`${(nf.action || "ban").toUpperCase()}\`\n` +
     `> **Active Patterns (${patterns.length}):** ${patternsFormatted}\n\n` +
     `-# Add or remove custom patterns via \`antiraid namefilter --add <text>\``;
 
@@ -687,6 +687,105 @@ function buildRaidLockContainer({ isLocked, count = 0, reason = "", executorTag 
     container.addActionRowComponents(navRow);
     container.addActionRowComponents(btnRow);
     container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(`-# ${executorTag ? `Executed by ${executorTag} • ` : ""}ASTRIXCODE™ Security • Emergency Lockdown`)
+    );
+  }
+
+  return container;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 8. SERVER LOCKDOWN / UNLOCK VIEW
+// ─────────────────────────────────────────────────────────────────────────────
+function buildRaidLockContainer({ isLocked, count = 0, reason = "", executorTag = "" }) {
+  const container = new ContainerBuilder();
+
+  if (isLocked) {
+    container
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `### 🔒 **Anti-Raid • Server Lockdown Executed**\n` +
+            `-# Sending messages has been locked across public text channels for @everyone\n\n` +
+            `> **Channels Locked:** \`${count}\` text channel(s)\n` +
+            `> **Lockdown Reason:** \`${reason || "Emergency server lockdown"}\`\n\n` +
+            `-# Click 'Unlock Server' below to restore normal channel communication.`
+        )
+      )
+      .addSeparatorComponents(
+        new SeparatorBuilder()
+          .setSpacing(SeparatorSpacingSize.Small)
+          .setDivider(true)
+      );
+
+    const navRow = new ActionRowBuilder().addComponents(buildAntiraidNavMenu("overview"));
+
+    const unlockBtn = new ButtonBuilder()
+      .setCustomId("antiraid_action_do_unlock")
+      .setLabel("Unlock Server")
+      .setEmoji("🔓")
+      .setStyle(ButtonStyle.Success);
+
+    const cpBtn = new ButtonBuilder()
+      .setCustomId("antiraid_nav_overview")
+      .setLabel("Control Center")
+      .setEmoji("🛡️")
+      .setStyle(ButtonStyle.Primary);
+
+    const refreshBtn = new ButtonBuilder()
+      .setCustomId("antiraid_btn_refresh")
+      .setLabel("Refresh")
+      .setEmoji("🔄")
+      .setStyle(ButtonStyle.Secondary);
+
+    const btnRow = new ActionRowBuilder().addComponents(unlockBtn, cpBtn, refreshBtn);
+
+    container.addActionRowComponents(navRow);
+    container.addActionRowComponents(btnRow);
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(`-# ${executorTag ? `Executed by ${executorTag} • ` : ""}ASTRIXCODE™ Security • Emergency Lockdown`)
+    );
+  } else {
+    container
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `### 🔓 **Anti-Raid • Server Lockdown Lifted**\n` +
+            `-# Sending messages permissions restored for @everyone across text channels\n\n` +
+            `> **Channels Unlocked:** \`${count}\` text channel(s)\n` +
+            `> **Server Status:** Normal public channel communication restored.\n\n` +
+            `-# Click 'Lockdown Server' below to re-lock channels if a raid resumes.`
+        )
+      )
+      .addSeparatorComponents(
+        new SeparatorBuilder()
+          .setSpacing(SeparatorSpacingSize.Small)
+          .setDivider(true)
+      );
+
+    const navRow = new ActionRowBuilder().addComponents(buildAntiraidNavMenu("overview"));
+
+    const lockBtn = new ButtonBuilder()
+      .setCustomId("antiraid_action_do_lockdown")
+      .setLabel("Lockdown Server")
+      .setEmoji("🔒")
+      .setStyle(ButtonStyle.Danger);
+
+    const cpBtn = new ButtonBuilder()
+      .setCustomId("antiraid_nav_overview")
+      .setLabel("Control Center")
+      .setEmoji("🛡️")
+      .setStyle(ButtonStyle.Primary);
+
+    const refreshBtn = new ButtonBuilder()
+      .setCustomId("antiraid_btn_refresh")
+      .setLabel("Refresh")
+      .setEmoji("🔄")
+      .setStyle(ButtonStyle.Secondary);
+
+    const btnRow = new ActionRowBuilder().addComponents(lockBtn, cpBtn, refreshBtn);
+
+    container.addActionRowComponents(navRow);
+    container.addActionRowComponents(btnRow);
+    container.addTextDisplayComponents(
       new TextDisplayBuilder().setContent(`-# ${executorTag ? `Executed by ${executorTag} • ` : ""}ASTRIXCODE™ Security • Emergency Protocol`)
     );
   }
@@ -882,6 +981,7 @@ async function handleAntiRaidInteraction(client, interaction) {
   }
 
   // 5. Refresh Button
+
   if (customId === "antiraid_btn_refresh" || customId === "antiraid_refresh") {
     const freshConfig = antiraidManager.getGuildAntiraid(guildId);
     const updated = buildAntiraidContainer(freshConfig, guild, "overview");

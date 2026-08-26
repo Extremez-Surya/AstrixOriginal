@@ -36,8 +36,27 @@ module.exports = {
     const roleInput = args.slice(1).join(" ");
 
     if (!userInput || !roleInput) {
+      const helpContainer = new ContainerBuilder()
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `### 🎭 **Role Manager • Grant Role**\n` +
+            `-# Directly assign a server role to a target member\n\n` +
+            `> **Command Syntax:** \`.radd <@user> <@role>\`\n` +
+            `> **Example:** \`.radd @user @VIP\` or \`.radd 123456789 987654321\`\n\n` +
+            `-# Tip: Bind custom shortcuts via \`.customrole\` to toggle roles with 1-word commands!`
+          )
+        )
+        .addSeparatorComponents(
+          new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+        )
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Custom Role Engine`)
+        );
+
       return message.reply({
-        content: "⚠️ **Invalid Usage.**\n*Syntax:* `.radd <@user> <@role>`\n*Example:* `.radd @user @VIP`",
+        components: [helpContainer],
+        flags: MessageFlags.IsComponentsV2,
+        allowedMentions: { repliedUser: false },
       }).catch(() => null);
     }
 
@@ -52,12 +71,14 @@ module.exports = {
     if (!targetMember || !role) {
       return message.reply({
         content: "⚠️ Please specify a valid server member and role.",
+        flags: MessageFlags.Ephemeral,
       }).catch(() => null);
     }
 
-    if (customRolesManager.checkDangerousPermissions(role)) {
+    const isGuildOwner = message.author.id === message.guild.ownerId;
+    if (!isGuildOwner && customRolesManager.checkDangerousPermissions(role)) {
       return message.reply({
-        content: "🛡️ **Security Block:** You cannot grant roles with dangerous permissions (Administrator, Manage Server, etc).",
+        content: "🛡️ **Security Block:** Only the Server Owner can assign roles with Administrator or dangerous permissions.",
         flags: MessageFlags.Ephemeral,
       }).catch(() => null);
     }
@@ -66,40 +87,40 @@ module.exports = {
     if (role.position >= me.roles.highest.position) {
       return message.reply({
         content: `❌ I cannot manage <@&${role.id}> because it is higher than or equal to my highest role.`,
+        flags: MessageFlags.Ephemeral,
+      }).catch(() => null);
+    }
+
+    if (targetMember.roles.cache.has(role.id)) {
+      return message.reply({
+        content: `⚠️ <@${targetMember.id}> already has the <@&${role.id}> role.`,
+        flags: MessageFlags.Ephemeral,
       }).catch(() => null);
     }
 
     await targetMember.roles.add(role, `Role granted via .radd by ${message.author.tag}`).catch(() => null);
 
-    const container = new ContainerBuilder();
-
-    const headerText =
-      `### 🎭 **Role Granted • Custom Role Action**\n` +
-      `-# *Role has been successfully added to target member.*`;
-    container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
-
-    container.addSeparatorComponents(
-      new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-    );
-
-    const details =
-      `> • 👤 **Target Member:** <@${targetMember.id}> (\`${targetMember.user.tag}\`)\n` +
-      `> • 🎭 **Role Granted:** <@&${role.id}>\n` +
-      `> • 🛡️ **Assigned By:** <@${message.author.id}>`;
-    container.addTextDisplayComponents(new TextDisplayBuilder().setContent(details));
-
-    container.addSeparatorComponents(
-      new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-    );
-
-    container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Custom Role Engine`)
-    );
+    const container = new ContainerBuilder()
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `### 🎭 **Role Granted • Custom Role Action**\n` +
+          `-# Successfully assigned role to target member\n\n` +
+          `> • 👤 **Target Member:** <@${targetMember.id}> (\`${targetMember.user.tag}\`)\n` +
+          `> • 🎭 **Role Granted:** <@&${role.id}>\n` +
+          `> • 🛡️ **Assigned By:** <@${message.author.id}>`
+        )
+      )
+      .addSeparatorComponents(
+        new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+      )
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Custom Role Engine`)
+      );
 
     return message.reply({
       components: [container],
       flags: MessageFlags.IsComponentsV2,
-      allowedMentions: { parse: [], repliedUser: false },
+      allowedMentions: { repliedUser: false },
     }).catch(() => null);
   },
 };

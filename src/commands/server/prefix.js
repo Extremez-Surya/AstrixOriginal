@@ -1,12 +1,5 @@
-const {
-  ContainerBuilder,
-  TextDisplayBuilder,
-  SeparatorBuilder,
-  SeparatorSpacingSize,
-  MessageFlags,
-} = require("discord.js");
-const prefixManager = require("../../lib/prefixManager");
-const { clientPrefix } = require("../../lib/config.json");
+const { MessageFlags } = require("discord.js");
+const { buildConfigurationContainer } = require("../../lib/security/handleConfigurationInteraction");
 
 /** @type {import('../../lib/types/index.ts').MessageCommand} */
 module.exports = {
@@ -19,31 +12,13 @@ module.exports = {
   devOnly: false,
 
   async execute(client, message, args) {
-    const currentPrefix = prefixManager.getPrefix(message.guild.id);
-    const isCustom = currentPrefix !== (clientPrefix || "-");
+    if (!message.guild) return;
 
-    const container = new ContainerBuilder()
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### 🌐 Server Prefix • ${message.guild.name}\n` +
-            `> - **Active Prefix:** \`${currentPrefix}\`\n` +
-            `> - **Type:** \`${isCustom ? "🔧 Custom (Server)" : "🌐 Global Default"}\`\n\n` +
-            `-# *Use \`${currentPrefix}setprefix <symbol>\` to change the prefix, or \`${currentPrefix}help\` to browse all commands.*`,
-        ),
-      )
-      .addSeparatorComponents(
-        new SeparatorBuilder()
-          .setSpacing(SeparatorSpacingSize.Small)
-          .setDivider(true),
-      )
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(`-# *ASTRIXCODE™ Server Customization*`),
-      );
-
+    const container = buildConfigurationContainer(message.guild, "prefix");
     return message.reply({
       components: [container],
       flags: MessageFlags.IsComponentsV2,
-      allowedMentions: { parse: [], repliedUser: false },
-    });
+      allowedMentions: { repliedUser: false },
+    }).catch(() => null);
   },
 };

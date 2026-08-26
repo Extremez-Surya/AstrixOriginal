@@ -955,7 +955,7 @@ function buildWallRolesView(config, guild, subTab = "main") {
     .setEmoji("🏠")
     .setStyle(ButtonStyle.Secondary);
 
-  const btnRow = new ActionRowBuilder().addComponents(cpBtn, homeBtn);
+  const btnRow = new ActionRowBuilder().addComponents(cpBtn, homeBtn, deleteBtn);
 
   container.addActionRowComponents(actionRow);
   container.addActionRowComponents(navRow);

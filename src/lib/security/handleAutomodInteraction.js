@@ -11,6 +11,9 @@ const {
   StringSelectMenuOptionBuilder,
   ChannelSelectMenuBuilder,
   ChannelType,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
   PermissionFlagsBits,
 } = require("discord.js");
 const automodManager = require("../automodManager");
@@ -159,7 +162,7 @@ function buildAutomodOverviewView(config, guild) {
   // 2. Global Navigation Dropdown
   const navRow = new ActionRowBuilder().addComponents(buildAutomodNavMenu("overview"));
 
-  // 3. Minimal 2-button control row
+  // 3. Minimal 3-button control row
   const refreshBtn = new ButtonBuilder()
     .setCustomId("automod_btn_refresh")
     .setLabel("Refresh")
@@ -305,9 +308,9 @@ function buildAutomodPresetsView(config, guild) {
         .setDescription("Balanced protection for active community servers")
         .setEmoji("⚖️"),
       new StringSelectMenuOptionBuilder()
-        .setLabel("Apply Light Preset (Essential Only)")
+        .setLabel("Apply Light Preset (Basic Defense)")
         .setValue("preset_light")
-        .setDescription("Minimal baseline protection keeping chat open")
+        .setDescription("Standard safety filter for low-moderation servers")
         .setEmoji("🪶")
     );
 
@@ -331,7 +334,7 @@ function buildAutomodPresetsView(config, guild) {
   container.addActionRowComponents(menuRow);
   container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
-  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Presets Hub`));
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Security Presets`));
 
   return container;
 }
@@ -346,7 +349,7 @@ function buildAutomodBadWordsView(config, guild) {
 
   const headerText =
     `### 🤬 **AutoMod • Bad Words & Blacklist Directory**\n` +
-    `-# Custom keyword & phrase blacklist automatically deleted upon message send`;
+    `-# Auto-delete messages matching custom prohibited words or profanity phrases`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
@@ -371,7 +374,7 @@ function buildAutomodBadWordsView(config, guild) {
 
   const actionMenu = new StringSelectMenuBuilder()
     .setCustomId("automod_badwords_select_action")
-    .setPlaceholder("🤬 Bad Words Actions (Toggle / Clear)...")
+    .setPlaceholder("🤬 Bad Words Actions (Add / Remove / Clear)...")
     .addOptions(
       new StringSelectMenuOptionBuilder()
         .setLabel(isEnabled ? "Disable Bad Words Filter" : "Enable Bad Words Filter")
@@ -919,6 +922,38 @@ async function handleAutomodInteraction(client, interaction) {
     const val = interaction.values[0];
     if (val === "action_toggle_bw") {
       automodManager.toggleModule(guildId, "badwords");
+    } else if (val === "action_add_bw") {
+      const modal = new ModalBuilder()
+        .setCustomId("automod_modal_submit_add_badword")
+        .setTitle("Add Banned Word to Blacklist");
+
+      const wordInput = new TextInputBuilder()
+        .setCustomId("bw_word")
+        .setLabel("Prohibited Word or Phrase")
+        .setStyle(TextInputStyle.Short)
+        .setPlaceholder("e.g. scam, nsfw, hatephrase")
+        .setRequired(true)
+        .setMaxLength(100);
+
+      modal.addComponents(new ActionRowBuilder().addComponents(wordInput));
+      await interaction.showModal(modal).catch(() => null);
+      return true;
+    } else if (val === "action_delete_bw") {
+      const modal = new ModalBuilder()
+        .setCustomId("automod_modal_submit_delete_badword")
+        .setTitle("Remove Banned Word from Blacklist");
+
+      const wordInput = new TextInputBuilder()
+        .setCustomId("bw_del_word")
+        .setLabel("Word or Phrase to Unban")
+        .setStyle(TextInputStyle.Short)
+        .setPlaceholder("e.g. word to remove")
+        .setRequired(true)
+        .setMaxLength(100);
+
+      modal.addComponents(new ActionRowBuilder().addComponents(wordInput));
+      await interaction.showModal(modal).catch(() => null);
+      return true;
     } else if (val === "action_clear_bw") {
       if (config.modules?.badwords) config.modules.badwords.words = [];
       automodManager.setGuildAutomod(guildId, config);
@@ -927,6 +962,39 @@ async function handleAutomodInteraction(client, interaction) {
     const updated = buildAutomodContainer(freshConfig, guild, "badwords");
     await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
     return true;
+  }
+
+  // 1.3b Badwords Modals Submissions
+  if (interaction.isModalSubmit && interaction.isModalSubmit()) {
+    if (customId === "automod_modal_submit_add_badword") {
+      const word = interaction.fields.getTextInputValue("bw_word")?.trim().toLowerCase();
+      if (word) {
+        if (!config.modules.badwords) config.modules.badwords = { enabled: true, words: [], punishments: ["delete"] };
+        if (!config.modules.badwords.words) config.modules.badwords.words = [];
+        if (!config.modules.badwords.words.includes(word)) {
+          config.modules.badwords.words.push(word);
+          automodManager.setGuildAutomod(guildId, config);
+        }
+      }
+      await interaction.reply({
+        content: `✅ Word \`${word}\` added to bad words blacklist!`,
+        flags: MessageFlags.Ephemeral,
+      }).catch(() => null);
+      return true;
+    }
+
+    if (customId === "automod_modal_submit_delete_badword") {
+      const word = interaction.fields.getTextInputValue("bw_del_word")?.trim().toLowerCase();
+      if (word && config.modules?.badwords?.words) {
+        config.modules.badwords.words = config.modules.badwords.words.filter((w) => w.toLowerCase() !== word);
+        automodManager.setGuildAutomod(guildId, config);
+      }
+      await interaction.reply({
+        content: `🗑️ Word \`${word}\` removed from bad words blacklist!`,
+        flags: MessageFlags.Ephemeral,
+      }).catch(() => null);
+      return true;
+    }
   }
 
   // 1.4 Anti-Caps Action Select

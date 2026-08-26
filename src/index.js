@@ -62,8 +62,8 @@ manager.spawn().catch((err) => {
 });
 
 process.on("uncaughtException", (err, origin) => {
-  logger.Error("Process", `uncaughtException: ${err?.message || err}`);
+  logger.Error("Process", `uncaughtException (origin: ${origin || "unknown"})`, err);
 });
 process.on("unhandledRejection", (reason) => {
-  logger.Error("Process", `unhandledRejection: ${reason?.message || reason}`);
+  logger.Error("Process", "unhandledRejection", reason);
 });

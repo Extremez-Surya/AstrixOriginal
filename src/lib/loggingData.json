@@ -8286,7 +8286,8 @@
             "1529079540498825296"
           ],
           "messages": [
-            "1542181372615991366"
+            "1542183497698115707",
+            "1542183548457590884"
           ],
           "threads": [],
           "nsfw": false,
@@ -8296,7 +8297,7 @@
           "rawPosition": 2,
           "parentId": "1526109132027990097",
           "topic": null,
-          "lastMessageId": "1542181372615991366",
+          "lastMessageId": "1542183548457590884",
           "defaultThreadRateLimitPerUser": null,
           "rateLimitPerUser": 0,
           "createdTimestamp": 1787738804525
@@ -8344,7 +8345,8 @@
             "1529079540498825296"
           ],
           "messages": [
-            "1542181372615991366"
+            "1542183497698115707",
+            "1542183548457590884"
           ],
           "threads": [],
           "nsfw": false,
@@ -8354,7 +8356,7 @@
           "rawPosition": 2,
           "parentId": "1526109132027990097",
           "topic": null,
-          "lastMessageId": "1542181372615991366",
+          "lastMessageId": "1542183548457590884",
           "defaultThreadRateLimitPerUser": null,
           "rateLimitPerUser": 0,
           "createdTimestamp": 1787738804525
@@ -8402,7 +8404,8 @@
             "1529079540498825296"
           ],
           "messages": [
-            "1542181372615991366"
+            "1542183497698115707",
+            "1542183548457590884"
           ],
           "threads": [],
           "nsfw": false,
@@ -8412,7 +8415,7 @@
           "rawPosition": 2,
           "parentId": "1526109132027990097",
           "topic": null,
-          "lastMessageId": "1542181372615991366",
+          "lastMessageId": "1542183548457590884",
           "defaultThreadRateLimitPerUser": null,
           "rateLimitPerUser": 0,
           "createdTimestamp": 1787738804525
@@ -8460,7 +8463,8 @@
             "1529079540498825296"
           ],
           "messages": [
-            "1542181372615991366"
+            "1542183497698115707",
+            "1542183548457590884"
           ],
           "threads": [],
           "nsfw": false,
@@ -8470,7 +8474,7 @@
           "rawPosition": 2,
           "parentId": "1526109132027990097",
           "topic": null,
-          "lastMessageId": "1542181372615991366",
+          "lastMessageId": "1542183548457590884",
           "defaultThreadRateLimitPerUser": null,
           "rateLimitPerUser": 0,
           "createdTimestamp": 1787738804525
@@ -8518,7 +8522,8 @@
             "1529079540498825296"
           ],
           "messages": [
-            "1542181372615991366"
+            "1542183497698115707",
+            "1542183548457590884"
           ],
           "threads": [],
           "nsfw": false,
@@ -8528,7 +8533,7 @@
           "rawPosition": 2,
           "parentId": "1526109132027990097",
           "topic": null,
-          "lastMessageId": "1542181372615991366",
+          "lastMessageId": "1542183548457590884",
           "defaultThreadRateLimitPerUser": null,
           "rateLimitPerUser": 0,
           "createdTimestamp": 1787738804525
@@ -8576,7 +8581,8 @@
             "1529079540498825296"
           ],
           "messages": [
-            "1542181372615991366"
+            "1542183497698115707",
+            "1542183548457590884"
           ],
           "threads": [],
           "nsfw": false,
@@ -8586,7 +8592,7 @@
           "rawPosition": 2,
           "parentId": "1526109132027990097",
           "topic": null,
-          "lastMessageId": "1542181372615991366",
+          "lastMessageId": "1542183548457590884",
           "defaultThreadRateLimitPerUser": null,
           "rateLimitPerUser": 0,
           "createdTimestamp": 1787738804525
@@ -8634,7 +8640,8 @@
             "1529079540498825296"
           ],
           "messages": [
-            "1542181372615991366"
+            "1542183497698115707",
+            "1542183548457590884"
           ],
           "threads": [],
           "nsfw": false,
@@ -8644,7 +8651,7 @@
           "rawPosition": 2,
           "parentId": "1526109132027990097",
           "topic": null,
-          "lastMessageId": "1542181372615991366",
+          "lastMessageId": "1542183548457590884",
           "defaultThreadRateLimitPerUser": null,
           "rateLimitPerUser": 0,
           "createdTimestamp": 1787738804525
@@ -8692,7 +8699,8 @@
             "1529079540498825296"
           ],
           "messages": [
-            "1542181372615991366"
+            "1542183497698115707",
+            "1542183548457590884"
           ],
           "threads": [],
           "nsfw": false,
@@ -8702,7 +8710,7 @@
           "rawPosition": 2,
           "parentId": "1526109132027990097",
           "topic": null,
-          "lastMessageId": "1542181372615991366",
+          "lastMessageId": "1542183548457590884",
           "defaultThreadRateLimitPerUser": null,
           "rateLimitPerUser": 0,
           "createdTimestamp": 1787738804525
@@ -8750,7 +8758,8 @@
             "1529079540498825296"
           ],
           "messages": [
-            "1542181372615991366"
+            "1542183497698115707",
+            "1542183548457590884"
           ],
           "threads": [],
           "nsfw": false,
@@ -8760,13 +8769,2163 @@
           "rawPosition": 2,
           "parentId": "1526109132027990097",
           "topic": null,
-          "lastMessageId": "1542181372615991366",
+          "lastMessageId": "1542183548457590884",
           "defaultThreadRateLimitPerUser": null,
           "rateLimitPerUser": 0,
           "createdTimestamp": 1787738804525
         },
         "content": "--automodstatus",
         "details": "Deleted message sent at <t:1787755090:T>"
+      }
+    },
+    {
+      "id": "1787755473002_ttks4",
+      "timestamp": 1787755473002,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542183497698115707",
+            "1542183548457590884"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542183548457590884",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "!!an",
+        "details": "Deleted message sent at <t:1787755485:T>"
+      }
+    },
+    {
+      "id": "1787755498672_fjr18",
+      "timestamp": 1787755498672,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542183497698115707",
+            "1542183548457590884"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542183548457590884",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "!!an",
+        "details": "Deleted message sent at <t:1787755511:T>"
+      }
+    },
+    {
+      "id": "1787755570344_gdv68",
+      "timestamp": 1787755570344,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542183497698115707",
+            "1542183548457590884"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542183548457590884",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "--automodstatus",
+        "details": "Deleted message sent at <t:1787755582:T>"
+      }
+    },
+    {
+      "id": "1787755582331_kxii3",
+      "timestamp": 1787755582331,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542183497698115707",
+            "1542183548457590884"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542183548457590884",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "--h",
+        "details": "Deleted message sent at <t:1787755595:T>"
+      }
+    },
+    {
+      "id": "1787755596811_kglgz",
+      "timestamp": 1787755596811,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542183497698115707",
+            "1542183548457590884"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542183548457590884",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "--configuration",
+        "details": "Deleted message sent at <t:1787755609:T>"
+      }
+    },
+    {
+      "id": "1787756110407_n37wg",
+      "timestamp": 1787756110407,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542184084497891488",
+            "1542184086985244713",
+            "1542185698214289528"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542185698214289528",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "vanity",
+        "details": "Deleted message sent at <t:1787756122:T>"
+      }
+    },
+    {
+      "id": "1787772850219_tzc44",
+      "timestamp": 1787772850219,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542255917809016886"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542255917809016886",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "--h",
+        "details": "Deleted message sent at <t:1787772861:T>"
+      }
+    },
+    {
+      "id": "1787772986081_98q0h",
+      "timestamp": 1787772986081,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542256548527611987",
+            "1542256550578622626"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542257170916179968",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "--an",
+        "details": "Deleted message sent at <t:1787772997:T>"
+      }
+    },
+    {
+      "id": "1787773087978_0fgcv",
+      "timestamp": 1787773087978,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542256548527611987",
+            "1542256550578622626"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542257170916179968",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "h",
+        "details": "Deleted message sent at <t:1787773092:T>"
+      }
+    },
+    {
+      "id": "1787773149367_rcuvs",
+      "timestamp": 1787773149367,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542256548527611987",
+            "1542256550578622626"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542257170916179968",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "g",
+        "details": "Deleted message sent at <t:1787773163:T>"
+      }
+    },
+    {
+      "id": "1787773354925_srzx5",
+      "timestamp": 1787773354925,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542257957780062228",
+            "1542257959856246844"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542258030798704812",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "gg",
+        "details": "Deleted message sent at <t:1787773368:T>"
+      }
+    },
+    {
+      "id": "1787773858467_dovij",
+      "timestamp": 1787773858467,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542260180916506736",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "--config",
+        "details": "Deleted message sent at <t:1787773830:T>"
+      }
+    },
+    {
+      "id": "1787773867516_v5qjx",
+      "timestamp": 1787773867516,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542260180916506736",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "--h",
+        "details": "Deleted message sent at <t:1787773880:T>"
+      }
+    },
+    {
+      "id": "1787774138036_z7ahb",
+      "timestamp": 1787774138036,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542261211788349471",
+            "1542261214283825316",
+            "1542261717759823934"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542261717759823934",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "owner <@1299394763933618239>",
+        "details": "Deleted message sent at <t:1787774150:T>"
+      }
+    },
+    {
+      "id": "1787774151927_lm6nt",
+      "timestamp": 1787774151927,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542261211788349471",
+            "1542261214283825316",
+            "1542261717759823934"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542261717759823934",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "owner1 <@1299394763933618239>",
+        "details": "Deleted message sent at <t:1787774165:T>"
+      }
+    },
+    {
+      "id": "1787774167309_atedw",
+      "timestamp": 1787774167309,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542261211788349471",
+            "1542261214283825316",
+            "1542261717759823934"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542261717759823934",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "--owner1 <@1299394763933618239>",
+        "details": "Deleted message sent at <t:1787774176:T>"
+      }
+    },
+    {
+      "id": "1787774208481_fk8ln",
+      "timestamp": 1787774208481,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542261211788349471",
+            "1542261214283825316",
+            "1542261717759823934"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542261717759823934",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": ".og <@1299394763933618239>",
+        "details": "Deleted message sent at <t:1787774221:T>"
+      }
+    },
+    {
+      "id": "1787774217280_0civh",
+      "timestamp": 1787774217280,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542261211788349471",
+            "1542261214283825316",
+            "1542261717759823934"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542261717759823934",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "--og <@1299394763933618239>",
+        "details": "Deleted message sent at <t:1787774227:T>"
+      }
+    },
+    {
+      "id": "1787774239117_kk5op",
+      "timestamp": 1787774239117,
+      "eventType": "messageEdit",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542261211788349471",
+            "1542261214283825316",
+            "1542261717759823934"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542261717759823934",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "before": "--og",
+        "after": "--og <@1299394763933618239>",
+        "details": "Message edited • [Jump to Message](https://discord.com/channels/1526109131042459678/1542113059772833832/1542261717759823934)"
+      }
+    },
+    {
+      "id": "1787774411290_um25v",
+      "timestamp": 1787774411290,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542262466527109160"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542262586576343060",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "--customrole",
+        "details": "Deleted message sent at <t:1787774424:T>"
+      }
+    },
+    {
+      "id": "1787774440922_35gf6",
+      "timestamp": 1787774440922,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542262466527109160"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542262586576343060",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": ".og <@1299394763933618239>",
+        "details": "Deleted message sent at <t:1787774454:T>"
+      }
+    },
+    {
+      "id": "1787774442080_6kr7g",
+      "timestamp": 1787774442080,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542262466527109160"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542262586576343060",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "og <@1299394763933618239>",
+        "details": "Deleted message sent at <t:1787774449:T>"
+      }
+    },
+    {
+      "id": "1787774442997_htbzv",
+      "timestamp": 1787774442997,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542262466527109160"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542262586576343060",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "--og <@1299394763933618239>",
+        "details": "Deleted message sent at <t:1787774444:T>"
+      }
+    },
+    {
+      "id": "1787774606046_apspo",
+      "timestamp": 1787774606046,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542263831362019478"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542263831362019478",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "--customrole",
+        "details": "Deleted message sent at <t:1787774619:T>"
+      }
+    },
+    {
+      "id": "1787774624284_wh2d5",
+      "timestamp": 1787774624284,
+      "eventType": "roleAdd",
+      "category": "member",
+      "data": {
+        "target": {
+          "id": "1526109358474264686",
+          "bot": true,
+          "system": false,
+          "flags": 0,
+          "username": "Astrix",
+          "globalName": null,
+          "discriminator": "9917",
+          "avatar": "c1fe3548e60ccdef32563a6b0f026342",
+          "banner": "05a0a97de3c270ec45fe1ea4f56a7952",
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "verified": true,
+          "mfaEnabled": true,
+          "createdTimestamp": 1783923224801,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/2.png",
+          "hexAccentColor": null,
+          "tag": "Astrix#9917",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1526109358474264686/c1fe3548e60ccdef32563a6b0f026342.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1526109358474264686/c1fe3548e60ccdef32563a6b0f026342.webp",
+          "bannerURL": "https://cdn.discordapp.com/banners/1526109358474264686/05a0a97de3c270ec45fe1ea4f56a7952.webp",
+          "guildTagBadgeURL": null
+        },
+        "role": {
+          "guild": "1526109131042459678",
+          "icon": null,
+          "unicodeEmoji": null,
+          "id": "1539888295587090463",
+          "name": "onwer",
+          "color": 15844367,
+          "colors": {
+            "primaryColor": 15844367,
+            "secondaryColor": null,
+            "tertiaryColor": null
+          },
+          "hoist": true,
+          "rawPosition": 5,
+          "permissions": "0",
+          "managed": false,
+          "mentionable": false,
+          "flags": 0,
+          "tags": null,
+          "createdTimestamp": 1787208379409
+        },
+        "details": "Role assigned: <@&1539888295587090463> (`onwer`)"
+      }
+    },
+    {
+      "id": "1787774630159_1ioyu",
+      "timestamp": 1787774630159,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542263831362019478"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542263831362019478",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "og <@1526109358474264686>",
+        "details": "Deleted message sent at <t:1787774639:T>"
+      }
+    },
+    {
+      "id": "1787774633508_zpxyb",
+      "timestamp": 1787774633508,
+      "eventType": "roleRemove",
+      "category": "member",
+      "data": {
+        "target": {
+          "id": "1526109358474264686",
+          "bot": true,
+          "system": false,
+          "flags": 0,
+          "username": "Astrix",
+          "globalName": null,
+          "discriminator": "9917",
+          "avatar": "c1fe3548e60ccdef32563a6b0f026342",
+          "banner": "05a0a97de3c270ec45fe1ea4f56a7952",
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "verified": true,
+          "mfaEnabled": true,
+          "createdTimestamp": 1783923224801,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/2.png",
+          "hexAccentColor": null,
+          "tag": "Astrix#9917",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1526109358474264686/c1fe3548e60ccdef32563a6b0f026342.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1526109358474264686/c1fe3548e60ccdef32563a6b0f026342.webp",
+          "bannerURL": "https://cdn.discordapp.com/banners/1526109358474264686/05a0a97de3c270ec45fe1ea4f56a7952.webp",
+          "guildTagBadgeURL": null
+        },
+        "role": {
+          "guild": "1526109131042459678",
+          "icon": null,
+          "unicodeEmoji": null,
+          "id": "1539888295587090463",
+          "name": "onwer",
+          "color": 15844367,
+          "colors": {
+            "primaryColor": 15844367,
+            "secondaryColor": null,
+            "tertiaryColor": null
+          },
+          "hoist": true,
+          "rawPosition": 5,
+          "permissions": "0",
+          "managed": false,
+          "mentionable": false,
+          "flags": 0,
+          "tags": null,
+          "createdTimestamp": 1787208379409
+        },
+        "details": "Role removed: <@&1539888295587090463> (`onwer`)"
+      }
+    },
+    {
+      "id": "1787774634652_d82bs",
+      "timestamp": 1787774634652,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542263831362019478"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542263831362019478",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "og <@1526109358474264686>",
+        "details": "Deleted message sent at <t:1787774648:T>"
+      }
+    },
+    {
+      "id": "1787774668621_gw18m",
+      "timestamp": 1787774668621,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542263831362019478"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542263831362019478",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "--radd",
+        "details": "Deleted message sent at <t:1787774682:T>"
+      }
+    },
+    {
+      "id": "1787774675080_s7fek",
+      "timestamp": 1787774675080,
+      "eventType": "roleAdd",
+      "category": "member",
+      "data": {
+        "target": {
+          "id": "1526109358474264686",
+          "bot": true,
+          "system": false,
+          "flags": 0,
+          "username": "Astrix",
+          "globalName": null,
+          "discriminator": "9917",
+          "avatar": "c1fe3548e60ccdef32563a6b0f026342",
+          "banner": "05a0a97de3c270ec45fe1ea4f56a7952",
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "verified": true,
+          "mfaEnabled": true,
+          "createdTimestamp": 1783923224801,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/2.png",
+          "hexAccentColor": null,
+          "tag": "Astrix#9917",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1526109358474264686/c1fe3548e60ccdef32563a6b0f026342.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1526109358474264686/c1fe3548e60ccdef32563a6b0f026342.webp",
+          "bannerURL": "https://cdn.discordapp.com/banners/1526109358474264686/05a0a97de3c270ec45fe1ea4f56a7952.webp",
+          "guildTagBadgeURL": null
+        },
+        "role": {
+          "guild": "1526109131042459678",
+          "icon": null,
+          "unicodeEmoji": null,
+          "id": "1539888295587090463",
+          "name": "onwer",
+          "color": 15844367,
+          "colors": {
+            "primaryColor": 15844367,
+            "secondaryColor": null,
+            "tertiaryColor": null
+          },
+          "hoist": true,
+          "rawPosition": 5,
+          "permissions": "0",
+          "managed": false,
+          "mentionable": false,
+          "flags": 0,
+          "tags": null,
+          "createdTimestamp": 1787208379409
+        },
+        "details": "Role assigned: <@&1539888295587090463> (`onwer`)"
+      }
+    },
+    {
+      "id": "1787774688993_he8bk",
+      "timestamp": 1787774688993,
+      "eventType": "roleRemove",
+      "category": "member",
+      "data": {
+        "target": {
+          "id": "1526109358474264686",
+          "bot": true,
+          "system": false,
+          "flags": 0,
+          "username": "Astrix",
+          "globalName": null,
+          "discriminator": "9917",
+          "avatar": "c1fe3548e60ccdef32563a6b0f026342",
+          "banner": "05a0a97de3c270ec45fe1ea4f56a7952",
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "verified": true,
+          "mfaEnabled": true,
+          "createdTimestamp": 1783923224801,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/2.png",
+          "hexAccentColor": null,
+          "tag": "Astrix#9917",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1526109358474264686/c1fe3548e60ccdef32563a6b0f026342.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1526109358474264686/c1fe3548e60ccdef32563a6b0f026342.webp",
+          "bannerURL": "https://cdn.discordapp.com/banners/1526109358474264686/05a0a97de3c270ec45fe1ea4f56a7952.webp",
+          "guildTagBadgeURL": null
+        },
+        "role": {
+          "guild": "1526109131042459678",
+          "icon": null,
+          "unicodeEmoji": null,
+          "id": "1539888295587090463",
+          "name": "onwer",
+          "color": 15844367,
+          "colors": {
+            "primaryColor": 15844367,
+            "secondaryColor": null,
+            "tertiaryColor": null
+          },
+          "hoist": true,
+          "rawPosition": 5,
+          "permissions": "0",
+          "managed": false,
+          "mentionable": false,
+          "flags": 0,
+          "tags": null,
+          "createdTimestamp": 1787208379409
+        },
+        "details": "Role removed: <@&1539888295587090463> (`onwer`)"
+      }
+    },
+    {
+      "id": "1787774698593_ge8gb",
+      "timestamp": 1787774698593,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542263831362019478"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542263831362019478",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "--rremove <@1526109358474264686> <@&1539888295587090463>",
+        "details": "Deleted message sent at <t:1787774704:T>"
+      }
+    },
+    {
+      "id": "1787774699866_aqhr7",
+      "timestamp": 1787774699866,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542263831362019478"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542263831362019478",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "--radd <@1526109358474264686> <@&1539888295587090463>",
+        "details": "Deleted message sent at <t:1787774693:T>"
+      }
+    },
+    {
+      "id": "1787774701280_czm6m",
+      "timestamp": 1787774701280,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542263831362019478"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542263831362019478",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "--rremove <@1526109358474264686> <@&1539888295587090463>",
+        "details": "Deleted message sent at <t:1787774704:T>"
+      }
+    },
+    {
+      "id": "1787774703985_c5e5h",
+      "timestamp": 1787774703985,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542263831362019478"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542263831362019478",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "--radd <@1526109358474264686> <@&1539888295587090463>",
+        "details": "Deleted message sent at <t:1787774690:T>"
+      }
+    },
+    {
+      "id": "1787774726953_jtda1",
+      "timestamp": 1787774726953,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542263831362019478"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542263831362019478",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "--reqrole",
+        "details": "Deleted message sent at <t:1787774725:T>"
+      }
+    },
+    {
+      "id": "1787774736848_ml20c",
+      "timestamp": 1787774736848,
+      "eventType": "messageDelete",
+      "category": "message",
+      "data": {
+        "target": {
+          "id": "1299394763933618239",
+          "bot": false,
+          "system": false,
+          "flags": 0,
+          "username": "theextremez_",
+          "globalName": "! God💔",
+          "discriminator": "0",
+          "avatar": "bae09541f37cad7e3d39a529824598eb",
+          "banner": null,
+          "accentColor": null,
+          "avatarDecoration": null,
+          "avatarDecorationData": null,
+          "collectibles": null,
+          "primaryGuild": null,
+          "createdTimestamp": 1729870253309,
+          "defaultAvatarURL": "https://cdn.discordapp.com/embed/avatars/5.png",
+          "hexAccentColor": null,
+          "tag": "theextremez_",
+          "avatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "displayAvatarURL": "https://cdn.discordapp.com/avatars/1299394763933618239/bae09541f37cad7e3d39a529824598eb.webp",
+          "bannerURL": null,
+          "guildTagBadgeURL": null
+        },
+        "channel": {
+          "type": 0,
+          "guild": "1526109131042459678",
+          "guildId": "1526109131042459678",
+          "permissionOverwrites": [
+            "1526109131042459678",
+            "1529079540498825296"
+          ],
+          "messages": [
+            "1542263831362019478"
+          ],
+          "threads": [],
+          "nsfw": false,
+          "flags": 0,
+          "id": "1542113059772833832",
+          "name": "general",
+          "rawPosition": 2,
+          "parentId": "1526109132027990097",
+          "topic": null,
+          "lastMessageId": "1542263831362019478",
+          "defaultThreadRateLimitPerUser": null,
+          "rateLimitPerUser": 0,
+          "createdTimestamp": 1787738804525
+        },
+        "content": "--h",
+        "details": "Deleted message sent at <t:1787774748:T>"
       }
     }
   ]

@@ -159,17 +159,31 @@ function processPlaceholders(template, message, extraArgs = "") {
 // ─────────────────────────────────────────────────────────────────────────────
 // STICKY MESSAGES HELPER METHODS
 // ─────────────────────────────────────────────────────────────────────────────
-function setStickyMessage(guildId, channelId, content) {
+function setStickyMessage(guildId, channelId, stickyData) {
   const config = getGuildConfig(guildId);
   const existingIdx = config.stickyMessages.findIndex((s) => s.channelId === channelId);
 
+  const stickyObj = typeof stickyData === "string"
+    ? { content: stickyData, title: null, author: null, footer: null, thumbnail: null }
+    : {
+        content: stickyData.content || stickyData.description || "",
+        title: stickyData.title || null,
+        author: stickyData.author || null,
+        footer: stickyData.footer || null,
+        thumbnail: stickyData.thumbnail || null,
+      };
+
   if (existingIdx !== -1) {
-    config.stickyMessages[existingIdx].content = content;
-    config.stickyMessages[existingIdx].enabled = true;
+    config.stickyMessages[existingIdx] = {
+      ...config.stickyMessages[existingIdx],
+      ...stickyObj,
+      enabled: true,
+      updatedAt: Date.now(),
+    };
   } else {
     config.stickyMessages.push({
       channelId,
-      content,
+      ...stickyObj,
       lastMessageId: null,
       enabled: true,
       createdAt: Date.now(),
@@ -178,6 +192,21 @@ function setStickyMessage(guildId, channelId, content) {
 
   setGuildConfig(guildId, config);
   return true;
+}
+
+function editReaction(guildId, phrase, newEmoji) {
+  const config = getGuildConfig(guildId);
+  const targetLower = phrase.trim().toLowerCase();
+  const reactionItem = (config.reactionTriggers || []).find(
+    (r) => (r.trigger || "").trim().toLowerCase() === targetLower
+  );
+
+  if (reactionItem) {
+    if (newEmoji) reactionItem.emoji = newEmoji;
+    setGuildConfig(guildId, config);
+    return true;
+  }
+  return false;
 }
 
 function removeStickyMessage(guildId, channelId) {
@@ -244,12 +273,15 @@ async function evaluateTriggersAndReactions(message, client) {
           } catch (_) {}
         }
 
+        let header = sticky.title ? `### 📌 **${sticky.title}**\n` : `### 📌 **Sticky Message Notice**\n`;
+        if (sticky.author) header = `**👤 ${sticky.author}**\n` + header;
+
+        const body = sticky.content || "*No content provided*";
+        const footerText = sticky.footer ? `-# ${sticky.footer}` : `-# Pinned via Astrix Configuration Engine • Automatically updated`;
+
         const stickyContainer = new ContainerBuilder()
           .addTextDisplayComponents(
-            new TextDisplayBuilder().setContent(
-              `### 📌 **Sticky Message Notice**\n\n${sticky.content}\n\n` +
-              `-# Pinned via Astrix Configuration Engine • Automatically updated`
-            )
+            new TextDisplayBuilder().setContent(`${header}\n${body}\n\n${footerText}`)
           );
 
         const newStickyMsg = await message.channel.send({
@@ -386,6 +418,7 @@ module.exports = {
   getStickyMessages,
   clearStickyMessages,
   editTrigger,
+  editReaction,
   evaluateTriggersAndReactions,
 };
 

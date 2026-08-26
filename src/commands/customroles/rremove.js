@@ -8,9 +8,9 @@ const {
 const customRolesManager = require("../../lib/customRolesManager");
 
 module.exports = {
-  alias: ["rremove", "revokerole", "takerole"],
+  alias: ["rremove", "revokerole", "takerole", "rrem"],
   category: "Custom Roles",
-  description: "Directly revoke a role from a target member.",
+  description: "Directly remove a role from a target member.",
   usage: ".rremove <@user> <@role>",
 
   async execute(client, message, args) {
@@ -36,8 +36,27 @@ module.exports = {
     const roleInput = args.slice(1).join(" ");
 
     if (!userInput || !roleInput) {
+      const helpContainer = new ContainerBuilder()
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `### 🎭 **Role Manager • Revoke Role**\n` +
+            `-# Directly remove a server role from a target member\n\n` +
+            `> **Command Syntax:** \`.rremove <@user> <@role>\`\n` +
+            `> **Example:** \`.rremove @user @VIP\` or \`.rremove 123456789 987654321\`\n\n` +
+            `-# Tip: Bind custom shortcuts via \`.customrole\` to toggle roles with 1-word commands!`
+          )
+        )
+        .addSeparatorComponents(
+          new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+        )
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Custom Role Engine`)
+        );
+
       return message.reply({
-        content: "⚠️ **Invalid Usage.**\n*Syntax:* `.rremove <@user> <@role>`\n*Example:* `.rremove @user @VIP`",
+        components: [helpContainer],
+        flags: MessageFlags.IsComponentsV2,
+        allowedMentions: { repliedUser: false },
       }).catch(() => null);
     }
 
@@ -52,6 +71,7 @@ module.exports = {
     if (!targetMember || !role) {
       return message.reply({
         content: "⚠️ Please specify a valid server member and role.",
+        flags: MessageFlags.Ephemeral,
       }).catch(() => null);
     }
 
@@ -59,40 +79,40 @@ module.exports = {
     if (role.position >= me.roles.highest.position) {
       return message.reply({
         content: `❌ I cannot manage <@&${role.id}> because it is higher than or equal to my highest role.`,
+        flags: MessageFlags.Ephemeral,
+      }).catch(() => null);
+    }
+
+    if (!targetMember.roles.cache.has(role.id)) {
+      return message.reply({
+        content: `⚠️ <@${targetMember.id}> does not have the <@&${role.id}> role.`,
+        flags: MessageFlags.Ephemeral,
       }).catch(() => null);
     }
 
     await targetMember.roles.remove(role, `Role revoked via .rremove by ${message.author.tag}`).catch(() => null);
 
-    const container = new ContainerBuilder();
-
-    const headerText =
-      `### 🎭 **Role Revoked • Custom Role Action**\n` +
-      `-# *Role has been successfully stripped from target member.*`;
-    container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
-
-    container.addSeparatorComponents(
-      new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-    );
-
-    const details =
-      `> • 👤 **Target Member:** <@${targetMember.id}> (\`${targetMember.user.tag}\`)\n` +
-      `> • 🎭 **Role Revoked:** <@&${role.id}>\n` +
-      `> • 🛡️ **Revoked By:** <@${message.author.id}>`;
-    container.addTextDisplayComponents(new TextDisplayBuilder().setContent(details));
-
-    container.addSeparatorComponents(
-      new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-    );
-
-    container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Custom Role Engine`)
-    );
+    const container = new ContainerBuilder()
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `### 🎭 **Role Revoked • Custom Role Action**\n` +
+          `-# Successfully removed role from target member\n\n` +
+          `> • 👤 **Target Member:** <@${targetMember.id}> (\`${targetMember.user.tag}\`)\n` +
+          `> • 🎭 **Role Revoked:** <@&${role.id}>\n` +
+          `> • 🛡️ **Revoked By:** <@${message.author.id}>`
+        )
+      )
+      .addSeparatorComponents(
+        new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+      )
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Custom Role Engine`)
+      );
 
     return message.reply({
       components: [container],
       flags: MessageFlags.IsComponentsV2,
-      allowedMentions: { parse: [], repliedUser: false },
+      allowedMentions: { repliedUser: false },
     }).catch(() => null);
   },
 };

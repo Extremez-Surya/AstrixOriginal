@@ -36,7 +36,7 @@ const client = new CustomClient({
 module.exports = client;
 
 process.on("uncaughtException", (err, origin) => {
-  logger.Error(`Shard #${client.shard?.ids[0] ?? 0}`, "uncaughtException", err);
+  logger.Error(`Shard #${client.shard?.ids[0] ?? 0}`, `uncaughtException (origin: ${origin || "unknown"})`, err);
 });
 
 process.on("unhandledRejection", (reason) => {

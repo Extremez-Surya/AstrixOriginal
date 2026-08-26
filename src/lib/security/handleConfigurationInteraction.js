@@ -90,8 +90,8 @@ function buildConfigOverviewView(guild) {
   const stickyCount = config.stickyMessages?.length || 0;
 
   const headerText =
-    `### ⚙️ **Astrix Server Configuration Control Center**\n` +
-    `-# *Manage automated triggers, smart auto-reactions, sticky notices & server settings for **${guild.name}***`;
+    `### ⚙️ **Astrix Server Configuration • Control Center**\n` +
+    `-# Manage automated triggers, smart auto-reactions, sticky notices & server settings for **${guild.name}**`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
@@ -99,13 +99,10 @@ function buildConfigOverviewView(guild) {
   );
 
   const telemetryText =
-    `**📊 Active Configuration Telemetry:**\n` +
-    `> • 🤖 **Auto-Responders (Triggers):** \`${triggerCount}\` active phrases\n` +
-    `> • 😀 **Reaction Triggers:** \`${reactCount}\` keyword auto-reactors\n` +
-    `> • 📸 **Channel Auto-Reactions:** \`${channelReactCount}\` channels bound\n` +
-    `> • 📌 **Sticky Messages:** \`${stickyCount}\` active dynamic notices\n` +
-    `> • ⚡ **Server Command Prefix:** \`${currentPrefix}\`\n\n` +
-    `💡 *Select a module from the dropdown below or use the quick action buttons to customize.*`;
+    `> **Triggers & Responders:** \`${triggerCount}\` active phrases • **Command Prefix:** \`${currentPrefix}\`\n` +
+    `> **Auto-Reactions:** \`${reactCount}\` keyword triggers • \`${channelReactCount}\` channel auto-reactors\n` +
+    `> **Sticky Notices:** \`${stickyCount}\` dynamic pinned messages\n\n` +
+    `-# Select an action below or switch dashboard using the navigation menu.`;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(telemetryText));
 
@@ -113,42 +110,62 @@ function buildConfigOverviewView(guild) {
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
+  // 1. Quick Action Dropdown
+  const actionMenu = new StringSelectMenuBuilder()
+    .setCustomId("config_overview_select_action")
+    .setPlaceholder("⚡ Server Configuration Actions & Hubs...")
+    .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Auto-Responders Hub (Triggers)")
+        .setValue("nav_triggers")
+        .setDescription("Create or edit automated keyword response triggers")
+        .setEmoji("🤖"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Auto-Reactions & Emojis")
+        .setValue("nav_reactions")
+        .setDescription("Configure keyword reactions & channel auto-emojis")
+        .setEmoji("😀"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Sticky Messages Engine")
+        .setValue("nav_sticky")
+        .setDescription("Configure dynamic pinned notices at the bottom of chats")
+        .setEmoji("📌"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Server Prefix Settings")
+        .setValue("nav_prefix")
+        .setDescription("Change or reset the command execution prefix")
+        .setEmoji("⚡"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Command Manual & Placeholders")
+        .setValue("nav_commands")
+        .setDescription("View trigger syntax and dynamic variable tokens")
+        .setEmoji("📖")
+    );
+
+  const actionRow = new ActionRowBuilder().addComponents(actionMenu);
+
+  // 2. Global Navigation Dropdown
   const navRow = new ActionRowBuilder().addComponents(buildConfigNavMenu("overview"));
 
-  const triggersBtn = new ButtonBuilder()
-    .setCustomId("config_nav_triggers")
-    .setLabel("Triggers Hub")
-    .setEmoji("🤖")
-    .setStyle(ButtonStyle.Primary);
-
-  const reactBtn = new ButtonBuilder()
-    .setCustomId("config_nav_reactions")
-    .setLabel("Reactions Hub")
-    .setEmoji("😀")
-    .setStyle(ButtonStyle.Primary);
-
-  const stickyBtn = new ButtonBuilder()
-    .setCustomId("config_nav_sticky")
-    .setLabel("Sticky Hub")
-    .setEmoji("📌")
-    .setStyle(ButtonStyle.Primary);
-
-  const prefixBtn = new ButtonBuilder()
-    .setCustomId("config_nav_prefix")
-    .setLabel("Prefix")
-    .setEmoji("⚡")
-    .setStyle(ButtonStyle.Secondary);
-
+  // 3. Minimal 3-button control row
   const refreshBtn = new ButtonBuilder()
     .setCustomId("config_btn_refresh")
     .setLabel("Refresh")
     .setEmoji("🔄")
     .setStyle(ButtonStyle.Secondary);
 
-  const btnRow = new ActionRowBuilder().addComponents(triggersBtn, reactBtn, stickyBtn, prefixBtn, refreshBtn);
+  const cpBtn = new ButtonBuilder()
+    .setCustomId("config_nav_overview")
+    .setLabel("Control Center")
+    .setEmoji("⚙️")
+    .setStyle(ButtonStyle.Primary);
 
+  const btnRow = new ActionRowBuilder().addComponents(refreshBtn, cpBtn);
+
+  container.addActionRowComponents(actionRow);
   container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Server Configuration`));
 
   return container;
 }
@@ -162,31 +179,22 @@ function buildConfigTriggersView(guild) {
   const triggers = config.triggers || [];
 
   const headerText =
-    `### 🤖 **Auto-Responders Matrix (Triggers)**\n` +
-    `-# Custom auto-responses that trigger strictly when the full message matches the specified keyword.`;
+    `### 🤖 **Server Config • Auto-Responders Hub**\n` +
+    `-# Custom auto-responses that trigger strictly when the full message matches the keyword for **${guild.name}**`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  let listStr = "";
-  if (triggers.length > 0) {
-    triggers.slice(0, 10).forEach((t, i) => {
-      const respSnippet = t.response.length > 60 ? t.response.slice(0, 57) + "..." : t.response;
-      listStr += `> \`${i + 1}.\` **Phrase:** \`${t.trigger}\` • **Match:** \`EXACT (Single Word/Phrase)\`\n>    ↳ *Response:* ${respSnippet}\n`;
-    });
-    if (triggers.length > 10) {
-      listStr += `> ... *and ${triggers.length - 10} more triggers.*`;
-    }
-  } else {
-    listStr = "> *No auto-responder triggers configured yet.*";
-  }
+  const formattedTriggers =
+    triggers.length > 0
+      ? triggers.slice(0, 5).map((t) => `\`${t.trigger}\` ➔ ${t.response.length > 35 ? t.response.slice(0, 32) + "..." : t.response}`).join("\n> • ")
+      : "*No auto-responder triggers configured yet*";
 
   const content =
-    `**📋 Active Triggers (${triggers.length}):**\n${listStr}\n\n` +
-    `🔒 *Exact Mode: \`"vanity"\` will trigger only on \`vanity\` and NOT on \`it is the vanity\`.*\n` +
-    `💡 *Command Syntax:* \`.trigger add <phrase> | <response>\` • \`.trigger edit <phrase> | <new response>\` • \`.trigger remove <phrase>\``;
+    `> **Active Triggers (${triggers.length}):**\n> • ${formattedTriggers}\n\n` +
+    `-# Select an action below or create triggers via \`trigger add <phrase> | <response>\``;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
 
@@ -194,25 +202,40 @@ function buildConfigTriggersView(guild) {
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  const addBtn = new ButtonBuilder()
-    .setCustomId("config_modal_add_trigger")
-    .setLabel("Create Trigger")
-    .setEmoji("➕")
-    .setStyle(ButtonStyle.Success);
+  const actionMenu = new StringSelectMenuBuilder()
+    .setCustomId("config_triggers_select_action")
+    .setPlaceholder("🤖 Trigger Actions (Create / Edit / Delete / Clear)...")
+    .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Create New Trigger")
+        .setValue("action_add")
+        .setDescription("Open modal to create a keyword response trigger")
+        .setEmoji("➕"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Edit Existing Trigger")
+        .setValue("action_edit")
+        .setDescription("Open modal to modify a trigger's response")
+        .setEmoji("✏️"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Delete Specific Trigger")
+        .setValue("action_delete")
+        .setDescription("Open modal to remove a single trigger phrase")
+        .setEmoji("🗑️"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Clear All Triggers")
+        .setValue("action_clear")
+        .setDescription("Delete all active auto-responder triggers")
+        .setEmoji("🧹")
+    );
 
-  const editBtn = new ButtonBuilder()
-    .setCustomId("config_modal_edit_trigger")
-    .setLabel("Edit Trigger")
+  const actionRow = new ActionRowBuilder().addComponents(actionMenu);
+  const navRow = new ActionRowBuilder().addComponents(buildConfigNavMenu("triggers"));
+
+  const customPrefixBtn = new ButtonBuilder()
+    .setCustomId("config_btn_set_custom_prefix")
+    .setLabel("Set Custom Prefix")
     .setEmoji("✏️")
-    .setStyle(ButtonStyle.Primary)
-    .setDisabled(triggers.length === 0);
-
-  const clearBtn = new ButtonBuilder()
-    .setCustomId("config_clear_triggers")
-    .setLabel("Clear All Triggers")
-    .setEmoji("🧹")
-    .setStyle(ButtonStyle.Danger)
-    .setDisabled(triggers.length === 0);
+    .setStyle(ButtonStyle.Primary);
 
   const cpBtn = new ButtonBuilder()
     .setCustomId("config_nav_overview")
@@ -220,10 +243,18 @@ function buildConfigTriggersView(guild) {
     .setEmoji("⚙️")
     .setStyle(ButtonStyle.Secondary);
 
-  const btnRow = new ActionRowBuilder().addComponents(addBtn, editBtn, clearBtn, cpBtn);
+  const refreshBtn = new ButtonBuilder()
+    .setCustomId("config_btn_refresh")
+    .setLabel("Refresh")
+    .setEmoji("🔄")
+    .setStyle(ButtonStyle.Secondary);
 
-  container.addActionRowComponents(new ActionRowBuilder().addComponents(buildConfigNavMenu("triggers")));
+  const btnRow = new ActionRowBuilder().addComponents(customPrefixBtn, cpBtn, refreshBtn);
+
+  container.addActionRowComponents(actionRow);
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Auto-Responders`));
 
   return container;
 }
@@ -238,37 +269,28 @@ function buildConfigReactionsView(guild) {
   const channelReactions = config.channelReactions || [];
 
   const headerText =
-    `### 😀 **Auto-Reactions & Emojis Directory**\n` +
-    `-# Automatically react with emojis upon matching keywords or on every message in designated channels.`;
+    `### 😀 **Server Config • Auto-Reactions Directory**\n` +
+    `-# Automatically react with emojis upon matching keywords or on every message in designated channels`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  let kwStr = "";
-  if (reactTriggers.length > 0) {
-    reactTriggers.slice(0, 8).forEach((rt, i) => {
-      kwStr += `> \`${i + 1}.\` ${rt.emoji} ➔ \`${rt.trigger}\`\n`;
-    });
-    if (reactTriggers.length > 8) kwStr += `> ... *and ${reactTriggers.length - 8} more.*`;
-  } else {
-    kwStr = "> *No keyword reactions configured.*";
-  }
+  const kwFormatted =
+    reactTriggers.length > 0
+      ? reactTriggers.slice(0, 5).map((rt) => `${rt.emoji} ➔ \`${rt.trigger}\``).join(", ")
+      : "*None configured*";
 
-  let chStr = "";
-  if (channelReactions.length > 0) {
-    channelReactions.forEach((cr, i) => {
-      chStr += `> \`${i + 1}.\` <#${cr.channelId}> ➔ ${cr.emojis?.join(" ") || "None"}\n`;
-    });
-  } else {
-    chStr = "> *No channel auto-reactors configured.*";
-  }
+  const chFormatted =
+    channelReactions.length > 0
+      ? channelReactions.map((cr) => `<#${cr.channelId}> ➔ ${cr.emojis?.join(" ")}`).join(", ")
+      : "*None configured*";
 
   const content =
-    `**😀 Keyword Auto-Reactors (${reactTriggers.length}):**\n${kwStr}\n\n` +
-    `**📸 Channel Auto-Reactors (${channelReactions.length}):**\n${chStr}\n\n` +
-    `💡 *Command Syntax:* \`.reaction add <emoji> <phrase>\` • \`.reaction messages <#channel> <emojis...>\``;
+    `> **Keyword Auto-Reactors (${reactTriggers.length}):** ${kwFormatted}\n` +
+    `> **Channel Auto-Reactors (${channelReactions.length}):** ${chFormatted}\n\n` +
+    `-# Select an action below or use \`reaction add <emoji> <phrase>\``;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
 
@@ -276,18 +298,29 @@ function buildConfigReactionsView(guild) {
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  const addKwBtn = new ButtonBuilder()
-    .setCustomId("config_modal_add_reaction")
-    .setLabel("Add Keyword React")
-    .setEmoji("➕")
-    .setStyle(ButtonStyle.Success);
+  const actionMenu = new StringSelectMenuBuilder()
+    .setCustomId("config_reactions_select_action")
+    .setPlaceholder("😀 Auto-Reaction Actions (Add / Delete / Clear)...")
+    .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Add Keyword Reaction")
+        .setValue("action_add_kw")
+        .setDescription("Open modal to create a keyword auto-reactor")
+        .setEmoji("➕"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Delete Keyword Reaction")
+        .setValue("action_delete_kw")
+        .setDescription("Open modal to delete a single keyword auto-reactor")
+        .setEmoji("🗑️"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Clear All Reactions")
+        .setValue("action_clear")
+        .setDescription("Delete all keyword and channel auto-reactors")
+        .setEmoji("🧹")
+    );
 
-  const clearBtn = new ButtonBuilder()
-    .setCustomId("config_clear_reactions")
-    .setLabel("Clear All Reactions")
-    .setEmoji("🧹")
-    .setStyle(ButtonStyle.Danger)
-    .setDisabled(reactTriggers.length === 0 && channelReactions.length === 0);
+  const actionRow = new ActionRowBuilder().addComponents(actionMenu);
+  const navRow = new ActionRowBuilder().addComponents(buildConfigNavMenu("reactions"));
 
   const cpBtn = new ButtonBuilder()
     .setCustomId("config_nav_overview")
@@ -295,10 +328,18 @@ function buildConfigReactionsView(guild) {
     .setEmoji("⚙️")
     .setStyle(ButtonStyle.Primary);
 
-  const btnRow = new ActionRowBuilder().addComponents(addKwBtn, clearBtn, cpBtn);
+  const refreshBtn = new ButtonBuilder()
+    .setCustomId("config_btn_refresh")
+    .setLabel("Refresh")
+    .setEmoji("🔄")
+    .setStyle(ButtonStyle.Secondary);
 
-  container.addActionRowComponents(new ActionRowBuilder().addComponents(buildConfigNavMenu("reactions")));
+  const btnRow = new ActionRowBuilder().addComponents(cpBtn, refreshBtn);
+
+  container.addActionRowComponents(actionRow);
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Auto-Reactions`));
 
   return container;
 }
@@ -312,27 +353,22 @@ function buildConfigStickyView(guild) {
   const stickyList = config.stickyMessages || [];
 
   const headerText =
-    `### 📌 **Sticky Messages Engine**\n` +
-    `-# Dynamic announcements, rules, or guidelines automatically pinned at the bottom of designated channels.`;
+    `### 📌 **Server Config • Sticky Messages Engine**\n` +
+    `-# Dynamic announcements or guidelines automatically pinned at the bottom of designated channels`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  let listStr = "";
-  if (stickyList.length > 0) {
-    stickyList.forEach((s, i) => {
-      const snippet = s.content.length > 60 ? s.content.slice(0, 57) + "..." : s.content;
-      listStr += `> \`${i + 1}.\` <#${s.channelId}> ➔ ${snippet}\n`;
-    });
-  } else {
-    listStr = "> *No sticky messages active. Use the channel menu below or `.sticky add <#channel> <message>`.*";
-  }
+  const stickyFormatted =
+    stickyList.length > 0
+      ? stickyList.map((s) => `<#${s.channelId}>: ${s.content.length > 35 ? s.content.slice(0, 32) + "..." : s.content}`).join("\n> • ")
+      : "*No sticky messages active*";
 
   const content =
-    `**📌 Active Sticky Notices (${stickyList.length}):**\n${listStr}\n\n` +
-    `💡 *Whenever members send messages in a sticky-enabled channel, the bot reposts the sticky card at the bottom.*`;
+    `> **Active Sticky Notices (${stickyList.length}):**\n> • ${stickyFormatted}\n\n` +
+    `-# Select a text channel below to configure or manage sticky messages.`;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
 
@@ -345,14 +381,20 @@ function buildConfigStickyView(guild) {
     .setPlaceholder("📌 Select channel to set or remove sticky message...")
     .setChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement);
 
-  const menuRow = new ActionRowBuilder().addComponents(channelMenu);
+  const actionMenu = new StringSelectMenuBuilder()
+    .setCustomId("config_sticky_select_action")
+    .setPlaceholder("📌 Sticky Actions (Clear / Manage)...")
+    .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Clear All Sticky Messages")
+        .setValue("action_clear_all")
+        .setDescription("Remove sticky notices across all channels")
+        .setEmoji("🧹")
+    );
 
-  const clearBtn = new ButtonBuilder()
-    .setCustomId("config_clear_sticky")
-    .setLabel("Clear All Sticky")
-    .setEmoji("🧹")
-    .setStyle(ButtonStyle.Danger)
-    .setDisabled(stickyList.length === 0);
+  const menuRow = new ActionRowBuilder().addComponents(channelMenu);
+  const actionRow = new ActionRowBuilder().addComponents(actionMenu);
+  const navRow = new ActionRowBuilder().addComponents(buildConfigNavMenu("sticky"));
 
   const cpBtn = new ButtonBuilder()
     .setCustomId("config_nav_overview")
@@ -360,11 +402,19 @@ function buildConfigStickyView(guild) {
     .setEmoji("⚙️")
     .setStyle(ButtonStyle.Primary);
 
-  const btnRow = new ActionRowBuilder().addComponents(clearBtn, cpBtn);
+  const refreshBtn = new ButtonBuilder()
+    .setCustomId("config_btn_refresh")
+    .setLabel("Refresh")
+    .setEmoji("🔄")
+    .setStyle(ButtonStyle.Secondary);
 
-  container.addActionRowComponents(new ActionRowBuilder().addComponents(buildConfigNavMenu("sticky")));
+  const btnRow = new ActionRowBuilder().addComponents(cpBtn, refreshBtn);
+
   container.addActionRowComponents(menuRow);
+  container.addActionRowComponents(actionRow);
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Sticky Messages`));
 
   return container;
 }
@@ -377,8 +427,8 @@ function buildConfigPrefixView(guild) {
   const currentPrefix = prefixManager.getPrefix(guild.id);
 
   const headerText =
-    `### ⚡ **Server Prefix Settings**\n` +
-    `-# Set a customized prefix for invoking text commands in **${guild.name}**.`;
+    `### ⚡ **Server Config • Prefix Settings**\n` +
+    `-# Set a customized prefix for invoking text commands in **${guild.name}**`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
@@ -386,11 +436,9 @@ function buildConfigPrefixView(guild) {
   );
 
   const content =
-    `**⚙️ Current Server Prefix:** \`${currentPrefix}\`\n\n` +
-    `> • **Default Bot Prefix:** \`.\`\n` +
-    `> • **Current Guild Prefix:** \`${currentPrefix}\`\n` +
-    `> • **Example Command:** \`${currentPrefix}help\` • \`${currentPrefix}stats\`\n\n` +
-    `💡 *Click any 1-click preset button below to switch prefix instantly, or use \`.setprefix <prefix>\`.*`;
+    `> **Current Prefix:** \`${currentPrefix}\` • **Default Bot Prefix:** \`.\`\n` +
+    `> **Sample Commands:** \`${currentPrefix}help\` • \`${currentPrefix}antinuke\` • \`${currentPrefix}automod\`\n\n` +
+    `-# Select a prefix preset below or apply custom prefix via \`.setprefix <prefix>\``;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
 
@@ -398,36 +446,118 @@ function buildConfigPrefixView(guild) {
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  const pDot = new ButtonBuilder()
-    .setCustomId("config_prefix_set_.")
-    .setLabel("Prefix: .")
-    .setStyle(currentPrefix === "." ? ButtonStyle.Success : ButtonStyle.Secondary);
+  const prefixMenu = new StringSelectMenuBuilder()
+    .setCustomId("config_prefix_select_action")
+    .setPlaceholder("⚡ Select Prefix Preset or Set Custom...")
+    .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Set Prefix to: . (Default)")
+        .setValue("prefix_set_.")
+        .setDescription("Standard dot command prefix")
+        .setEmoji("📌"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Set Prefix to: !")
+        .setValue("prefix_set_!")
+        .setDescription("Exclamation command prefix")
+        .setEmoji("⚡"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Set Prefix to: ?")
+        .setValue("prefix_set_?")
+        .setDescription("Question mark command prefix")
+        .setEmoji("❓"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Set Prefix to: $")
+        .setValue("prefix_set_$")
+        .setDescription("Dollar symbol command prefix")
+        .setEmoji("💵"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Set Prefix to: --")
+        .setValue("prefix_set_--")
+        .setDescription("Double dash command prefix")
+        .setEmoji("➖"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Set Custom Prefix (Modal)")
+        .setValue("prefix_custom_modal")
+        .setDescription("Type a custom prefix up to 5 characters")
+        .setEmoji("✏️"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Reset to Bot Default")
+        .setValue("prefix_reset")
+        .setDescription("Clear custom prefix and use standard default")
+        .setEmoji("🔄")
+    );
 
-  const pEx = new ButtonBuilder()
-    .setCustomId("config_prefix_set_!")
-    .setLabel("Prefix: !")
-    .setStyle(currentPrefix === "!" ? ButtonStyle.Success : ButtonStyle.Secondary);
+  const menuRow = new ActionRowBuilder().addComponents(prefixMenu);
+  const navRow = new ActionRowBuilder().addComponents(buildConfigNavMenu("prefix"));
 
-  const pQues = new ButtonBuilder()
-    .setCustomId("config_prefix_set_?")
-    .setLabel("Prefix: ?")
-    .setStyle(currentPrefix === "?" ? ButtonStyle.Success : ButtonStyle.Secondary);
+  const cpBtn = new ButtonBuilder()
+    .setCustomId("config_nav_overview")
+    .setLabel("Control Center")
+    .setEmoji("⚙️")
+    .setStyle(ButtonStyle.Primary);
 
-  const pDollar = new ButtonBuilder()
-    .setCustomId("config_prefix_set_$")
-    .setLabel("Prefix: $")
-    .setStyle(currentPrefix === "$" ? ButtonStyle.Success : ButtonStyle.Secondary);
-
-  const pReset = new ButtonBuilder()
-    .setCustomId("config_prefix_reset")
-    .setLabel("Reset Default")
+  const refreshBtn = new ButtonBuilder()
+    .setCustomId("config_btn_refresh")
+    .setLabel("Refresh")
     .setEmoji("🔄")
-    .setStyle(ButtonStyle.Danger);
+    .setStyle(ButtonStyle.Secondary);
 
-  const btnRow = new ActionRowBuilder().addComponents(pDot, pEx, pQues, pDollar, pReset);
+  const btnRow = new ActionRowBuilder().addComponents(cpBtn, refreshBtn);
 
-  container.addActionRowComponents(new ActionRowBuilder().addComponents(buildConfigNavMenu("prefix")));
+  container.addActionRowComponents(menuRow);
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Prefix Config`));
+
+  return container;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 6. COMMAND MANUAL & PLACEHOLDERS VIEW
+// ─────────────────────────────────────────────────────────────────────────────
+function buildConfigCommandsManualView() {
+  const container = new ContainerBuilder();
+
+  const headerText =
+    `### 📖 **Server Config • Command Manual & Variables**\n` +
+    `-# Full command reference, syntax guides, and dynamic placeholder variables for triggers`;
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
+
+  container.addSeparatorComponents(
+    new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+  );
+
+  const content =
+    `**🤖 Auto-Responders & Triggers**\n` +
+    `> • \`trigger add <phrase> | <response>\` — Register auto-responder\n` +
+    `> • \`trigger edit <phrase> | <new-resp>\` — Update auto-responder\n` +
+    `> • \`trigger remove <phrase>\` — Delete auto-responder\n\n` +
+    `**😀 Auto-Reactions & Emojis**\n` +
+    `> • \`reaction add <emoji> <phrase>\` — Auto-react on keyword\n` +
+    `> • \`reaction messages <#channel> <emojis...>\` — Auto-react in channel\n\n` +
+    `**📌 Sticky Messages & Prefix**\n` +
+    `> • \`sticky add <#channel> <message>\` — Pin dynamic announcement\n` +
+    `> • \`setprefix <prefix>\` — Change server command prefix\n\n` +
+    `**⚡ Dynamic Variables:** \`{user}\`, \`{user.name}\`, \`{server}\`, \`{membercount}\`, \`{channel}\``;
+
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
+
+  container.addSeparatorComponents(
+    new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+  );
+
+  const cpBtn = new ButtonBuilder()
+    .setCustomId("config_nav_overview")
+    .setLabel("Control Center")
+    .setEmoji("⚙️")
+    .setStyle(ButtonStyle.Primary);
+
+  const navRow = new ActionRowBuilder().addComponents(buildConfigNavMenu("commands"));
+  const btnRow = new ActionRowBuilder().addComponents(cpBtn);
+
+  container.addActionRowComponents(navRow);
+  container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Documentation`));
 
   return container;
 }
@@ -544,6 +674,196 @@ async function handleConfigurationInteraction(client, interaction) {
     const selected = interaction.values[0];
     const targetTab = selected.replace("config_nav_", "");
     const updated = buildConfigurationContainer(guild, targetTab);
+    await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    return true;
+  }
+
+  // 1.1 Overview Action Select
+  if (isMenu && customId === "config_overview_select_action") {
+    const targetTab = interaction.values[0].replace("nav_", "");
+    const updated = buildConfigurationContainer(guild, targetTab);
+    await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    return true;
+  }
+
+  // 1.2 Triggers Action Select
+  if (isMenu && customId === "config_triggers_select_action") {
+    const val = interaction.values[0];
+    if (val === "action_add") {
+      const modal = new ModalBuilder()
+        .setCustomId("config_modal_submit_add_trigger")
+        .setTitle("Create Auto-Responder Trigger");
+
+      const phraseInput = new TextInputBuilder()
+        .setCustomId("trig_phrase")
+        .setLabel("Trigger Phrase (Exact Match)")
+        .setStyle(TextInputStyle.Short)
+        .setPlaceholder("e.g. vanity, support, website, ip")
+        .setRequired(true)
+        .setMaxLength(100);
+
+      const responseInput = new TextInputBuilder()
+        .setCustomId("trig_response")
+        .setLabel("Response Text (Placeholders supported)")
+        .setStyle(TextInputStyle.Paragraph)
+        .setPlaceholder("e.g. Join discord.gg/astrix for cool perks!")
+        .setRequired(true)
+        .setMaxLength(1000);
+
+      modal.addComponents(
+        new ActionRowBuilder().addComponents(phraseInput),
+        new ActionRowBuilder().addComponents(responseInput)
+      );
+
+      await interaction.showModal(modal).catch(() => null);
+      return true;
+    } else if (val === "action_edit") {
+      const modal = new ModalBuilder()
+        .setCustomId("config_modal_submit_edit_trigger")
+        .setTitle("Edit Auto-Responder Trigger");
+
+      const phraseInput = new TextInputBuilder()
+        .setCustomId("trig_edit_phrase")
+        .setLabel("Existing Trigger Phrase to Modify")
+        .setStyle(TextInputStyle.Short)
+        .setPlaceholder("e.g. vanity, support")
+        .setRequired(true)
+        .setMaxLength(100);
+
+      const responseInput = new TextInputBuilder()
+        .setCustomId("trig_edit_response")
+        .setLabel("New Response Text")
+        .setStyle(TextInputStyle.Paragraph)
+        .setPlaceholder("Enter new updated response message...")
+        .setRequired(true)
+        .setMaxLength(1000);
+
+      modal.addComponents(
+        new ActionRowBuilder().addComponents(phraseInput),
+        new ActionRowBuilder().addComponents(responseInput)
+      );
+
+      await interaction.showModal(modal).catch(() => null);
+      return true;
+    } else if (val === "action_delete") {
+      const modal = new ModalBuilder()
+        .setCustomId("config_modal_submit_delete_trigger")
+        .setTitle("Delete Auto-Responder Trigger");
+
+      const phraseInput = new TextInputBuilder()
+        .setCustomId("trig_delete_phrase")
+        .setLabel("Trigger Phrase to Remove")
+        .setStyle(TextInputStyle.Short)
+        .setPlaceholder("e.g. vanity, support")
+        .setRequired(true)
+        .setMaxLength(100);
+
+      modal.addComponents(new ActionRowBuilder().addComponents(phraseInput));
+      await interaction.showModal(modal).catch(() => null);
+      return true;
+    } else if (val === "action_clear") {
+      config.triggers = [];
+      configManager.setGuildConfig(guildId, config);
+      const updated = buildConfigurationContainer(guild, "triggers");
+      await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+  }
+
+  // 1.3 Reactions Action Select
+  if (isMenu && customId === "config_reactions_select_action") {
+    const val = interaction.values[0];
+    if (val === "action_add_kw") {
+      const modal = new ModalBuilder()
+        .setCustomId("config_modal_submit_add_reaction")
+        .setTitle("Add Keyword Reaction");
+
+      const emojiInput = new TextInputBuilder()
+        .setCustomId("react_emoji")
+        .setLabel("Emoji (Unicode or custom <:name:id>)")
+        .setStyle(TextInputStyle.Short)
+        .setPlaceholder("e.g. 👍, ❤️, 🔥")
+        .setRequired(true)
+        .setMaxLength(50);
+
+      const phraseInput = new TextInputBuilder()
+        .setCustomId("react_phrase")
+        .setLabel("Trigger Phrase")
+        .setStyle(TextInputStyle.Short)
+        .setPlaceholder("e.g. gg, welcome, astrix")
+        .setRequired(true)
+        .setMaxLength(100);
+
+      modal.addComponents(
+        new ActionRowBuilder().addComponents(emojiInput),
+        new ActionRowBuilder().addComponents(phraseInput)
+      );
+
+      await interaction.showModal(modal).catch(() => null);
+      return true;
+    } else if (val === "action_delete_kw") {
+      const modal = new ModalBuilder()
+        .setCustomId("config_modal_submit_delete_reaction")
+        .setTitle("Delete Keyword Reaction");
+
+      const phraseInput = new TextInputBuilder()
+        .setCustomId("react_delete_phrase")
+        .setLabel("Keyword Phrase to Remove")
+        .setStyle(TextInputStyle.Short)
+        .setPlaceholder("e.g. gg, welcome")
+        .setRequired(true)
+        .setMaxLength(100);
+
+      modal.addComponents(new ActionRowBuilder().addComponents(phraseInput));
+      await interaction.showModal(modal).catch(() => null);
+      return true;
+    } else if (val === "action_clear") {
+      config.reactionTriggers = [];
+      config.channelReactions = [];
+      configManager.setGuildConfig(guildId, config);
+      const updated = buildConfigurationContainer(guild, "reactions");
+      await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+  }
+
+  // 1.4 Sticky Action Select
+  if (isMenu && customId === "config_sticky_select_action") {
+    const val = interaction.values[0];
+    if (val === "action_clear_all") {
+      configManager.clearStickyMessages(guildId);
+      const updated = buildConfigurationContainer(guild, "sticky");
+      await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+  }
+
+  // 1.5 Prefix Action Select
+  if (isMenu && customId === "config_prefix_select_action") {
+    const val = interaction.values[0];
+    if (val === "prefix_custom_modal") {
+      const modal = new ModalBuilder()
+        .setCustomId("config_modal_submit_custom_prefix")
+        .setTitle("Set Custom Server Prefix");
+
+      const prefixInput = new TextInputBuilder()
+        .setCustomId("custom_prefix_text")
+        .setLabel("Enter New Server Prefix (1-5 chars)")
+        .setStyle(TextInputStyle.Short)
+        .setPlaceholder("e.g. +, ~, >>, *, !, $, .")
+        .setRequired(true)
+        .setMaxLength(5);
+
+      modal.addComponents(new ActionRowBuilder().addComponents(prefixInput));
+      await interaction.showModal(modal).catch(() => null);
+      return true;
+    } else if (val === "prefix_reset") {
+      prefixManager.resetPrefix(guildId);
+    } else if (val.startsWith("prefix_set_")) {
+      const p = val.replace("prefix_set_", "");
+      prefixManager.setPrefix(guildId, p);
+    }
+    const updated = buildConfigurationContainer(guild, "prefix");
     await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
     return true;
   }
@@ -757,6 +1077,26 @@ async function handleConfigurationInteraction(client, interaction) {
     return true;
   }
 
+  // 7c. Modals: Delete Trigger
+  if (isModalSubmit && customId === "config_modal_submit_delete_trigger") {
+    const phrase = interaction.fields.getTextInputValue("trig_delete_phrase")?.trim();
+    if (phrase) {
+      const removed = configManager.removeTrigger(guildId, phrase);
+      if (removed) {
+        await interaction.reply({
+          content: `🗑️ Auto-responder trigger \`${phrase}\` deleted successfully!`,
+          flags: MessageFlags.Ephemeral,
+        }).catch(() => null);
+      } else {
+        await interaction.reply({
+          content: `⚠️ Trigger \`${phrase}\` was not found in active triggers list.`,
+          flags: MessageFlags.Ephemeral,
+        }).catch(() => null);
+      }
+    }
+    return true;
+  }
+
   // 8. Modals: Add Keyword Reaction
   if (customId === "config_modal_add_reaction") {
     const modal = new ModalBuilder()
@@ -809,7 +1149,77 @@ async function handleConfigurationInteraction(client, interaction) {
     return true;
   }
 
-  // 9. Refresh Button
+  // 8b. Modals: Delete Keyword Reaction
+  if (isModalSubmit && customId === "config_modal_submit_delete_reaction") {
+    const phrase = interaction.fields.getTextInputValue("react_delete_phrase")?.trim();
+    if (phrase) {
+      const prevLen = config.reactionTriggers?.length || 0;
+      config.reactionTriggers = (config.reactionTriggers || []).filter(
+        (rt) => (rt.trigger || "").toLowerCase() !== phrase.toLowerCase()
+      );
+      if (config.reactionTriggers.length < prevLen) {
+        configManager.setGuildConfig(guildId, config);
+        await interaction.reply({
+          content: `🗑️ Auto-reaction for \`${phrase}\` deleted successfully!`,
+          flags: MessageFlags.Ephemeral,
+        }).catch(() => null);
+      } else {
+        await interaction.reply({
+          content: `⚠️ Reaction trigger for \`${phrase}\` was not found.`,
+          flags: MessageFlags.Ephemeral,
+        }).catch(() => null);
+      }
+    }
+    return true;
+  }
+
+  // 9. Modals: Custom Prefix Submission
+  if (isModalSubmit && customId === "config_modal_submit_custom_prefix") {
+    const newPrefix = interaction.fields.getTextInputValue("custom_prefix_text")?.trim();
+    if (newPrefix && newPrefix.length <= 5 && !newPrefix.includes(" ")) {
+      prefixManager.setPrefix(guildId, newPrefix);
+      await interaction.reply({
+        content: `✅ Server command prefix updated to **\`${newPrefix}\`**!\n> Try running: \`${newPrefix}help\` or \`${newPrefix}configuration\``,
+        flags: MessageFlags.Ephemeral,
+      }).catch(() => null);
+    } else {
+      await interaction.reply({
+        content: `❌ Invalid prefix. Prefix must be between 1-5 characters and cannot contain spaces.`,
+        flags: MessageFlags.Ephemeral,
+      }).catch(() => null);
+    }
+    return true;
+  }
+
+  // 9b. Modals: Edit Keyword Reaction Submission
+  if (isModalSubmit && customId === "config_modal_submit_edit_reaction") {
+    const phrase = interaction.fields.getTextInputValue("react_edit_phrase")?.trim().toLowerCase();
+    const newEmoji = interaction.fields.getTextInputValue("react_new_emoji")?.trim();
+
+    if (phrase && newEmoji) {
+      const currentConfig = configManager.getGuildConfig(guildId);
+      const targetItem = (currentConfig.reactionTriggers || []).find(
+        (r) => (r.trigger || "").trim().toLowerCase() === phrase
+      );
+
+      if (targetItem) {
+        targetItem.emoji = newEmoji;
+        configManager.setGuildConfig(guildId, currentConfig);
+        await interaction.reply({
+          content: `✅ Auto-reaction for keyword **\`${phrase}\`** updated to ${newEmoji}!`,
+          flags: MessageFlags.Ephemeral,
+        }).catch(() => null);
+      } else {
+        await interaction.reply({
+          content: `⚠️ No active auto-reaction found matching keyword **\`${phrase}\`**.`,
+          flags: MessageFlags.Ephemeral,
+        }).catch(() => null);
+      }
+    }
+    return true;
+  }
+
+  // 10. Refresh Button
   if (customId === "config_btn_refresh") {
     const updated = buildConfigurationContainer(guild, "overview");
     await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);

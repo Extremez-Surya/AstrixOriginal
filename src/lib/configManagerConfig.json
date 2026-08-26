@@ -6,10 +6,20 @@
       "channelReactions": []
     },
     "1526109131042459678": {
-      "triggers": [],
+      "triggers": [
+        {
+          "id": "trig_1787756102838",
+          "trigger": "vanity",
+          "response": "discord.gg/dreamzone",
+          "matchMode": "exact",
+          "enabled": true,
+          "useComponentsV2": true
+        }
+      ],
       "reactionTriggers": [],
       "channelReactions": [],
-      "stickyMessages": []
+      "stickyMessages": [],
+      "mediaOnlyChannels": []
     },
     "test_guild_123": {
       "triggers": [

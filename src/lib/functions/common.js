@@ -96,12 +96,21 @@ const logger = {
   Error: (scope, message, err = null) => {
     const badge = renderBadge("ERROR", colors.white, bgRgb(225, 29, 72)); // Rose/Red Pill
     const formattedScope = `${colors.rose}${bold}[${scope}]${reset}`;
+    let errMsg = message;
+    if (err) {
+      if (err.message && !message.includes(err.message)) {
+        errMsg = `${message} -> ${err.message}`;
+      } else if (typeof err === "string" && !message.includes(err)) {
+        errMsg = `${message} -> ${err}`;
+      }
+    }
     console.log(
-      `${colors.darkGray}${formatTime()}${reset}  ${badge}  ${formattedScope.padEnd(28)} ${colors.rose}${message}${reset}`
+      `${colors.darkGray}${formatTime()}${reset}  ${badge}  ${formattedScope.padEnd(28)} ${colors.rose}${errMsg}${reset}`
     );
     if (err && err.stack) {
-      const stackLines = err.stack.split("\n").slice(1, 4).join("\n");
-      console.log(`${colors.darkGray}${stackLines}${reset}`);
+      console.error(`${colors.darkGray}${err.stack}${reset}`);
+    } else if (err && typeof err === "object") {
+      console.dir(err, { depth: null, colors: true });
     }
   },
 

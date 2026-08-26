@@ -33,12 +33,12 @@ function isAuthorized(client, member, guild) {
 function buildCustomRolesNavMenu(activeId = "overview") {
   return new StringSelectMenuBuilder()
     .setCustomId("cr_nav_menu")
-    .setPlaceholder("🧭 Custom Roles Control Suite Navigation...")
+    .setPlaceholder("🧭 Custom Roles Hub Navigation...")
     .addOptions(
       new StringSelectMenuOptionBuilder()
         .setLabel("Control Center & Telemetry")
         .setValue("cr_nav_overview")
-        .setDescription("Overview of role shortcuts, reqrole access & security status")
+        .setDescription("Overview of role shortcuts & staff access controls")
         .setEmoji("🎭")
         .setDefault(activeId === "overview"),
       new StringSelectMenuOptionBuilder()
@@ -54,7 +54,7 @@ function buildCustomRolesNavMenu(activeId = "overview") {
         .setEmoji("➕")
         .setDefault(activeId === "create"),
       new StringSelectMenuOptionBuilder()
-        .setLabel("Required Role (ReqRole) Security")
+        .setLabel("Required Role (ReqRole) Access")
         .setValue("cr_nav_reqrole")
         .setDescription("Define which staff role is authorized to invoke shortcuts")
         .setEmoji("🔒")
@@ -88,68 +88,78 @@ function buildCustomRolesOverviewView(guild, crConfig) {
   }
 
   const headerText =
-    `### 🎭 **Astrix Custom Roles Control Suite**\n` +
-    `-# *Ultra-fast custom role shortcuts & interactive role management for **${guild.name}***`;
+    `### 🎭 **Custom Roles • Control Suite**\n` +
+    `-# Ultra-fast custom role shortcuts & interactive role management for **${guild.name}**`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  const statusHeadline = `### 🟢 **Status: Custom Roles System Active**\n> Sub-0.1s role allocation engine with real-time privilege & hierarchy protection.`;
-  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(statusHeadline));
-
-  const telemetryText =
-    `**📊 System Telemetry & Access Controls:**\n` +
-    `> • 🔒 **Required Role (ReqRole):** ${reqStatus}\n` +
-    `> • ⚡ **Configured Shortcuts:** \`${aliases.length}\` role aliases active\n` +
-    `> • 🛡️ **Anti-Bypass Guard:** 🟢 \`ARMED\` (Dangerous permissions blocked)\n` +
-    `> • 🚀 **Quick Invocation:** \`.<alias> @user\` *(Instantly grants or revokes role)*\n\n` +
-    `💡 *Select a module from the dropdown below or use the quick action buttons to customize.*`;
-
-  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(telemetryText));
-
-  container.addSeparatorComponents(
-    new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-  );
-
-  let shortcutsText = "";
+  let shortcutsPreview = "";
   if (aliases.length > 0) {
-    const list = aliases.slice(0, 6).map(([alias, roleId]) => {
+    const list = aliases.slice(0, 4).map(([alias, roleId]) => {
       const r = guild.roles.cache.get(roleId);
-      return `> • **\` .${alias} \`** ➔ ${r ? `<@&${r.id}>` : `\`${roleId}\``}`;
+      return `> • **\`.${alias}\`** ➔ ${r ? `<@&${r.id}>` : `\`${roleId}\``}`;
     });
-    shortcutsText = `**📋 Configured Shortcuts Preview:**\n${list.join("\n")}`;
-    if (aliases.length > 6) shortcutsText += `\n> ... *and ${aliases.length - 6} more (see Matrix tab).*`;
+    shortcutsPreview = `\n\n**Active Shortcuts Preview (${aliases.length}):**\n${list.join("\n")}`;
+    if (aliases.length > 4) shortcutsPreview += `\n> ... *and ${aliases.length - 4} more (see Shortcuts Matrix).*`;
   } else {
-    shortcutsText = `*No custom role aliases configured yet. Click **Create Shortcut** below to bind one.*`;
+    shortcutsPreview = "\n\n*No custom role shortcuts bound yet. Select an action below to create one.*";
   }
 
-  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(shortcutsText));
+  const content =
+    `> **System Status:** 🟢 \`ARMED & ACTIVE\` • **Configured Shortcuts:** \`${aliases.length}\` active\n` +
+    `> **Required Role (ReqRole):** ${reqStatus}\n` +
+    `> **Anti-Bypass Guard:** 🟢 \`PROTECTED\` (Admin / Dangerous permissions blocked)` +
+    shortcutsPreview;
+
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
 
   container.addSeparatorComponents(
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
+  // 1. Action Select Dropdown
+  const actionMenu = new StringSelectMenuBuilder()
+    .setCustomId("cr_overview_select_action")
+    .setPlaceholder("⚡ Custom Role Actions (Create / Manage / Settings)...")
+    .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Create / Bind Shortcut")
+        .setValue("nav_create")
+        .setDescription("Bind a keyword trigger (e.g. .vip) to a server role")
+        .setEmoji("➕"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Active Shortcuts Matrix")
+        .setValue("nav_matrix")
+        .setDescription("Inspect, test, or delete configured role aliases")
+        .setEmoji("⚡"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Configure Required Staff Role")
+        .setValue("nav_reqrole")
+        .setDescription("Set or remove staff role authorization for shortcuts")
+        .setEmoji("🔒"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Anti-Bypass & Hierarchy Guard")
+        .setValue("nav_security")
+        .setDescription("Inspect role hierarchy and permission safeguards")
+        .setEmoji("🛡️"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Command Manual & Guide")
+        .setValue("nav_commands")
+        .setDescription("View full syntax reference for all custom role commands")
+        .setEmoji("📖")
+    );
+
+  const actionRow = new ActionRowBuilder().addComponents(actionMenu);
   const navRow = new ActionRowBuilder().addComponents(buildCustomRolesNavMenu("overview"));
 
-  const createBtn = new ButtonBuilder()
-    .setCustomId("cr_nav_create")
-    .setLabel("Create Shortcut")
-    .setEmoji("➕")
-    .setStyle(ButtonStyle.Success);
-
-  const matrixBtn = new ButtonBuilder()
-    .setCustomId("cr_nav_matrix")
-    .setLabel("Shortcuts Matrix")
-    .setEmoji("⚡")
+  const cpBtn = new ButtonBuilder()
+    .setCustomId("cr_nav_overview")
+    .setLabel("Control Center")
+    .setEmoji("🎭")
     .setStyle(ButtonStyle.Primary);
-
-  const reqRoleBtn = new ButtonBuilder()
-    .setCustomId("cr_nav_reqrole")
-    .setLabel("ReqRole Config")
-    .setEmoji("🔒")
-    .setStyle(ButtonStyle.Secondary);
 
   const refreshBtn = new ButtonBuilder()
     .setCustomId("cr_btn_refresh")
@@ -157,10 +167,12 @@ function buildCustomRolesOverviewView(guild, crConfig) {
     .setEmoji("🔄")
     .setStyle(ButtonStyle.Secondary);
 
-  const btnRow = new ActionRowBuilder().addComponents(createBtn, matrixBtn, reqRoleBtn, refreshBtn);
+  const btnRow = new ActionRowBuilder().addComponents(cpBtn, refreshBtn);
 
+  container.addActionRowComponents(actionRow);
   container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Custom Roles Engine`));
 
   return container;
 }
@@ -173,29 +185,29 @@ function buildCustomRolesMatrixView(guild, crConfig) {
   const aliases = Object.entries(crConfig.aliases || {});
 
   const headerText =
-    `### ⚡ **Active Role Shortcuts Matrix**\n` +
-    `-# All active trigger aliases mapped to server roles. Members can execute \`.<alias> @user\` to toggle.`;
+    `### ⚡ **Custom Roles • Active Shortcuts Matrix**\n` +
+    `-# All configured keyword aliases bound to roles in **${guild.name}**`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  let listStr = "";
+  let matrixFormatted = "";
   if (aliases.length > 0) {
-    listStr = aliases.map(([alias, roleId], i) => {
+    const list = aliases.map(([alias, roleId]) => {
       const r = guild.roles.cache.get(roleId);
-      const rName = r ? `<@&${r.id}>` : `\`Deleted Role (${roleId})\``;
-      const pos = r ? `#${r.position}` : "N/A";
-      return `> \`${i + 1}.\` **Trigger:** \`.${alias}\` ➔ ${rName} • Position: \`${pos}\``;
-    }).join("\n");
+      return `> • **\`.${alias} @user\`** ➔ ${r ? `<@&${r.id}>` : `\`${roleId}\``}`;
+    });
+    matrixFormatted = list.join("\n");
   } else {
-    listStr = "> *No custom role aliases configured yet.*";
+    matrixFormatted = "*No custom role shortcuts active. Use Create Shortcut to bind one.*";
   }
 
   const content =
-    `**📋 Configured Shortcuts (${aliases.length}):**\n${listStr}\n\n` +
-    `💡 *Command Syntax:* \`.customrole add <alias> <role>\` • \`.customrole remove <alias>\``;
+    `> **Total Active Shortcuts:** \`${aliases.length} / 25\`\n\n` +
+    `**Registered Aliases:**\n${matrixFormatted}\n\n` +
+    `-# Invoking a shortcut grants the role if missing, or revokes it if already owned.`;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
 
@@ -204,35 +216,23 @@ function buildCustomRolesMatrixView(guild, crConfig) {
   );
 
   if (aliases.length > 0) {
-    const selectOptions = aliases.slice(0, 25).map(([alias, roleId]) => {
-      const role = guild.roles.cache.get(roleId);
-      return new StringSelectMenuOptionBuilder()
-        .setLabel(`Inspect .${alias}`)
-        .setValue(`cr_inspect_${alias}_${roleId}`)
-        .setDescription(`Role: ${role ? role.name : roleId}`)
-        .setEmoji("🎭");
-    });
-
     const selectMenu = new StringSelectMenuBuilder()
-      .setCustomId("customrole_alias_select")
-      .setPlaceholder("🔍 Select an alias to inspect details...")
-      .addOptions(selectOptions);
-
+      .setCustomId("cr_matrix_alias_select")
+      .setPlaceholder("🗑️ Select an alias to delete from server...")
+      .addOptions(
+        aliases.slice(0, 25).map(([alias, roleId]) => {
+          const r = guild.roles.cache.get(roleId);
+          return new StringSelectMenuOptionBuilder()
+            .setLabel(`Delete: .${alias}`)
+            .setValue(`delete_${alias}`)
+            .setDescription(`Unbind shortcut for role: ${r?.name || roleId}`)
+            .setEmoji("🗑️");
+        })
+      );
     container.addActionRowComponents(new ActionRowBuilder().addComponents(selectMenu));
   }
 
-  const createBtn = new ButtonBuilder()
-    .setCustomId("cr_nav_create")
-    .setLabel("Create Shortcut")
-    .setEmoji("➕")
-    .setStyle(ButtonStyle.Success);
-
-  const deleteBtn = new ButtonBuilder()
-    .setCustomId("cr_btn_remove_menu")
-    .setLabel("Delete Shortcut")
-    .setEmoji("🗑️")
-    .setStyle(ButtonStyle.Danger)
-    .setDisabled(aliases.length === 0);
+  const navRow = new ActionRowBuilder().addComponents(buildCustomRolesNavMenu("matrix"));
 
   const cpBtn = new ButtonBuilder()
     .setCustomId("cr_nav_overview")
@@ -240,23 +240,30 @@ function buildCustomRolesMatrixView(guild, crConfig) {
     .setEmoji("🎭")
     .setStyle(ButtonStyle.Primary);
 
-  const btnRow = new ActionRowBuilder().addComponents(createBtn, deleteBtn, cpBtn);
+  const refreshBtn = new ButtonBuilder()
+    .setCustomId("cr_btn_refresh")
+    .setLabel("Refresh")
+    .setEmoji("🔄")
+    .setStyle(ButtonStyle.Secondary);
 
-  container.addActionRowComponents(new ActionRowBuilder().addComponents(buildCustomRolesNavMenu("matrix")));
+  const btnRow = new ActionRowBuilder().addComponents(cpBtn, refreshBtn);
+
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Shortcuts Matrix`));
 
   return container;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 4. CREATE / BIND SHORTCUT VIEW
+// 4. CREATE SHORTCUT WIZARD VIEW
 // ─────────────────────────────────────────────────────────────────────────────
 function buildCustomRolesCreateView(guild) {
   const container = new ContainerBuilder();
 
   const headerText =
-    `### ➕ **Create & Bind New Role Shortcut**\n` +
-    `-# Select a server role from the role picker below, then enter a custom trigger alias.`;
+    `### ➕ **Custom Roles • Bind New Role Shortcut**\n` +
+    `-# Bind a custom trigger command (e.g. \`.vip @user\` or \`.friend @user\`) to a role`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
@@ -264,11 +271,10 @@ function buildCustomRolesCreateView(guild) {
   );
 
   const content =
-    `**🎯 Role Binding Instructions:**\n` +
-    `> 1. Select the target server role from the **Role Picker** below.\n` +
-    `> 2. Enter a short, easy-to-remember trigger name (e.g. \`vip\`, \`member\`, \`mod\`, \`friend\`).\n` +
-    `> 3. Once bound, staff members can simply run \`.<alias> @user\` to grant or remove that role instantly!\n\n` +
-    `🛡️ *Note: Roles with Administrator or dangerous permissions cannot be bound for security reasons.*`;
+    `> **Step 1:** Select the target server role from the menu below.\n` +
+    `> **Step 2:** A popup box will appear asking for your desired command keyword.\n` +
+    `> **Step 3:** The command will be instantly usable by authorized staff!\n\n` +
+    `-# Note: Roles with Administrator or dangerous permissions cannot be bound.`;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
 
@@ -277,10 +283,11 @@ function buildCustomRolesCreateView(guild) {
   );
 
   const roleMenu = new RoleSelectMenuBuilder()
-    .setCustomId("cr_bind_select_role")
+    .setCustomId("cr_create_role_select")
     .setPlaceholder("🎭 Select a role to bind shortcut alias...");
 
   const menuRow = new ActionRowBuilder().addComponents(roleMenu);
+  const navRow = new ActionRowBuilder().addComponents(buildCustomRolesNavMenu("create"));
 
   const cpBtn = new ButtonBuilder()
     .setCustomId("cr_nav_overview")
@@ -288,11 +295,18 @@ function buildCustomRolesCreateView(guild) {
     .setEmoji("🎭")
     .setStyle(ButtonStyle.Primary);
 
-  const btnRow = new ActionRowBuilder().addComponents(cpBtn);
+  const refreshBtn = new ButtonBuilder()
+    .setCustomId("cr_btn_refresh")
+    .setLabel("Refresh")
+    .setEmoji("🔄")
+    .setStyle(ButtonStyle.Secondary);
 
-  container.addActionRowComponents(new ActionRowBuilder().addComponents(buildCustomRolesNavMenu("create")));
+  const btnRow = new ActionRowBuilder().addComponents(cpBtn, refreshBtn);
+
   container.addActionRowComponents(menuRow);
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Create Shortcut`));
 
   return container;
 }
@@ -302,16 +316,15 @@ function buildCustomRolesCreateView(guild) {
 // ─────────────────────────────────────────────────────────────────────────────
 function buildCustomRolesReqRoleView(guild, crConfig) {
   const container = new ContainerBuilder();
-
-  let reqStatus = "*None (Manage Roles default)*";
+  let reqStatus = "*None configured (Manage Roles default)*";
   if (crConfig.reqRole) {
     const r = guild.roles.cache.get(crConfig.reqRole);
     reqStatus = r ? `<@&${r.id}>` : `\`${crConfig.reqRole}\``;
   }
 
   const headerText =
-    `### 🔒 **Required Role (ReqRole) Security Configuration**\n` +
-    `-# Define which staff role is authorized to execute custom role triggers and shortcuts.`;
+    `### 🔒 **Custom Roles • Required Staff Role (ReqRole)**\n` +
+    `-# Restrict custom role shortcuts to members holding a specific staff role`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
@@ -319,12 +332,9 @@ function buildCustomRolesReqRoleView(guild, crConfig) {
   );
 
   const content =
-    `**⚙️ Current ReqRole Status:**\n` +
-    `> • 🔒 **Authorized Staff Role:** ${reqStatus}\n\n` +
-    `**🛡️ Access Hierarchy Rules:**\n` +
-    `> • **When ReqRole is configured:** Members require \`Administrator\`, \`Manage Server\`, OR the designated **ReqRole** to execute shortcuts.\n` +
-    `> • **When ReqRole is disabled:** Standard Discord **Manage Roles** permission is required.\n\n` +
-    `💡 *Select a new required role from the menu below or click Disable.*`;
+    `> **Current ReqRole:** ${reqStatus}\n` +
+    `> **Permission Logic:** If set, only members with this role (or Administrators) can execute shortcuts.\n\n` +
+    `-# Select a role below to set ReqRole, or click Disable to restore default.`;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
 
@@ -337,9 +347,10 @@ function buildCustomRolesReqRoleView(guild, crConfig) {
     .setPlaceholder("🔒 Select Required Role for Custom Roles...");
 
   const menuRow = new ActionRowBuilder().addComponents(roleMenu);
+  const navRow = new ActionRowBuilder().addComponents(buildCustomRolesNavMenu("reqrole"));
 
   const disableBtn = new ButtonBuilder()
-    .setCustomId("cr_reqrole_disable")
+    .setCustomId("cr_btn_disable_reqrole")
     .setLabel("Disable ReqRole")
     .setEmoji("🔓")
     .setStyle(ButtonStyle.Danger)
@@ -353,22 +364,23 @@ function buildCustomRolesReqRoleView(guild, crConfig) {
 
   const btnRow = new ActionRowBuilder().addComponents(disableBtn, cpBtn);
 
-  container.addActionRowComponents(new ActionRowBuilder().addComponents(buildCustomRolesNavMenu("reqrole")));
   container.addActionRowComponents(menuRow);
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • ReqRole Config`));
 
   return container;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 6. ANTI-BYPASS GUARD VIEW
+// 6. SECURITY & ANTI-BYPASS VIEW
 // ─────────────────────────────────────────────────────────────────────────────
 function buildCustomRolesSecurityView(guild, crConfig) {
   const container = new ContainerBuilder();
 
   const headerText =
-    `### 🛡️ **Anti-Bypass Guard & Hierarchy Safeguards**\n` +
-    `-# Real-time security layer preventing privilege escalation and malicious role abuse.`;
+    `### 🛡️ **Custom Roles • Anti-Bypass Guard & Hierarchy**\n` +
+    `-# Automated security layers preventing privilege escalation and role abuse`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
@@ -376,11 +388,12 @@ function buildCustomRolesSecurityView(guild, crConfig) {
   );
 
   const content =
-    `**🛡️ Active Defense Mechanisms:**\n` +
-    `> • ⛔ **Dangerous Permissions Block:** Roles granting \`Administrator\`, \`Manage Server\`, \`Manage Roles\`, \`Ban Members\`, etc., are strictly blocked from being bound to shortcuts.\n` +
-    `> • 📊 **Role Hierarchy Enforcement:** The bot strictly respects role positions. It cannot grant roles above or equal to its own highest role.\n` +
-    `> • 🚨 **Anti-Bypass Penalty:** Unauthorized spam attempts to invoke role aliases without permission result in automatic security timeouts.\n` +
-    `> • ⚡ **Execution Speed:** All checks run in under **0.1 seconds** before granting.`;
+    `> **🛡️ Dangerous Permission Filter:** 🟢 \`ARMED & ENFORCED\`\n` +
+    `> • Roles with Administrator, Manage Server, Ban Members, or Manage Roles cannot be bound.\n\n` +
+    `> **👑 Role Hierarchy Enforcer:** 🟢 \`ACTIVE\`\n` +
+    `> • Bot strictly refuses to grant roles higher than or equal to its own highest role.\n\n` +
+    `> **⚡ Anti-Loop Execution:** 🟢 \`PROTECTED\`\n` +
+    `> • Commands execute under sub-0.1s transactional locks to prevent duplicate assignments.`;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
 
@@ -388,16 +401,25 @@ function buildCustomRolesSecurityView(guild, crConfig) {
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
+  const navRow = new ActionRowBuilder().addComponents(buildCustomRolesNavMenu("security"));
+
   const cpBtn = new ButtonBuilder()
     .setCustomId("cr_nav_overview")
     .setLabel("Control Center")
     .setEmoji("🎭")
     .setStyle(ButtonStyle.Primary);
 
-  const btnRow = new ActionRowBuilder().addComponents(cpBtn);
+  const refreshBtn = new ButtonBuilder()
+    .setCustomId("cr_btn_refresh")
+    .setLabel("Refresh")
+    .setEmoji("🔄")
+    .setStyle(ButtonStyle.Secondary);
 
-  container.addActionRowComponents(new ActionRowBuilder().addComponents(buildCustomRolesNavMenu("security")));
+  const btnRow = new ActionRowBuilder().addComponents(cpBtn, refreshBtn);
+
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Safeguards`));
 
   return container;
 }
@@ -409,8 +431,8 @@ function buildCustomRolesCommandsManualView() {
   const container = new ContainerBuilder();
 
   const headerText =
-    `### 📖 **Custom Roles Command Manual**\n` +
-    `-# Complete reference guide for all Custom Role shortcut commands and management tools.`;
+    `### 📖 **Custom Roles • Command Manual & Quick Syntax**\n` +
+    `-# Full reference guide for custom role management commands and subcommands`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
@@ -418,22 +440,23 @@ function buildCustomRolesCommandsManualView() {
   );
 
   const content =
-    `🎭 **Custom Role Commands:**\n` +
-    `> • \`.customrole\` / \`.customrole view\` — Open interactive Control Center\n` +
-    `> • \`.customrole add <alias> <role>\` — Create a new role trigger shortcut\n` +
+    `**🎭 Core Management Commands**\n` +
+    `> • \`.customrole\` — Open interactive Control Center\n` +
+    `> • \`.customrole add <alias> <role>\` — Create a new role shortcut\n` +
     `> • \`.customrole remove <alias>\` — Delete an existing role shortcut\n` +
-    `> • \`.<alias> @user\` — Instantly toggle/assign role to member\n\n` +
-    `🔒 **Access & Direct Management:**\n` +
-    `> • \`.reqrole <@role|off>\` — Configure authorized staff role\n` +
-    `> • \`.radd <@user> <@role>\` — Directly assign role to member\n` +
-    `> • \`.rremove <@user> <@role>\` — Directly revoke role from member\n\n` +
-    `> **Aliases:** \`customrole\`, \`crole\`, \`cr\` • \`reqrole\`, \`crreq\` • \`radd\`, \`grantrole\` • \`rremove\`, \`revokerole\``;
+    `> • \`.customrole reqrole <role|off>\` — Set or clear required staff role\n\n` +
+    `**⚡ Direct Role Commands**\n` +
+    `> • \`.<alias> @user\` — Toggle bound role on target member\n` +
+    `> • \`.radd @user @role\` — Directly grant a role to member\n` +
+    `> • \`.rremove @user @role\` — Directly revoke a role from member`;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
 
   container.addSeparatorComponents(
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
+
+  const navRow = new ActionRowBuilder().addComponents(buildCustomRolesNavMenu("commands"));
 
   const cpBtn = new ButtonBuilder()
     .setCustomId("cr_nav_overview")
@@ -443,14 +466,15 @@ function buildCustomRolesCommandsManualView() {
 
   const btnRow = new ActionRowBuilder().addComponents(cpBtn);
 
-  container.addActionRowComponents(new ActionRowBuilder().addComponents(buildCustomRolesNavMenu("commands")));
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Documentation`));
 
   return container;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CENTRAL CONTAINER DISPATCHER
+// 8. DASHBOARD DISPATCHER
 // ─────────────────────────────────────────────────────────────────────────────
 function buildCustomRolesDashboard(guild, crConfig, activeTab = "overview") {
   switch (activeTab) {
@@ -471,7 +495,7 @@ function buildCustomRolesDashboard(guild, crConfig, activeTab = "overview") {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// INTERACTION ROUTER FOR CUSTOM ROLES
+// 9. INTERACTION ROUTER
 // ─────────────────────────────────────────────────────────────────────────────
 async function handleCustomRoleInteraction(client, interaction) {
   const isBtn = interaction.isButton();
@@ -484,26 +508,35 @@ async function handleCustomRoleInteraction(client, interaction) {
   const customId = interaction.customId;
   if (!customId.startsWith("cr_") && !customId.startsWith("customrole_")) return false;
 
-  const guild = interaction.guild;
-  if (!guild) return false;
+  if (!interaction.guild) return false;
 
-  if (!isAuthorized(client, interaction.member, guild)) {
+  if (!isAuthorized(client, interaction.member, interaction.guild)) {
     await interaction
       .reply({
-        content: "❌ You need **Manage Server** or **Administrator** permission to configure custom roles.",
+        content: "❌ You need **Manage Server** or **Administrator** permissions to configure Custom Roles.",
         flags: MessageFlags.Ephemeral,
       })
       .catch(() => null);
     return true;
   }
 
+  const guild = interaction.guild;
   const guildId = guild.id;
-  const crConfig = customRolesManager.getGuildConfig(client, guildId);
+  let crConfig = customRolesManager.getGuildConfig(client, guildId);
 
   // 1. Navigation Menu
   if (isMenu && customId === "cr_nav_menu") {
     const selected = interaction.values[0];
     const targetTab = selected.replace("cr_nav_", "");
+    const updated = buildCustomRolesDashboard(guild, crConfig, targetTab);
+    await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    return true;
+  }
+
+  // 1.2 Overview Action Select
+  if (isMenu && customId === "cr_overview_select_action") {
+    const selected = interaction.values[0];
+    const targetTab = selected.replace("nav_", "");
     const updated = buildCustomRolesDashboard(guild, crConfig, targetTab);
     await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
     return true;
@@ -517,170 +550,85 @@ async function handleCustomRoleInteraction(client, interaction) {
     return true;
   }
 
-  // 3. Inspect Alias from Dropdown
-  if (isMenu && customId === "customrole_alias_select") {
-    const selectedVal = interaction.values[0];
-    if (selectedVal && selectedVal.startsWith("cr_inspect_")) {
-      const parts = selectedVal.replace("cr_inspect_", "").split("_");
-      const alias = parts[0];
-      const roleId = parts[1];
-
-      const role = guild.roles.cache.get(roleId);
-      const reqStr = crConfig.reqRole ? `<@&${crConfig.reqRole}>` : "*None (Manage Roles)*";
-
-      const container = new ContainerBuilder();
-      container.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### 🎭 **Custom Role Alias Inspector: \`.${alias}\`**\n\n` +
-          `> • **Command Trigger:** \`.${alias} <@user>\`\n` +
-          `> • **Target Role:** ${role ? `<@&${role.id}>` : `\`Deleted Role (${roleId})\``}\n` +
-          `> • **Role ID:** \`${roleId}\`\n` +
-          `> • **Role Position:** \`#${role ? role.position : 0}\`\n` +
-          `> • **Required Role (ReqRole):** ${reqStr}\n\n` +
-          `💡 *Execute \`.${alias} @user\` in chat to grant or revoke this role.*`
-        )
-      );
-
-      await interaction.reply({
-        components: [container],
-        flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
-      }).catch(() => null);
+  // 3. Matrix Alias Delete Select Menu
+  if (isMenu && customId === "cr_matrix_alias_select") {
+    const val = interaction.values[0];
+    if (val.startsWith("delete_")) {
+      const alias = val.replace("delete_", "");
+      customRolesManager.updateGuildConfig(client, guildId, (cfg) => {
+        if (cfg.aliases && cfg.aliases[alias]) {
+          delete cfg.aliases[alias];
+        }
+        return cfg;
+      });
+      const freshConfig = customRolesManager.getGuildConfig(client, guildId);
+      const updated = buildCustomRolesDashboard(guild, freshConfig, "matrix");
+      await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
       return true;
     }
   }
 
-  // 4. Remove Menu Button
-  if (customId === "cr_btn_remove_menu") {
-    const aliases = Object.entries(crConfig.aliases || {});
-    if (aliases.length === 0) {
-      await interaction.reply({
-        content: "ℹ️ No custom role aliases configured to delete.",
-        flags: MessageFlags.Ephemeral,
-      }).catch(() => null);
-      return true;
-    }
-
-    const selectOptions = aliases.slice(0, 25).map(([alias, roleId]) => {
-      const role = guild.roles.cache.get(roleId);
-      return new StringSelectMenuOptionBuilder()
-        .setLabel(`Delete .${alias}`)
-        .setValue(`cr_del_${alias}`)
-        .setDescription(`Role: ${role ? role.name : roleId}`)
-        .setEmoji("🗑️");
-    });
-
-    const selectMenu = new StringSelectMenuBuilder()
-      .setCustomId("cr_remove_alias_select")
-      .setPlaceholder("🗑️ Select an alias to delete...")
-      .addOptions(selectOptions);
-
-    const container = new ContainerBuilder().addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        `### 🗑️ **Delete Custom Role Alias**\n-# Select the alias you want to remove:`
-      )
-    ).addActionRowComponents(new ActionRowBuilder().addComponents(selectMenu));
-
-    await interaction.reply({
-      components: [container],
-      flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
-    }).catch(() => null);
-    return true;
-  }
-
-  if (isMenu && customId === "cr_remove_alias_select") {
-    const selectedVal = interaction.values[0];
-    const alias = selectedVal.replace("cr_del_", "");
-
-    customRolesManager.updateGuildConfig(client, guildId, (cfg) => {
-      delete cfg.aliases[alias];
-      return cfg;
-    });
-
-    await interaction.reply({
-      content: `✅ Custom role shortcut \`.${alias}\` deleted successfully!`,
-      flags: MessageFlags.Ephemeral,
-    }).catch(() => null);
-    return true;
-  }
-
-  // 5. Bind Role Picker -> Modal for Alias Name
-  if (isRoleMenu && customId === "cr_bind_select_role") {
-    const roleId = interaction.values[0];
-    const role = guild.roles.cache.get(roleId);
+  // 4. Role Select for Shortcut Creation
+  if (isRoleMenu && customId === "cr_create_role_select") {
+    const selectedRoleId = interaction.values[0];
+    const role = guild.roles.cache.get(selectedRoleId);
 
     if (!role) {
       await interaction.reply({ content: "❌ Invalid role selected.", flags: MessageFlags.Ephemeral }).catch(() => null);
       return true;
     }
 
-    if (customRolesManager.checkDangerousPermissions(role)) {
+    const me = guild.members.me;
+    if (role.position >= me.roles.highest.position) {
       await interaction.reply({
-        content: "🛡️ **Security Block:** Roles with dangerous permissions (e.g. Administrator, Manage Server, Manage Roles) cannot be bound to shortcuts.",
+        content: `❌ I cannot manage <@&${role.id}> because it is higher than or equal to my highest role in the server hierarchy.`,
+        flags: MessageFlags.Ephemeral,
+      }).catch(() => null);
+      return true;
+    }
+
+    const isGuildOwner = interaction.user.id === guild.ownerId;
+    if (!isGuildOwner && customRolesManager.checkDangerousPermissions(role)) {
+      await interaction.reply({
+        content: "🛡️ **Security Alert:** Only the Server Owner can bind roles with Administrator / Dangerous permissions.",
         flags: MessageFlags.Ephemeral,
       }).catch(() => null);
       return true;
     }
 
     const modal = new ModalBuilder()
-      .setCustomId(`cr_modal_submit_bind_${roleId}`)
-      .setTitle(`Bind Shortcut for @${role.name.slice(0, 30)}`);
+      .setCustomId(`cr_modal_submit_create_${role.id}`)
+      .setTitle(`Bind Shortcut: @${role.name.slice(0, 20)}`);
 
-    const input = new TextInputBuilder()
-      .setCustomId("alias_name")
-      .setLabel("Shortcut Alias Trigger (without dot)")
+    const aliasInput = new TextInputBuilder()
+      .setCustomId("cr_alias_name")
+      .setLabel("Shortcut Command Name (without dot)")
       .setStyle(TextInputStyle.Short)
-      .setPlaceholder("e.g. vip, friend, member, mod")
+      .setPlaceholder("e.g. vip, friend, verified, member")
       .setRequired(true)
       .setMaxLength(30);
 
-    modal.addComponents(new ActionRowBuilder().addComponents(input));
+    modal.addComponents(new ActionRowBuilder().addComponents(aliasInput));
     await interaction.showModal(modal).catch(() => null);
     return true;
   }
 
-  // 6. Modal Submission for Binding
-  if (isModalSubmit && customId.startsWith("cr_modal_submit_bind_")) {
-    const roleId = customId.replace("cr_modal_submit_bind_", "");
-    const rawAlias = interaction.fields.getTextInputValue("alias_name")?.trim().toLowerCase().replace(/^\./, "");
-
-    if (!rawAlias || customRolesManager.RESERVED_SUBCOMMANDS.includes(rawAlias)) {
-      await interaction.reply({
-        content: `❌ \`${rawAlias}\` is a reserved command name. Please choose another alias.`,
-        flags: MessageFlags.Ephemeral,
-      }).catch(() => null);
-      return true;
-    }
-
-    customRolesManager.updateGuildConfig(client, guildId, (cfg) => {
-      cfg.aliases[rawAlias] = roleId;
-      return cfg;
-    });
-
-    await interaction.reply({
-      content: `✅ Successfully created custom role shortcut \`.${rawAlias}\` ➔ <@&${roleId}>!`,
-      flags: MessageFlags.Ephemeral,
-    }).catch(() => null);
-    return true;
-  }
-
-  // 7. ReqRole Select Menu
+  // 5. Role Select for ReqRole
   if (isRoleMenu && customId === "cr_reqrole_select") {
-    const roleId = interaction.values[0];
-    const role = guild.roles.cache.get(roleId);
-
+    const selectedRoleId = interaction.values[0];
     customRolesManager.updateGuildConfig(client, guildId, (cfg) => {
-      cfg.reqRole = roleId;
+      cfg.reqRole = selectedRoleId;
       return cfg;
     });
 
-    await interaction.reply({
-      content: `✅ ReqRole updated: Members now require ${role ? `<@&${role.id}>` : `\`${roleId}\``} to invoke shortcuts.`,
-      flags: MessageFlags.Ephemeral,
-    }).catch(() => null);
+    const freshConfig = customRolesManager.getGuildConfig(client, guildId);
+    const updated = buildCustomRolesDashboard(guild, freshConfig, "reqrole");
+    await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
     return true;
   }
 
-  if (customId === "cr_reqrole_disable") {
+  // 6. Disable ReqRole Button
+  if (customId === "cr_btn_disable_reqrole") {
     customRolesManager.updateGuildConfig(client, guildId, (cfg) => {
       cfg.reqRole = null;
       return cfg;
@@ -689,6 +637,40 @@ async function handleCustomRoleInteraction(client, interaction) {
     const freshConfig = customRolesManager.getGuildConfig(client, guildId);
     const updated = buildCustomRolesDashboard(guild, freshConfig, "reqrole");
     await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    return true;
+  }
+
+  // 7. Modal Submission for Shortcut Creation
+  if (isModalSubmit && customId.startsWith("cr_modal_submit_create_")) {
+    const roleId = customId.replace("cr_modal_submit_create_", "");
+    const alias = interaction.fields.getTextInputValue("cr_alias_name")?.trim().toLowerCase();
+
+    if (!alias || alias.includes(" ")) {
+      await interaction.reply({
+        content: "❌ Shortcut command name cannot contain spaces.",
+        flags: MessageFlags.Ephemeral,
+      }).catch(() => null);
+      return true;
+    }
+
+    if (customRolesManager.RESERVED_SUBCOMMANDS.includes(alias)) {
+      await interaction.reply({
+        content: `❌ Alias \`.${alias}\` is a reserved system command keyword.`,
+        flags: MessageFlags.Ephemeral,
+      }).catch(() => null);
+      return true;
+    }
+
+    customRolesManager.updateGuildConfig(client, guildId, (cfg) => {
+      if (!cfg.aliases) cfg.aliases = {};
+      cfg.aliases[alias] = roleId;
+      return cfg;
+    });
+
+    await interaction.reply({
+      content: `✅ Custom role shortcut created!\n> You can now run **\`.${alias} @user\`** to instantly toggle <@&${roleId}> on members.`,
+      flags: MessageFlags.Ephemeral,
+    }).catch(() => null);
     return true;
   }
 
