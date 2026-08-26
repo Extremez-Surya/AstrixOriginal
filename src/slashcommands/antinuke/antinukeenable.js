@@ -40,21 +40,45 @@ module.exports = {
       }).catch(() => null);
     }
 
-    antinukeManager.enableMaster(interaction.guild.id);
-
-    const container = new ContainerBuilder()
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### ${EMOJIS.ticky_red || "✅"} Anti-Nuke System Activated\n` +
-            `-# Master anti-nuke protection system is now **ENABLED** (Sub-0.1s Zero-Bypass Engine Online).`
+    if (config.enabled) {
+      const alreadyActiveContainer = new ContainerBuilder()
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `### 🛡️ **Anti-Nuke Defense Already Active**\n` +
+              `> 🟢 Master Anti-Nuke shield and all **10 security modules** are already active and guarding **${interaction.guild.name}**.\n\n` +
+              `-# If you want to reconfigure settings or roles, access the **Control Center** below.`
+          )
         )
-      )
-      .addSeparatorComponents(
-        new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-      )
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(`-# Protection active • ASTRIXCODE™ Sub-0.1s Defense`)
+        .addSeparatorComponents(
+          new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+        );
+
+      const { ButtonBuilder, ButtonStyle, ActionRowBuilder } = require("discord.js");
+      const cpBtn = new ButtonBuilder()
+        .setCustomId("antinuke_nav_overview")
+        .setLabel("Control Center")
+        .setEmoji("🛡️")
+        .setStyle(ButtonStyle.Primary);
+
+      const guideBtn = new ButtonBuilder()
+        .setCustomId("antinuke_nav_menu")
+        .setLabel("Help & Guide")
+        .setEmoji("📜")
+        .setStyle(ButtonStyle.Secondary);
+
+      alreadyActiveContainer.addActionRowComponents(new ActionRowBuilder().addComponents(cpBtn, guideBtn));
+      alreadyActiveContainer.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Active & Enforced`)
       );
+
+      return interaction.reply({
+        components: [alreadyActiveContainer],
+        flags: MessageFlags.IsComponentsV2,
+      }).catch(() => null);
+    }
+
+    const { buildEnableRecommendationContainer } = require("../../lib/security/handleAutoSetup");
+    const container = buildEnableRecommendationContainer(interaction.guild, interaction.user);
 
     return interaction.reply({
       components: [container],

@@ -1,12 +1,11 @@
 const {
   ContainerBuilder,
   TextDisplayBuilder,
-  SeparatorBuilder,
-  SeparatorSpacingSize,
   MessageFlags,
 } = require("discord.js");
 const antinukeManager = require("../../lib/antinukeManager");
 const noprefixManager = require("../../lib/noprefixManager");
+const { buildWallRolesView } = require("../../lib/security/handleAntiNukeInteraction");
 
 function resolveRole(guild, roleArg, mentions) {
   if (mentions && mentions.roles && mentions.roles.size > 0) {
@@ -60,8 +59,11 @@ module.exports = {
       const role = resolveRole(message.guild, roleInput, message.mentions);
 
       if (!role) {
+        const freshConfig = antinukeManager.getGuildAntinuke(message.guild.id);
+        const container = buildWallRolesView(freshConfig, message.guild, "add");
         return message.reply({
-          content: "⚠️ **Usage:** `wallroles add <@role | roleId | roleName>`",
+          components: [container],
+          flags: MessageFlags.IsComponentsV2,
           allowedMentions: { repliedUser: false },
         }).catch(() => null);
       }
@@ -102,8 +104,11 @@ module.exports = {
       const role = resolveRole(message.guild, roleInput, message.mentions);
 
       if (!role) {
+        const freshConfig = antinukeManager.getGuildAntinuke(message.guild.id);
+        const container = buildWallRolesView(freshConfig, message.guild, "remove");
         return message.reply({
-          content: "⚠️ **Usage:** `wallroles remove <@role | roleId | roleName>`",
+          components: [container],
+          flags: MessageFlags.IsComponentsV2,
           allowedMentions: { repliedUser: false },
         }).catch(() => null);
       }
@@ -191,33 +196,9 @@ module.exports = {
       }
     }
 
-    // 5. DEFAULT / LIST VIEW
+    // 5. DEFAULT / LIST VIEW (Minimal Interactive View)
     const freshConfig = antinukeManager.getGuildAntinuke(message.guild.id);
-    const wallRoles = freshConfig.wallRoles || (freshConfig.securityWallRole ? [freshConfig.securityWallRole] : []);
-
-    const roleList = wallRoles.length > 0
-      ? wallRoles.map((id, index) => {
-          const role = message.guild.roles.cache.get(id);
-          return role
-            ? `> \`${index + 1}.\` <@&${role.id}> (\`${role.name}\`) — **${role.members.size}** members`
-            : `> \`${index + 1}.\` Deleted Role (\`${id}\`)`;
-        }).join("\n")
-      : "> *No Security Wall roles configured.*";
-
-    const container = new ContainerBuilder();
-
-    container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        `### 🛡️ **Astrix Security Wall Roles**\n\n` +
-        `The Security Wall acts as a permission barrier between verified human members and untrusted users.\n\n` +
-        `**Active Wall Roles (${wallRoles.length}):**\n${roleList}\n\n` +
-        `**Commands:**\n` +
-        `> • \`wallroles add <@role>\` — Add a security wall role\n` +
-        `> • \`wallroles remove <@role>\` — Remove a security wall role\n` +
-        `> • \`wallroles reset\` — Reset all security wall roles\n` +
-        `> • \`wallroles list\` — View all active security wall roles`
-      )
-    );
+    const container = buildWallRolesView(freshConfig, message.guild, "main");
 
     return message.reply({
       components: [container],

@@ -1,12 +1,11 @@
 const {
   ContainerBuilder,
   TextDisplayBuilder,
-  SeparatorBuilder,
-  SeparatorSpacingSize,
   MessageFlags,
   PermissionFlagsBits,
   ChannelType,
 } = require("discord.js");
+const { buildRaidLockContainer } = require("../../lib/security/handleAntiRaidInteraction");
 const EMOJIS = require("../../lib/emojis");
 
 module.exports = {
@@ -39,36 +38,27 @@ module.exports = {
     );
 
     let unlockedCount = 0;
+    const promises = [];
     for (const [, channel] of textChannels) {
-      await channel.permissionOverwrites
-        .edit(
-          message.guild.roles.everyone,
-          { SendMessages: null },
-          { reason: `Raid Unlock invoked by ${message.author.tag}` }
-        )
-        .then(() => unlockedCount++)
-        .catch(() => null);
-    }
-
-    const container = new ContainerBuilder()
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### 🔓 **Server Lockdown Lifted**\n` +
-            `-# *Sending messages restored for @everyone across text channels.*\n\n` +
-            `> • **Channels Unlocked:** \`${unlockedCount}\` text channel(s)\n` +
-            `> • **Status:** Server returned to normal channel communication.`
-        )
-      )
-      .addSeparatorComponents(
-        new SeparatorBuilder()
-          .setSpacing(SeparatorSpacingSize.Small)
-          .setDivider(true)
-      )
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `-# Executed by ${message.author.tag} • ASTRIXCODE™ Emergency Protocol`
-        )
+      promises.push(
+        channel.permissionOverwrites
+          .edit(
+            message.guild.roles.everyone,
+            { SendMessages: null },
+            { reason: `Raid Unlock invoked by ${message.author.tag}` }
+          )
+          .then(() => unlockedCount++)
+          .catch(() => null)
       );
+    }
+    await Promise.allSettled(promises);
+
+    const container = buildRaidLockContainer({
+      isLocked: false,
+      count: unlockedCount,
+      reason: "Server unlocked",
+      executorTag: message.author.tag,
+    });
 
     return message.reply({
       components: [container],

@@ -55,8 +55,12 @@ module.exports = {
     const role = resolveRole(message.guild, roleInput, message.mentions);
 
     if (!role) {
+      const freshConfig = antinukeManager.getGuildAntinuke(message.guild.id);
+      const { buildWallRolesView } = require("../../lib/security/handleAntiNukeInteraction");
+      const container = buildWallRolesView(freshConfig, message.guild, "add");
       return message.reply({
-        content: "⚠️ **Usage:** `wallroles add <@role | roleId | roleName>`",
+        components: [container],
+        flags: MessageFlags.IsComponentsV2,
         allowedMentions: { repliedUser: false },
       }).catch(() => null);
     }

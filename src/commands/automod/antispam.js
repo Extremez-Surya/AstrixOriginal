@@ -1,15 +1,9 @@
 const {
-  ContainerBuilder,
-  TextDisplayBuilder,
-  SeparatorBuilder,
-  SeparatorSpacingSize,
   MessageFlags,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
   PermissionFlagsBits,
 } = require("discord.js");
 const automodManager = require("../../lib/automodManager");
+const { buildAntispamContainer } = require("../../lib/security/handleAutomodInteraction");
 
 module.exports = {
   alias: ["antispam", "spamfilter"],
@@ -44,47 +38,7 @@ module.exports = {
     }
 
     config = automodManager.getGuildAutomod(guildId);
-    const isEnabled = config.enabled && config.modules?.antispam?.enabled;
-    const threshold = config.modules?.antispam?.threshold || 5;
-    const windowSec = config.modules?.antispam?.window || 5;
-
-    const container = new ContainerBuilder();
-
-    const headerText =
-      `### 📨 **Anti-Spam Filter Configuration**\n` +
-      `-# Rate-limits rapid message flooding and punishes spam bots.`;
-    container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
-
-    container.addSeparatorComponents(
-      new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-    );
-
-    const content =
-      `**⚙️ Filter Status:**\n` +
-      `> • 📨 **Anti-Spam Filter:** ${isEnabled ? "🟢 `ENABLED`" : "🔴 `DISABLED`"}\n` +
-      `> • ⏱️ **Rate Limit Window:** \`${threshold} messages per ${windowSec} seconds\`\n` +
-      `> • ⚖️ **Violation Penalty:** \`Warning + Message Deletion + Auto-Timeout\`\n\n` +
-      `💡 *Click the toggle button below or use \`.antispam on\` / \`.antispam off\`.*`;
-
-    container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
-
-    container.addSeparatorComponents(
-      new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-    );
-
-    const toggleBtn = new ButtonBuilder()
-      .setCustomId("automod_mod_toggle_antispam_btn")
-      .setLabel(isEnabled ? "Disable Anti-Spam" : "Enable Anti-Spam")
-      .setEmoji(isEnabled ? "🔴" : "🟢")
-      .setStyle(isEnabled ? ButtonStyle.Danger : ButtonStyle.Success);
-
-    const cpBtn = new ButtonBuilder()
-      .setCustomId("automod_nav_overview")
-      .setLabel("AutoMod Control Center")
-      .setEmoji("🤖")
-      .setStyle(ButtonStyle.Primary);
-
-    container.addActionRowComponents(new ActionRowBuilder().addComponents(toggleBtn, cpBtn));
+    const container = buildAntispamContainer(config, message.guild);
 
     return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
   },

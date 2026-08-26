@@ -5,8 +5,12 @@ const {
   SeparatorSpacingSize,
   MessageFlags,
   PermissionFlagsBits,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
 } = require("discord.js");
 const antiraidManager = require("../../lib/antiraidManager");
+const { buildAntiraidNavMenu } = require("../../lib/security/handleAntiRaidInteraction");
 const EMOJIS = require("../../lib/emojis");
 
 module.exports = {
@@ -57,43 +61,63 @@ module.exports = {
       container
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### 🚨 **Emergency Raid Mode Activated**\n` +
-              `-# *Server security lockdown is now enforced on all incoming joins.*\n\n` +
-              `> • **Status:** \`ACTIVE RAID LOCKDOWN\`\n` +
-              `> • **Action:** Automatic Kick/Ban of all newly joining members\n` +
-              `> • **Deactivate:** Run \`.raidmode off\` or click Deactivate below`
+            `### 🚨 **Anti-Raid • Emergency Raid Lockdown Activated**\n` +
+              `-# Server security lockdown is now enforced on all incoming joins\n\n` +
+              `> **Shield Status:** 🚨 \`ACTIVE RAID LOCKDOWN\` • **Action:** Automatic Kick/Ban on incoming joins\n` +
+              `> **Protection Scope:** Intercepts join floods and neutralizes raider waves instantly.\n\n` +
+              `-# Select a page below or click 'Deactivate' to return to normal operation.`
           )
         )
         .addSeparatorComponents(
           new SeparatorBuilder()
             .setSpacing(SeparatorSpacingSize.Small)
             .setDivider(true)
-        )
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `-# Enforcement active • ASTRIXCODE™ Security System`
-          )
         );
     } else {
       container
         .addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### 🟢 **Raid Mode Deactivated**\n` +
-              `-# *Server protection returned to standard automated checks.*\n\n` +
-              `> • **Status:** \`NORMAL OPERATING STATE\``
+            `### 🟢 **Anti-Raid • Raid Mode Deactivated**\n` +
+              `-# Server protection returned to standard automated checks\n\n` +
+              `> **Shield Status:** 🟢 \`NORMAL OPERATING STATE\` • Automated checks active\n` +
+              `> **Protection Scope:** Join gatekeeper & rate limits running in normal mode.\n\n` +
+              `-# Select a page below or visit Control Center.`
           )
         )
         .addSeparatorComponents(
           new SeparatorBuilder()
             .setSpacing(SeparatorSpacingSize.Small)
             .setDivider(true)
-        )
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `-# Protection active • ASTRIXCODE™ Security System`
-          )
         );
     }
+
+    const navRow = new ActionRowBuilder().addComponents(buildAntiraidNavMenu("overview"));
+
+    const toggleBtn = new ButtonBuilder()
+      .setCustomId("antiraid_btn_toggle_raidmode")
+      .setLabel(config.raidState ? "Deactivate Raid Mode" : "Raid Lockdown")
+      .setEmoji(config.raidState ? "🟢" : "🚨")
+      .setStyle(config.raidState ? ButtonStyle.Success : ButtonStyle.Danger);
+
+    const cpBtn = new ButtonBuilder()
+      .setCustomId("antiraid_nav_overview")
+      .setLabel("Control Center")
+      .setEmoji("🛡️")
+      .setStyle(ButtonStyle.Primary);
+
+    const refreshBtn = new ButtonBuilder()
+      .setCustomId("antiraid_btn_refresh")
+      .setLabel("Refresh")
+      .setEmoji("🔄")
+      .setStyle(ButtonStyle.Secondary);
+
+    const btnRow = new ActionRowBuilder().addComponents(toggleBtn, cpBtn, refreshBtn);
+
+    container.addActionRowComponents(navRow);
+    container.addActionRowComponents(btnRow);
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Emergency Protocol`)
+    );
 
     return message.reply({
       components: [container],

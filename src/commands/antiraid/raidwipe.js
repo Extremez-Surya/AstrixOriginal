@@ -8,8 +8,11 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
 } = require("discord.js");
 const antiraidManager = require("../../lib/antiraidManager");
+const { buildAntiraidNavMenu } = require("../../lib/security/handleAntiRaidInteraction");
 const EMOJIS = require("../../lib/emojis");
 
 function parseDuration(s) {
@@ -61,13 +64,77 @@ module.exports = {
     }
 
     if (!args || args.length < 2) {
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `### 🧹 **Anti-Raid • Raidwipe Mass Purge Hub**\n` +
+            `-# Instantly purge recent raiders who joined during a raid wave\n\n` +
+            `> **Protection Scope:** Filters accounts joined within 30s to 15m.\n` +
+            `> **Purge Actions:** \`BAN\` (deletes messages + permanent) or \`KICK\` (instant removal).\n\n` +
+            `-# Select a rapid-purge preset below or execute \`raidwipe <time> <ban|kick>\``
+          )
+        )
+        .addSeparatorComponents(
+          new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+        );
+
+      const actionMenu = new StringSelectMenuBuilder()
+        .setCustomId("antiraid_raidwipe_select_preset")
+        .setPlaceholder("⚡ Select Rapid Raidwipe Purge Preset...")
+        .addOptions(
+          new StringSelectMenuOptionBuilder()
+            .setLabel("Purge Last 1 Minute (BAN)")
+            .setValue("preset_1m_ban")
+            .setDescription("Bans all accounts joined within the last 60 seconds")
+            .setEmoji("🧹"),
+          new StringSelectMenuOptionBuilder()
+            .setLabel("Purge Last 5 Minutes (BAN)")
+            .setValue("preset_5m_ban")
+            .setDescription("Bans all accounts joined within the last 5 minutes")
+            .setEmoji("🧹"),
+          new StringSelectMenuOptionBuilder()
+            .setLabel("Purge Last 10 Minutes (BAN)")
+            .setValue("preset_10m_ban")
+            .setDescription("Bans all accounts joined within the last 10 minutes")
+            .setEmoji("🧹"),
+          new StringSelectMenuOptionBuilder()
+            .setLabel("Purge Last 5 Minutes (KICK)")
+            .setValue("preset_5m_kick")
+            .setDescription("Kicks all accounts joined within the last 5 minutes")
+            .setEmoji("👢"),
+          new StringSelectMenuOptionBuilder()
+            .setLabel("Purge Last 15 Minutes (KICK)")
+            .setValue("preset_15m_kick")
+            .setDescription("Kicks all accounts joined within the last 15 minutes")
+            .setEmoji("👢")
+        );
+
+      const navRow = new ActionRowBuilder().addComponents(buildAntiraidNavMenu("commands"));
+      const actionRow = new ActionRowBuilder().addComponents(actionMenu);
+
+      const cpBtn = new ButtonBuilder()
+        .setCustomId("antiraid_nav_overview")
+        .setLabel("Control Center")
+        .setEmoji("🛡️")
+        .setStyle(ButtonStyle.Primary);
+
+      const refreshBtn = new ButtonBuilder()
+        .setCustomId("antiraid_btn_refresh")
+        .setLabel("Refresh")
+        .setEmoji("🔄")
+        .setStyle(ButtonStyle.Secondary);
+
+      const btnRow = new ActionRowBuilder().addComponents(cpBtn, refreshBtn);
+
+      container.addActionRowComponents(actionRow);
+      container.addActionRowComponents(navRow);
+      container.addActionRowComponents(btnRow);
+      container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Raid Quarantine`)
+      );
+
       return message.reply({
-        components: [
-          buildNotice(
-            "Missing Arguments",
-            "Usage: `.raidwipe <time> <ban|kick> [reason...]`\n*Example:* `.raidwipe 5m ban Server Raid Cleanup`"
-          ),
-        ],
+        components: [container],
         flags: MessageFlags.IsComponentsV2,
         allowedMentions: { repliedUser: false },
       }).catch(() => null);

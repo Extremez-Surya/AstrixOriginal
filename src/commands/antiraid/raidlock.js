@@ -1,12 +1,11 @@
 const {
   ContainerBuilder,
   TextDisplayBuilder,
-  SeparatorBuilder,
-  SeparatorSpacingSize,
   MessageFlags,
   PermissionFlagsBits,
   ChannelType,
 } = require("discord.js");
+const { buildRaidLockContainer } = require("../../lib/security/handleAntiRaidInteraction");
 const EMOJIS = require("../../lib/emojis");
 
 module.exports = {
@@ -57,37 +56,27 @@ module.exports = {
     }
 
     let lockedCount = 0;
+    const promises = [];
     for (const [, channel] of textChannels) {
-      await channel.permissionOverwrites
-        .edit(
-          message.guild.roles.everyone,
-          { SendMessages: false },
-          { reason: `Raid Lock: ${reason}` }
-        )
-        .then(() => lockedCount++)
-        .catch(() => null);
-    }
-
-    const container = new ContainerBuilder()
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### 🔒 **Server Lockdown Executed**\n` +
-            `-# *Sending messages disabled for @everyone across text channels.*\n\n` +
-            `> • **Channels Locked:** \`${lockedCount}\` text channel(s)\n` +
-            `> • **Reason:** \`${reason}\`\n` +
-            `> • **Unlock Command:** Run \`.raidunlock\` to restore normal permissions.`
-        )
-      )
-      .addSeparatorComponents(
-        new SeparatorBuilder()
-          .setSpacing(SeparatorSpacingSize.Small)
-          .setDivider(true)
-      )
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `-# Executed by ${message.author.tag} • ASTRIXCODE™ Emergency Protocol`
-        )
+      promises.push(
+        channel.permissionOverwrites
+          .edit(
+            message.guild.roles.everyone,
+            { SendMessages: false },
+            { reason: `Raid Lock: ${reason}` }
+          )
+          .then(() => lockedCount++)
+          .catch(() => null)
       );
+    }
+    await Promise.allSettled(promises);
+
+    const container = buildRaidLockContainer({
+      isLocked: true,
+      count: lockedCount,
+      reason,
+      executorTag: message.author.tag,
+    });
 
     return message.reply({
       components: [container],

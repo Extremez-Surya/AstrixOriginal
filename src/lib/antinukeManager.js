@@ -19,8 +19,10 @@ function getDefaultConfig() {
     unbypassableRole: null,
     wallRoles: [],
     extraOwners: [],
+    admins: [],
     whitelist: [],
     superWhitelist: [],
+    protocolUsers: {},
     punishment: "ban", // "ban" | "kick" | "strip" | "timeout" | "quarantine"
     threshold: 3, // Default 3 actions (with rapid sub-second burst detection)
     windowMs: 60000,
@@ -45,15 +47,23 @@ function getDefaultConfig() {
   };
 }
 
-function initCache() {
-  if (isInitialized) return;
+function readDiskData() {
   try {
     if (fs.existsSync(CONFIG_FILE)) {
       const data = fs.readFileSync(CONFIG_FILE, "utf8");
-      const parsed = JSON.parse(data);
-      for (const [guildId, cfg] of Object.entries(parsed)) {
-        configCache.set(guildId, cfg);
-      }
+      return JSON.parse(data);
+    }
+  } catch (e) {
+    console.error("[AntiNukeManager] Read disk error:", e);
+  }
+  return {};
+}
+
+function initCache() {
+  try {
+    const parsed = readDiskData();
+    for (const [guildId, cfg] of Object.entries(parsed)) {
+      configCache.set(guildId, cfg);
     }
   } catch (e) {
     console.error("[AntiNukeManager] Cache init error:", e);
@@ -61,26 +71,34 @@ function initCache() {
   isInitialized = true;
 }
 
-function saveDiskAsync() {
-  if (saveTimer) clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => {
-    try {
-      const obj = {};
-      for (const [guildId, cfg] of configCache.entries()) {
-        obj[guildId] = cfg;
-      }
-      fs.writeFileSync(CONFIG_FILE, JSON.stringify(obj, null, 2), "utf8");
-    } catch (e) {
-      console.error("[AntiNukeManager] Save disk error:", e);
+function flushDiskSync() {
+  try {
+    const existing = readDiskData();
+    for (const [guildId, cfg] of configCache.entries()) {
+      existing[guildId] = cfg;
     }
-  }, 100);
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify(existing, null, 2), "utf8");
+  } catch (e) {
+    console.error("[AntiNukeManager] Flush disk error:", e);
+  }
+}
+
+function saveDiskAsync() {
+  flushDiskSync();
 }
 
 function getGuildAntinuke(guildId) {
   if (!isInitialized) initCache();
   if (!guildId) return getDefaultConfig();
 
-  const raw = configCache.get(guildId);
+  let raw = configCache.get(guildId);
+  if (!raw) {
+    const diskData = readDiskData();
+    if (diskData[guildId]) {
+      raw = diskData[guildId];
+      configCache.set(guildId, raw);
+    }
+  }
   if (!raw) return getDefaultConfig();
 
   const defaultConfig = getDefaultConfig();
@@ -90,8 +108,10 @@ function getGuildAntinuke(guildId) {
     modules: { ...defaultConfig.modules, ...(raw.modules || {}) },
     wallRoles: Array.isArray(raw.wallRoles) ? raw.wallRoles : (raw.securityWallRole ? [raw.securityWallRole] : []),
     extraOwners: Array.isArray(raw.extraOwners) ? raw.extraOwners : [],
+    admins: Array.isArray(raw.admins) ? raw.admins : [],
     whitelist: Array.isArray(raw.whitelist) ? raw.whitelist : [],
     superWhitelist: Array.isArray(raw.superWhitelist) ? raw.superWhitelist : [],
+    protocolUsers: raw.protocolUsers && typeof raw.protocolUsers === "object" && !Array.isArray(raw.protocolUsers) ? raw.protocolUsers : {},
     stats: { ...defaultConfig.stats, ...(raw.stats || {}) },
   };
 }
@@ -101,7 +121,7 @@ function setGuildAntinuke(guildId, config) {
   if (!guildId) return false;
 
   configCache.set(guildId, config);
-  saveDiskAsync();
+  flushDiskSync();
   return true;
 }
 
@@ -174,10 +194,52 @@ function isWhitelisted(client, guild, userId) {
 
   const config = getGuildAntinuke(guild.id);
   if (config.extraOwners && config.extraOwners.includes(userId)) return true;
-  if (config.whitelist && config.whitelist.includes(userId)) return true;
   if (config.superWhitelist && config.superWhitelist.includes(userId)) return true;
+  if (config.admins && config.admins.includes(userId)) return true;
+  if (config.whitelist && config.whitelist.includes(userId)) return true;
+
+  if (config.bypassRole) {
+    const member = guild.members?.cache?.get(userId);
+    if (member && member.roles.cache.has(config.bypassRole)) return true;
+  }
 
   return false;
+}
+
+function addAdmin(guildId, userId) {
+  const config = getGuildAntinuke(guildId);
+  if (!config.admins) config.admins = [];
+  if (!config.admins.includes(userId)) {
+    config.admins.push(userId);
+    setGuildAntinuke(guildId, config);
+    return true;
+  }
+  return false;
+}
+
+function removeAdmin(guildId, userId) {
+  const config = getGuildAntinuke(guildId);
+  if (config.admins && config.admins.includes(userId)) {
+    config.admins = config.admins.filter((id) => id !== userId);
+    setGuildAntinuke(guildId, config);
+    return true;
+  }
+  return false;
+}
+
+function toggleAdmin(guildId, userId) {
+  const config = getGuildAntinuke(guildId);
+  if (!config.admins) config.admins = [];
+  let added = false;
+  if (config.admins.includes(userId)) {
+    config.admins = config.admins.filter((id) => id !== userId);
+    added = false;
+  } else {
+    config.admins.push(userId);
+    added = true;
+  }
+  setGuildAntinuke(guildId, config);
+  return added;
 }
 
 function addWhitelist(guildId, userId) {
@@ -198,6 +260,21 @@ function removeWhitelist(guildId, userId) {
     return true;
   }
   return false;
+}
+
+function toggleWhitelist(guildId, userId) {
+  const config = getGuildAntinuke(guildId);
+  if (!config.whitelist) config.whitelist = [];
+  let added = false;
+  if (config.whitelist.includes(userId)) {
+    config.whitelist = config.whitelist.filter((id) => id !== userId);
+    added = false;
+  } else {
+    config.whitelist.push(userId);
+    added = true;
+  }
+  setGuildAntinuke(guildId, config);
+  return added;
 }
 
 function clearWhitelist(guildId) {
@@ -228,6 +305,21 @@ function removeSuperWhitelist(guildId, userId) {
   return false;
 }
 
+function toggleTrustedAdmin(guildId, userId) {
+  const config = getGuildAntinuke(guildId);
+  if (!config.superWhitelist) config.superWhitelist = [];
+  let added = false;
+  if (config.superWhitelist.includes(userId)) {
+    config.superWhitelist = config.superWhitelist.filter((id) => id !== userId);
+    added = false;
+  } else {
+    config.superWhitelist.push(userId);
+    added = true;
+  }
+  setGuildAntinuke(guildId, config);
+  return added;
+}
+
 function clearSuperWhitelist(guildId) {
   const config = getGuildAntinuke(guildId);
   config.superWhitelist = [];
@@ -253,6 +345,21 @@ function removeExtraOwner(guildId, userId) {
     return true;
   }
   return false;
+}
+
+function toggleExtraOwner(guildId, userId) {
+  const config = getGuildAntinuke(guildId);
+  if (!config.extraOwners) config.extraOwners = [];
+  let added = false;
+  if (config.extraOwners.includes(userId)) {
+    config.extraOwners = config.extraOwners.filter((id) => id !== userId);
+    added = false;
+  } else {
+    config.extraOwners.push(userId);
+    added = true;
+  }
+  setGuildAntinuke(guildId, config);
+  return added;
 }
 
 function setSecurityWallRole(guildId, roleId) {
@@ -336,6 +443,129 @@ function resetAntinuke(guildId) {
   return true;
 }
 
+function applyPreset(guildId, presetName = "recommended") {
+  const config = getGuildAntinuke(guildId);
+  const name = String(presetName).toLowerCase();
+
+  config.enabled = true;
+  config.autoRevert = true;
+  if (!config.modules) config.modules = {};
+  for (const k of ["channel", "role", "ban", "kick", "webhook", "botAdd", "guildUpdate", "emoji", "permissions", "prune"]) {
+    config.modules[k] = true;
+  }
+
+  if (name === "hardcore" || name === "extreme") {
+    config.threshold = 1;
+    config.punishment = "ban";
+    config.windowMs = 60000;
+  } else if (name === "relaxed" || name === "light") {
+    config.threshold = 5;
+    config.punishment = "kick";
+    config.windowMs = 60000;
+  } else {
+    // "recommended" / "balanced"
+    config.threshold = 3;
+    config.punishment = "ban";
+    config.windowMs = 60000;
+  }
+
+  setGuildAntinuke(guildId, config);
+  return config;
+}
+
+async function applyProtocol(guild, member, authorId) {
+  if (!guild || !member) return { success: false, reason: "Member not found" };
+  const config = getGuildAntinuke(guild.id);
+  if (!config.protocolUsers) config.protocolUsers = {};
+
+  const manageableRoles = member.roles.cache
+    .filter((r) => r.id !== guild.id && r.editable && !r.managed)
+    .map((r) => r.id);
+
+  if (manageableRoles.length > 0) {
+    await member.roles.remove(manageableRoles, `[ASTRIX PROTOCOL] Applied by <@${authorId}>`).catch(() => null);
+  }
+
+  if (member.moderatable) {
+    await member.timeout(28 * 24 * 60 * 60 * 1000, `[ASTRIX PROTOCOL] Emergency security lockdown`).catch(() => null);
+  }
+
+  config.protocolUsers[member.id] = {
+    timestamp: Date.now(),
+    roles: manageableRoles,
+    appliedBy: authorId,
+  };
+
+  setGuildAntinuke(guild.id, config);
+  return { success: true, strippedCount: manageableRoles.length };
+}
+
+async function removeProtocol(guild, member, authorId) {
+  if (!guild || !member) return { success: false, reason: "Member not found" };
+  const config = getGuildAntinuke(guild.id);
+  if (!config.protocolUsers) config.protocolUsers = {};
+
+  const record = config.protocolUsers[member.id];
+  if (!record) return { success: false, reason: "User is not under protocol" };
+
+  if (member.moderatable) {
+    await member.timeout(null, `[ASTRIX PROTOCOL] Restored by <@${authorId}>`).catch(() => null);
+  }
+
+  let restoredCount = 0;
+  if (Array.isArray(record.roles) && record.roles.length > 0) {
+    const validRoles = record.roles.filter((id) => guild.roles.cache.has(id));
+    if (validRoles.length > 0) {
+      await member.roles.add(validRoles, `[ASTRIX PROTOCOL] Role restoration by <@${authorId}>`).catch(() => null);
+      restoredCount = validRoles.length;
+    }
+  }
+
+  delete config.protocolUsers[member.id];
+  setGuildAntinuke(guild.id, config);
+  return { success: true, restoredCount };
+}
+
+function getProtocolList(guildId) {
+  const config = getGuildAntinuke(guildId);
+  return config.protocolUsers || {};
+}
+
+const MODULE_ALIASES = {
+  ban: "ban",
+  bans: "ban",
+  kick: "kick",
+  kicks: "kick",
+  role: "role",
+  roles: "role",
+  channel: "channel",
+  channels: "channel",
+  webhook: "webhook",
+  webhooks: "webhook",
+  emoji: "emoji",
+  emojis: "emoji",
+  sticker: "emoji",
+  stickers: "emoji",
+  botadd: "botAdd",
+  bot: "botAdd",
+  bots: "botAdd",
+  vanity: "guildUpdate",
+  server: "guildUpdate",
+  guildupdate: "guildUpdate",
+  prune: "prune",
+  prunes: "prune",
+  permissions: "permissions",
+  permission: "permissions",
+  perms: "permissions",
+  perm: "permissions",
+};
+
+function isExtraOwner(guildId, userId) {
+  if (!guildId || !userId) return false;
+  const config = getGuildAntinuke(guildId);
+  return Array.isArray(config.extraOwners) && config.extraOwners.includes(userId);
+}
+
 initCache();
 
 module.exports = {
@@ -348,14 +578,21 @@ module.exports = {
   toggleMaster,
   toggleModule,
   isWhitelisted,
+  isExtraOwner,
+  addAdmin,
+  removeAdmin,
+  toggleAdmin,
   addWhitelist,
   removeWhitelist,
+  toggleWhitelist,
   clearWhitelist,
   addSuperWhitelist,
   removeSuperWhitelist,
+  toggleTrustedAdmin,
   clearSuperWhitelist,
   addExtraOwner,
   removeExtraOwner,
+  toggleExtraOwner,
   setSecurityWallRole,
   addWallRole,
   removeWallRole,
@@ -364,4 +601,9 @@ module.exports = {
   setModLogs,
   incrementStats,
   resetAntinuke,
+  applyPreset,
+  applyProtocol,
+  removeProtocol,
+  getProtocolList,
+  MODULE_ALIASES,
 };

@@ -1,7 +1,7 @@
 {
   "1526109131042459678": {
     "enabled": false,
-    "raidState": false,
+    "raidState": true,
     "strictMode": "EXTREME",
     "logChannel": null,
     "massjoin": {

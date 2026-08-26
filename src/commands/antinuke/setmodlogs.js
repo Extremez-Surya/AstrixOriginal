@@ -1,7 +1,14 @@
 const {
   ContainerBuilder,
   TextDisplayBuilder,
+  SeparatorBuilder,
+  SeparatorSpacingSize,
   MessageFlags,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ChannelSelectMenuBuilder,
+  ChannelType,
 } = require("discord.js");
 const antinukeManager = require("../../lib/antinukeManager");
 
@@ -33,8 +40,53 @@ module.exports = {
       message.guild.channels.cache.find((c) => c.name.toLowerCase() === args[0]?.toLowerCase());
 
     if (!channel) {
+      const currentChan = config.modLogsChannel;
+      const chanText = currentChan ? `<#${currentChan}>` : "*None configured*";
+
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `### 📋 **Moderation • Audit Log Configuration**\n` +
+            `-# Select a channel below to receive real-time moderation and member enforcement logs\n\n` +
+            `> **Current Log Channel:** ${chanText}\n` +
+            `> **Event Dispatch:** Logs warns, mutes, kicks, bans, unbans and timeout actions.\n\n` +
+            `-# Select a text channel from the menu below to update.`
+          )
+        )
+        .addSeparatorComponents(
+          new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+        );
+
+      const channelMenu = new ChannelSelectMenuBuilder()
+        .setCustomId("antinuke_set_modlog_channel_select")
+        .setPlaceholder("📋 Select text channel for Moderation logs...")
+        .setChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement);
+
+      const menuRow = new ActionRowBuilder().addComponents(channelMenu);
+
+      const cpBtn = new ButtonBuilder()
+        .setCustomId("antinuke_nav_overview")
+        .setLabel("Control Center")
+        .setEmoji("🛡️")
+        .setStyle(ButtonStyle.Primary);
+
+      const homeBtn = new ButtonBuilder()
+        .setCustomId("antinuke_nav_home")
+        .setLabel("Main Menu")
+        .setEmoji("🏠")
+        .setStyle(ButtonStyle.Secondary);
+
+      const btnRow = new ActionRowBuilder().addComponents(cpBtn, homeBtn);
+
+      container.addActionRowComponents(menuRow);
+      container.addActionRowComponents(btnRow);
+      container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Moderation Log Dispatcher`)
+      );
+
       return message.reply({
-        content: "⚠️ **Usage:** `setmodlogs <#channel | channelId>`",
+        components: [container],
+        flags: MessageFlags.IsComponentsV2,
         allowedMentions: { repliedUser: false },
       }).catch(() => null);
     }

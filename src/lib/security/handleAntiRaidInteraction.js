@@ -78,54 +78,25 @@ function buildAntiraidOverviewView(config, guild) {
   const isEnabled = Boolean(config.enabled);
 
   const headerText =
-    `### 🛡️ **Astrix Anti-Raid System**\n` +
-    `-# *Real-time network defense, join-flood interception & raid quarantine for **${guild?.name || "Your Server"}***`;
+    `### 🛡️ **Astrix Anti-Raid • Defense Center**\n` +
+    `-# Real-time network defense & join-flood quarantine for **${guild?.name || "Your Server"}**`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  const statusHeadline = isEnabled
-    ? `### 🟢 **Status: Anti-Raid Active & Enforcing**\n> Real-time join gatekeeper is actively filtering raiders and self-bot floods.`
-    : `### 🔴 **Status: Anti-Raid Disabled**\n> Incoming join protection is offline. Click **[ 🟢 Enable System ]** below to arm defense.`;
-
-  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(statusHeadline));
-
-  const raidStateText = config.raidState
-    ? "🚨 `EMERGENCY RAID LOCKDOWN ACTIVE`"
-    : "🟢 `NORMAL OPERATION`";
-
-  const massjoinStatus = config.enabled && config.massjoin?.enabled ? "🟢 `ENABLED`" : "🔴 `DISABLED`";
-  const massjoinThreshold = `${config.massjoin?.threshold || 5} joins in 10s`;
-  const massjoinAction = (config.massjoin?.action || "kick").toUpperCase();
-  const lockStatus = config.enabled && config.massjoin?.lockChannels ? "🟢 `ACTIVE`" : "🔴 `OFF`";
-
-  const namefilterStatus = config.enabled && config.namefilter?.enabled ? "🟢 `ENABLED`" : "🔴 `DISABLED`";
-  const namePatternsCount = (config.namefilter?.patterns || []).length;
-  const nameAction = (config.namefilter?.action || "ban").toUpperCase();
-
-  const avatarStatus = config.enabled && config.avatar?.enabled ? "🟢 `ENABLED`" : "🔴 `DISABLED`";
-  const avatarAction = (config.avatar?.action || "kick").toUpperCase();
-
-  const newaccStatus = config.enabled && config.newaccounts?.enabled ? "🟢 `ENABLED`" : "🔴 `DISABLED`";
-  const newaccThreshold = `< ${config.newaccounts?.threshold || 7} Days`;
-  const newaccAction = (config.newaccounts?.action || "kick").toUpperCase();
-
-  const logChan = config.logChannel ? `<#${config.logChannel}>` : "*None (Select in Logs tab)*";
+  const massjoinStatus = config.enabled && config.massjoin?.enabled ? "🟢 `ON`" : "🔴 `OFF`";
+  const namefilterStatus = config.enabled && config.namefilter?.enabled ? "🟢 `ON`" : "🔴 `OFF`";
+  const newaccStatus = config.enabled && config.newaccounts?.enabled ? "🟢 `ON`" : "🔴 `OFF`";
+  const logChan = config.logChannel ? `<#${config.logChannel}>` : "*None*";
   const whitelistCount = (config.whitelist || []).length;
 
   const telemetryText =
-    `**📊 Defense Telemetry:**\n` +
-    `> • 🚨 **Raid Mode:** ${raidStateText}\n` +
-    `> • ⚡ **Mass Join Limit:** ${massjoinStatus} (${massjoinThreshold} • \`${massjoinAction}\`)\n` +
-    `> • 🔒 **Auto-Channel Lockdown:** ${lockStatus}\n` +
-    `> • 📛 **Name & Pattern Filter:** ${namefilterStatus} (\`${namePatternsCount}\` patterns • \`${nameAction}\`)\n` +
-    `> • 🖼️ **Default Avatar Filter:** ${avatarStatus} (\`${avatarAction}\`)\n` +
-    `> • 👶 **Account Age Gate:** ${newaccStatus} (${newaccThreshold} • \`${newaccAction}\`)\n` +
-    `> • 📜 **Log Channel:** ${logChan}\n` +
-    `> • 👥 **Whitelisted Users:** \`${whitelistCount}\` immune operators\n` +
-    `> • 📈 **Intercepted Stats:** \`${config.stats?.blockedCount || 0}\` raiders blocked • \`${config.stats?.raidsDetected || 0}\` raids intercepted`;
+    `> **Shield Status:** ${isEnabled ? "🟢 `ARMED & ACTIVE`" : "🔴 `OFFLINE & DISABLED`"} • **Raid Mode:** ${config.raidState ? "🚨 `LOCKDOWN`" : "🟢 `NORMAL`"}\n` +
+    `> **Join Defense:** \`⚡ Mass Join\` ${massjoinStatus} • \`📛 Name Filter\` ${namefilterStatus} • \`👶 Age Gate\` ${newaccStatus}\n` +
+    `> **Telemetry:** \`${config.stats?.blockedCount || 0}\` raiders blocked • \`${whitelistCount}\` whitelisted • Log: ${logChan}\n\n` +
+    `-# Select an action below or switch dashboard using the navigation menu.`;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(telemetryText));
 
@@ -133,36 +104,72 @@ function buildAntiraidOverviewView(config, guild) {
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
+  // 1. Quick Actions Dropdown
+  const actionMenu = new StringSelectMenuBuilder()
+    .setCustomId("antiraid_overview_select_action")
+    .setPlaceholder("⚡ Anti-Raid Actions & Fast Controls...")
+    .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel(isEnabled ? "Deactivate Anti-Raid Shield" : "Activate Anti-Raid Shield")
+        .setValue("action_toggle_master")
+        .setDescription(isEnabled ? "Disables real-time join interception" : "Enables real-time 24/7 join protection")
+        .setEmoji(isEnabled ? "🔴" : "🟢"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel(config.raidState ? "Lift Emergency Raid Lockdown" : "Trigger Emergency Raid Lockdown")
+        .setValue("action_toggle_raidmode")
+        .setDescription(config.raidState ? "Restores normal server access" : "Immediately kicks/bans joining raiders")
+        .setEmoji(config.raidState ? "🟢" : "🚨"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Mass Join & Velocity Limits")
+        .setValue("nav_massjoin")
+        .setDescription("Configure burst thresholds and auto-lockdown rules")
+        .setEmoji("⚡"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Name & Username Pattern Filter")
+        .setValue("nav_namefilter")
+        .setDescription("Filter raid-bot usernames and spam patterns")
+        .setEmoji("📛"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Avatar & Account Age Gate")
+        .setValue("nav_filters")
+        .setDescription("Filter default avatars and brand-new accounts")
+        .setEmoji("🖼️"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Whitelist Operators Directory")
+        .setValue("nav_whitelist")
+        .setDescription("Manage trusted users immune to join filters")
+        .setEmoji("📋"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Audit Log Channel")
+        .setValue("nav_logs")
+        .setDescription("Configure log channel for raid alerts")
+        .setEmoji("📜")
+    );
+
+  const actionRow = new ActionRowBuilder().addComponents(actionMenu);
+
+  // 2. Global Navigation Dropdown
   const navRow = new ActionRowBuilder().addComponents(buildAntiraidNavMenu("overview"));
 
-  const toggleBtn = new ButtonBuilder()
-    .setCustomId("antiraid_btn_toggle_master")
-    .setLabel(isEnabled ? "Disable System" : "Enable System")
-    .setEmoji(isEnabled ? "🔴" : "🟢")
-    .setStyle(isEnabled ? ButtonStyle.Danger : ButtonStyle.Success);
-
-  const raidmodeBtn = new ButtonBuilder()
-    .setCustomId("antiraid_btn_toggle_raidmode")
-    .setLabel(config.raidState ? "Deactivate Raid Mode" : "Raid Lockdown")
-    .setEmoji(config.raidState ? "🟢" : "🚨")
-    .setStyle(config.raidState ? ButtonStyle.Success : ButtonStyle.Danger);
-
-  const wlBtn = new ButtonBuilder()
-    .setCustomId("antiraid_nav_whitelist")
-    .setLabel("Whitelist")
-    .setEmoji("📋")
-    .setStyle(ButtonStyle.Primary);
-
+  // 3. Minimal 2-button control row
   const refreshBtn = new ButtonBuilder()
     .setCustomId("antiraid_btn_refresh")
     .setLabel("Refresh")
     .setEmoji("🔄")
     .setStyle(ButtonStyle.Secondary);
 
-  const btnRow = new ActionRowBuilder().addComponents(toggleBtn, raidmodeBtn, wlBtn, refreshBtn);
+  const cpBtn = new ButtonBuilder()
+    .setCustomId("antiraid_nav_overview")
+    .setLabel("Control Center")
+    .setEmoji("🛡️")
+    .setStyle(ButtonStyle.Primary);
 
+  const btnRow = new ActionRowBuilder().addComponents(refreshBtn, cpBtn);
+
+  container.addActionRowComponents(actionRow);
   container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Anti-Raid Guard`));
 
   return container;
 }
@@ -175,8 +182,8 @@ function buildAntiraidMassJoinView(config, guild) {
   const mj = config.massjoin || { enabled: false, threshold: 5, action: "kick", lockChannels: false };
 
   const headerText =
-    `### ⚡ **Mass Join & Join Velocity Defense**\n` +
-    `-# Detects and blocks bot waves joining in rapid bursts within a 10-second rolling window.`;
+    `### ⚡ **Anti-Raid • Mass Join Defense**\n` +
+    `-# Intercepts rapid bot waves in rolling 10-second join windows for **${guild?.name || "Your Server"}**`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
@@ -185,12 +192,9 @@ function buildAntiraidMassJoinView(config, guild) {
 
   const isEnabled = config.enabled && mj.enabled;
   const content =
-    `**⚙️ Mass Join Configuration:**\n` +
-    `> • ⚡ **Module Status:** ${isEnabled ? "🟢 `ENABLED`" : "🔴 `DISABLED`"}\n` +
-    `> • ⏱️ **Burst Rate Limit:** \`${mj.threshold || 5} joins per 10 seconds\`\n` +
-    `> • ⚖️ **Punishment Action:** \`${(mj.action || "kick").toUpperCase()}\`\n` +
-    `> • 🔒 **Auto-Channel Lockdown:** ${mj.lockChannels ? "🟢 `ENABLED` (Locks SendMessages for @everyone)" : "🔴 `DISABLED`"}\n\n` +
-    `💡 *Command Syntax:* \`antiraid massjoin on/off --limit 5 --do ban/kick --lock true/false\``;
+    `> **Module Status:** ${isEnabled ? "🟢 `ARMED & ACTIVE`" : "🔴 `DISABLED`"} • **Threshold:** \`${mj.threshold || 5} joins / 10s\`\n` +
+    `> **Enforcement Action:** \`${(mj.action || "kick").toUpperCase()}\` • **Auto-Lockdown:** ${mj.lockChannels ? "🟢 `ENABLED`" : "🔴 `DISABLED`"}\n\n` +
+    `-# Select an action below to toggle status, adjust punishment or auto-lockdown.`;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
 
@@ -198,23 +202,29 @@ function buildAntiraidMassJoinView(config, guild) {
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  const toggleMjBtn = new ButtonBuilder()
-    .setCustomId("antiraid_toggle_massjoin")
-    .setLabel(mj.enabled ? "Disable Mass Join" : "Enable Mass Join")
-    .setEmoji(mj.enabled ? "🔴" : "🟢")
-    .setStyle(mj.enabled ? ButtonStyle.Danger : ButtonStyle.Success);
+  const actionMenu = new StringSelectMenuBuilder()
+    .setCustomId("antiraid_massjoin_select_action")
+    .setPlaceholder("⚡ Mass Join Actions (Toggle / Action / Lockdown)...")
+    .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel(mj.enabled ? "Disable Mass Join Defense" : "Enable Mass Join Defense")
+        .setValue("action_toggle_mj")
+        .setDescription("Toggles 10s burst join gatekeeper")
+        .setEmoji(mj.enabled ? "🔴" : "🟢"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel(mj.lockChannels ? "Disable Auto-Channel Lockdown" : "Enable Auto-Channel Lockdown")
+        .setValue("action_toggle_lock")
+        .setDescription("Automatically locks text channels during sudden join waves")
+        .setEmoji("🔒"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel(`Switch Action to ${mj.action === "ban" ? "KICK" : "BAN"}`)
+        .setValue("action_toggle_action")
+        .setDescription(`Currently set to ${(mj.action || "kick").toUpperCase()}`)
+        .setEmoji("⚖️")
+    );
 
-  const toggleLockBtn = new ButtonBuilder()
-    .setCustomId("antiraid_toggle_lockdown")
-    .setLabel(mj.lockChannels ? "Disable Auto-Lock" : "Enable Auto-Lock")
-    .setEmoji("🔒")
-    .setStyle(mj.lockChannels ? ButtonStyle.Secondary : ButtonStyle.Primary);
-
-  const toggleActionBtn = new ButtonBuilder()
-    .setCustomId("antiraid_toggle_massjoin_action")
-    .setLabel(`Action: ${(mj.action || "kick").toUpperCase()}`)
-    .setEmoji("⚖️")
-    .setStyle(ButtonStyle.Secondary);
+  const actionRow = new ActionRowBuilder().addComponents(actionMenu);
+  const navRow = new ActionRowBuilder().addComponents(buildAntiraidNavMenu("massjoin"));
 
   const cpBtn = new ButtonBuilder()
     .setCustomId("antiraid_nav_overview")
@@ -222,10 +232,18 @@ function buildAntiraidMassJoinView(config, guild) {
     .setEmoji("🛡️")
     .setStyle(ButtonStyle.Primary);
 
-  const btnRow = new ActionRowBuilder().addComponents(toggleMjBtn, toggleLockBtn, toggleActionBtn, cpBtn);
+  const refreshBtn = new ButtonBuilder()
+    .setCustomId("antiraid_btn_refresh")
+    .setLabel("Refresh")
+    .setEmoji("🔄")
+    .setStyle(ButtonStyle.Secondary);
 
-  container.addActionRowComponents(new ActionRowBuilder().addComponents(buildAntiraidNavMenu("massjoin")));
+  const btnRow = new ActionRowBuilder().addComponents(cpBtn, refreshBtn);
+
+  container.addActionRowComponents(actionRow);
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Join Velocity Defense`));
 
   return container;
 }
@@ -239,26 +257,24 @@ function buildAntiraidNameFilterView(config, guild) {
   const patterns = nf.patterns || [];
 
   const headerText =
-    `### 📛 **Name & Pattern Filter**\n` +
-    `-# Scans usernames of joining members and executes instant punishment on matches.`;
+    `### 📛 **Anti-Raid • Name & Pattern Filter**\n` +
+    `-# Scans usernames of joining members and executes instant punishment on matches`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  const patternsList =
+  const patternsFormatted =
     patterns.length > 0
-      ? patterns.map((p, i) => `> \`${i + 1}.\` \`${p}\``).join("\n")
-      : "> *No patterns configured. Add patterns using \`antiraid namefilter --add <text>\`*";
+      ? patterns.map((p) => `\`${p}\``).join(", ")
+      : "*No patterns configured*";
 
   const isEnabled = config.enabled && nf.enabled;
   const content =
-    `**⚙️ Name Filter Status:**\n` +
-    `> • 📛 **Module Status:** ${isEnabled ? "🟢 `ENABLED`" : "🔴 `DISABLED`"}\n` +
-    `> • ⚖️ **Punishment Action:** \`${(nf.action || "ban").toUpperCase()}\`\n\n` +
-    `**📋 Active Regex / Name Patterns (${patterns.length}):**\n${patternsList}\n\n` +
-    `💡 *Command Syntax:* \`antiraid namefilter on/off --add <pattern> --remove <pattern> --do ban/kick\``;
+    `> **Module Status:** ${isEnabled ? "🟢 `ARMED & ACTIVE`" : "🔴 `DISABLED`"} • **Action:** \`${(nf.action || "ban").toUpperCase()}\`\n` +
+    `> **Active Patterns (${patterns.length}):** ${patternsFormatted}\n\n` +
+    `-# Add or remove custom patterns via \`antiraid namefilter --add <text>\``;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
 
@@ -266,17 +282,24 @@ function buildAntiraidNameFilterView(config, guild) {
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  const toggleNfBtn = new ButtonBuilder()
-    .setCustomId("antiraid_toggle_namefilter")
-    .setLabel(nf.enabled ? "Disable Name Filter" : "Enable Name Filter")
-    .setEmoji(nf.enabled ? "🔴" : "🟢")
-    .setStyle(nf.enabled ? ButtonStyle.Danger : ButtonStyle.Success);
+  const actionMenu = new StringSelectMenuBuilder()
+    .setCustomId("antiraid_namefilter_select_action")
+    .setPlaceholder("📛 Name Filter Actions (Toggle / Action)...")
+    .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel(nf.enabled ? "Disable Name Filter" : "Enable Name Filter")
+        .setValue("action_toggle_nf")
+        .setDescription("Toggles username pattern filtering on join")
+        .setEmoji(nf.enabled ? "🔴" : "🟢"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel(`Switch Action to ${nf.action === "ban" ? "KICK" : "BAN"}`)
+        .setValue("action_toggle_action")
+        .setDescription(`Currently set to ${(nf.action || "ban").toUpperCase()}`)
+        .setEmoji("⚖️")
+    );
 
-  const toggleActionBtn = new ButtonBuilder()
-    .setCustomId("antiraid_toggle_namefilter_action")
-    .setLabel(`Action: ${(nf.action || "ban").toUpperCase()}`)
-    .setEmoji("⚖️")
-    .setStyle(ButtonStyle.Secondary);
+  const actionRow = new ActionRowBuilder().addComponents(actionMenu);
+  const navRow = new ActionRowBuilder().addComponents(buildAntiraidNavMenu("namefilter"));
 
   const cpBtn = new ButtonBuilder()
     .setCustomId("antiraid_nav_overview")
@@ -284,10 +307,18 @@ function buildAntiraidNameFilterView(config, guild) {
     .setEmoji("🛡️")
     .setStyle(ButtonStyle.Primary);
 
-  const btnRow = new ActionRowBuilder().addComponents(toggleNfBtn, toggleActionBtn, cpBtn);
+  const refreshBtn = new ButtonBuilder()
+    .setCustomId("antiraid_btn_refresh")
+    .setLabel("Refresh")
+    .setEmoji("🔄")
+    .setStyle(ButtonStyle.Secondary);
 
-  container.addActionRowComponents(new ActionRowBuilder().addComponents(buildAntiraidNavMenu("namefilter")));
+  const btnRow = new ActionRowBuilder().addComponents(cpBtn, refreshBtn);
+
+  container.addActionRowComponents(actionRow);
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Name Pattern Filter`));
 
   return container;
 }
@@ -301,8 +332,8 @@ function buildAntiraidFiltersView(config, guild) {
   const na = config.newaccounts || { enabled: false, threshold: 7, action: "kick" };
 
   const headerText =
-    `### 🖼️ **Avatar & Account Age Gate Filters**\n` +
-    `-# Automatically weed out fresh raid accounts and default discord avatars.`;
+    `### 🖼️ **Anti-Raid • Avatar & Age Gate Filters**\n` +
+    `-# Automatically weeds out fresh raid accounts and default discord avatars`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
@@ -313,14 +344,9 @@ function buildAntiraidFiltersView(config, guild) {
   const isNaEnabled = config.enabled && na.enabled;
 
   const content =
-    `**🖼️ Default Avatar Filter:**\n` +
-    `> • Status: ${isAvEnabled ? "🟢 `ENABLED`" : "🔴 `DISABLED`"}\n` +
-    `> • Action: \`${(av.action || "kick").toUpperCase()}\` on joining with default avatar\n\n` +
-    `**👶 Young Account Age Gate:**\n` +
-    `> • Status: ${isNaEnabled ? "🟢 `ENABLED`" : "🔴 `DISABLED`"}\n` +
-    `> • Threshold: Younger than \`${na.threshold || 7} Days\`\n` +
-    `> • Action: \`${(na.action || "kick").toUpperCase()}\`\n\n` +
-    `💡 *Command Syntax:* \`antiraid avatar on/off --do kick/ban\` • \`antiraid newaccounts on/off --age 7 --do kick/ban\``;
+    `> **Default Avatar Filter:** ${isAvEnabled ? "🟢 `ENABLED`" : "🔴 `DISABLED`"} • Action: \`${(av.action || "kick").toUpperCase()}\`\n` +
+    `> **Young Account Age Gate:** ${isNaEnabled ? "🟢 `ENABLED`" : "🔴 `DISABLED`"} • Threshold: \`< ${na.threshold || 7} Days\` (\`${(na.action || "kick").toUpperCase()}\`)\n\n` +
+    `-# Select an action below to toggle avatar check or young account filter.`;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
 
@@ -328,17 +354,24 @@ function buildAntiraidFiltersView(config, guild) {
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  const toggleAvBtn = new ButtonBuilder()
-    .setCustomId("antiraid_toggle_avatar")
-    .setLabel(av.enabled ? "Disable Avatar Filter" : "Enable Avatar Filter")
-    .setEmoji("🖼️")
-    .setStyle(av.enabled ? ButtonStyle.Danger : ButtonStyle.Success);
+  const actionMenu = new StringSelectMenuBuilder()
+    .setCustomId("antiraid_filters_select_action")
+    .setPlaceholder("🖼️ Filter Actions (Avatar / Age Gate)...")
+    .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel(av.enabled ? "Disable Default Avatar Filter" : "Enable Default Avatar Filter")
+        .setValue("action_toggle_avatar")
+        .setDescription("Filter joining users without custom avatars")
+        .setEmoji("🖼️"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel(na.enabled ? "Disable Account Age Gate" : "Enable Account Age Gate")
+        .setValue("action_toggle_newacc")
+        .setDescription("Filter accounts younger than configured threshold")
+        .setEmoji("👶")
+    );
 
-  const toggleNaBtn = new ButtonBuilder()
-    .setCustomId("antiraid_toggle_newaccounts")
-    .setLabel(na.enabled ? "Disable Age Gate" : "Enable Age Gate")
-    .setEmoji("👶")
-    .setStyle(na.enabled ? ButtonStyle.Danger : ButtonStyle.Success);
+  const actionRow = new ActionRowBuilder().addComponents(actionMenu);
+  const navRow = new ActionRowBuilder().addComponents(buildAntiraidNavMenu("filters"));
 
   const cpBtn = new ButtonBuilder()
     .setCustomId("antiraid_nav_overview")
@@ -346,10 +379,18 @@ function buildAntiraidFiltersView(config, guild) {
     .setEmoji("🛡️")
     .setStyle(ButtonStyle.Primary);
 
-  const btnRow = new ActionRowBuilder().addComponents(toggleAvBtn, toggleNaBtn, cpBtn);
+  const refreshBtn = new ButtonBuilder()
+    .setCustomId("antiraid_btn_refresh")
+    .setLabel("Refresh")
+    .setEmoji("🔄")
+    .setStyle(ButtonStyle.Secondary);
 
-  container.addActionRowComponents(new ActionRowBuilder().addComponents(buildAntiraidNavMenu("filters")));
+  const btnRow = new ActionRowBuilder().addComponents(cpBtn, refreshBtn);
+
+  container.addActionRowComponents(actionRow);
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Gate Filters`));
 
   return container;
 }
@@ -362,22 +403,23 @@ function buildAntiraidWhitelistView(config, guild, subTab = "main") {
   const wl = config.whitelist || [];
 
   const headerText =
-    `### 📋 **Anti-Raid Whitelist Hub**\n` +
-    `-# Whitelisted users completely bypass avatar, account age, and name filters.`;
+    `### 📋 **Anti-Raid • Whitelist Hub**\n` +
+    `-# Whitelisted users completely bypass avatar, account age, and name filters`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  const wlList =
+  const formattedWl =
     wl.length > 0
-      ? wl.map((id, i) => `> \`${i + 1}.\` <@${id}> (\`${id}\`)`).join("\n")
-      : "> *No users in whitelist yet. Use the selector below to add operators.*";
+      ? wl.map((id) => `<@${id}>`).join(", ")
+      : "*No whitelisted users registered*";
 
   const content =
-    `**📋 Whitelisted Operators (${wl.length}):**\n${wlList}\n\n` +
-    `💡 *Note: Whitelisted users will never be kicked or banned by anti-raid join gates.*`;
+    `> **🛡️ Whitelisted Operators (${wl.length}):** ${formattedWl}\n` +
+    `> **Immunity Scope:** Whitelisted users will never be kicked or banned by anti-raid join gates.\n\n` +
+    `-# Select an action below to add, remove, or clear whitelisted operators.`;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
 
@@ -390,32 +432,38 @@ function buildAntiraidWhitelistView(config, guild, subTab = "main") {
       .setCustomId("antiraid_wl_do_add_user")
       .setPlaceholder("➕ Select a user to add to Anti-Raid Whitelist...");
     container.addActionRowComponents(new ActionRowBuilder().addComponents(userMenu));
-  } else if (subTab === "remove") {
+  } else if (subTab === "remove" && wl.length > 0) {
     const userMenu = new UserSelectMenuBuilder()
       .setCustomId("antiraid_wl_do_remove_user")
       .setPlaceholder("➖ Select a user to remove from Anti-Raid Whitelist...");
     container.addActionRowComponents(new ActionRowBuilder().addComponents(userMenu));
   }
 
-  const addBtn = new ButtonBuilder()
-    .setCustomId("antiraid_wl_tab_add")
-    .setLabel("Add User")
-    .setEmoji("➕")
-    .setStyle(subTab === "add" ? ButtonStyle.Primary : ButtonStyle.Success);
+  const actionMenu = new StringSelectMenuBuilder()
+    .setCustomId("antiraid_wl_select_action")
+    .setPlaceholder("⚡ Whitelist Actions (Add / Remove / Clear)...")
+    .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Add User to Whitelist")
+        .setValue("action_add")
+        .setDescription("Register a trusted user to bypass raid filters")
+        .setEmoji("➕")
+        .setDefault(subTab === "add"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Remove User from Whitelist")
+        .setValue("action_remove")
+        .setDescription("Revoke whitelist immunity from a user")
+        .setEmoji("➖")
+        .setDefault(subTab === "remove"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Reset All Anti-Raid Whitelists")
+        .setValue("action_reset")
+        .setDescription("Clear all registered whitelisted users")
+        .setEmoji("🧹")
+    );
 
-  const removeBtn = new ButtonBuilder()
-    .setCustomId("antiraid_wl_tab_remove")
-    .setLabel("Remove User")
-    .setEmoji("➖")
-    .setStyle(subTab === "remove" ? ButtonStyle.Primary : ButtonStyle.Secondary)
-    .setDisabled(wl.length === 0);
-
-  const clearBtn = new ButtonBuilder()
-    .setCustomId("antiraid_wl_clear_all")
-    .setLabel("Clear Whitelist")
-    .setEmoji("🧹")
-    .setStyle(ButtonStyle.Danger)
-    .setDisabled(wl.length === 0);
+  const actionRow = new ActionRowBuilder().addComponents(actionMenu);
+  const navRow = new ActionRowBuilder().addComponents(buildAntiraidNavMenu("whitelist"));
 
   const cpBtn = new ButtonBuilder()
     .setCustomId("antiraid_nav_overview")
@@ -423,10 +471,18 @@ function buildAntiraidWhitelistView(config, guild, subTab = "main") {
     .setEmoji("🛡️")
     .setStyle(ButtonStyle.Primary);
 
-  const btnRow = new ActionRowBuilder().addComponents(addBtn, removeBtn, clearBtn, cpBtn);
+  const refreshBtn = new ButtonBuilder()
+    .setCustomId("antiraid_btn_refresh")
+    .setLabel("Refresh")
+    .setEmoji("🔄")
+    .setStyle(ButtonStyle.Secondary);
 
-  container.addActionRowComponents(new ActionRowBuilder().addComponents(buildAntiraidNavMenu("whitelist")));
+  const btnRow = new ActionRowBuilder().addComponents(cpBtn, refreshBtn);
+
+  container.addActionRowComponents(actionRow);
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Whitelist Hub`));
 
   return container;
 }
@@ -436,11 +492,11 @@ function buildAntiraidWhitelistView(config, guild, subTab = "main") {
 // ─────────────────────────────────────────────────────────────────────────────
 function buildAntiraidLogsView(config, guild) {
   const container = new ContainerBuilder();
-  const currentChan = config.logChannel ? `<#${config.logChannel}>` : "*None (Select below)*";
+  const currentChan = config.logChannel ? `<#${config.logChannel}>` : "*None configured*";
 
   const headerText =
-    `### 📜 **Anti-Raid Audit Logging Channel**\n` +
-    `-# Select the text channel where raid alerts, mass join triggers, and blocks are broadcast.`;
+    `### 📜 **Anti-Raid • Audit Logging Channel**\n` +
+    `-# Channel where raid alerts, mass join triggers, and blocks are broadcast`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
@@ -448,10 +504,9 @@ function buildAntiraidLogsView(config, guild) {
   );
 
   const content =
-    `**📋 Logging Configuration:**\n` +
-    `> • 📜 **Current Channel:** ${currentChan}\n` +
-    `> • ⚡ **Alert Frequency:** Real-time (<0.1s trigger dispatch)\n` +
-    `> • 🚨 **Dispatched Events:** Mass Join bursts, Raid Mode status, Raider Kicks/Bans`;
+    `> **Current Log Channel:** ${currentChan}\n` +
+    `> **Event Dispatch:** Real-time (<0.1s) alerts for Mass Joins, Raid Mode and Member Blocks.\n\n` +
+    `-# Select a text channel below to configure or update logging.`;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
 
@@ -461,10 +516,11 @@ function buildAntiraidLogsView(config, guild) {
 
   const channelMenu = new ChannelSelectMenuBuilder()
     .setCustomId("antiraid_logs_select_channel")
-    .setPlaceholder("📜 Select channel for Anti-Raid alerts...")
+    .setPlaceholder("📜 Select text channel for Anti-Raid alerts...")
     .setChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement);
 
   const menuRow = new ActionRowBuilder().addComponents(channelMenu);
+  const navRow = new ActionRowBuilder().addComponents(buildAntiraidNavMenu("logs"));
 
   const disableBtn = new ButtonBuilder()
     .setCustomId("antiraid_logs_disable")
@@ -481,9 +537,10 @@ function buildAntiraidLogsView(config, guild) {
 
   const btnRow = new ActionRowBuilder().addComponents(disableBtn, cpBtn);
 
-  container.addActionRowComponents(new ActionRowBuilder().addComponents(buildAntiraidNavMenu("logs")));
   container.addActionRowComponents(menuRow);
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Audit Logs`));
 
   return container;
 }
@@ -495,8 +552,8 @@ function buildAntiraidCommandsManualView() {
   const container = new ContainerBuilder();
 
   const headerText =
-    `### 📖 **Anti-Raid Command Manual**\n` +
-    `-# Complete reference guide for all Anti-Raid commands, subcommands, and flags.`;
+    `### 📖 **Anti-Raid • Command Manual**\n` +
+    `-# Quick reference for all Anti-Raid commands, subcommands, and flags`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
@@ -504,28 +561,17 @@ function buildAntiraidCommandsManualView() {
   );
 
   const content =
-    `🛡️ **Core Anti-Raid Commands**\n` +
+    `**🛡️ Core Commands**\n` +
     `> • \`antiraid\` — Open interactive Anti-Raid Control Center\n` +
-    `> • \`antiraid enable\` — Turn on master Anti-Raid system\n` +
-    `> • \`antiraid disable\` — Turn off master Anti-Raid system\n` +
-    `> • \`antiraid config\` — View current configuration & stats\n\n` +
-    `🚨 **Emergency Raid Lockdown**\n` +
-    `> • \`raidmode on / off\` — Toggle emergency join freeze (Bans incoming raiders)\n` +
-    `> • \`raidlock [reason]\` — Lock SendMessages in all public text channels\n` +
-    `> • \`raidunlock [reason]\` — Unlock SendMessages across all channels\n` +
-    `> • \`raidwipe <time> <ban|kick> [reason]\` — Mass purge recent raiders (e.g. \`raidwipe 5m ban\`)\n\n` +
-    `⚡ **Module Configurations**\n` +
-    `> • \`antiraid massjoin on/off --limit <num> --do <ban|kick> --lock <true|false>\`\n` +
-    `> • \`antiraid namefilter on/off --add <pattern> --remove <pattern> --do <ban|kick>\`\n` +
-    `> • \`antiraid avatar on/off --do <ban|kick>\`\n` +
-    `> • \`antiraid newaccounts on/off --age <days> --do <ban|kick>\`\n` +
-    `> • \`antiraid setchannel #channel\` — Configure alert logging channel\n\n` +
-    `📋 **Whitelist Management**\n` +
-    `> • \`antiraid whitelist add <@user>\` — Whitelist a user\n` +
-    `> • \`antiraid whitelist remove <@user>\` — Remove user from whitelist\n` +
-    `> • \`antiraid whitelist show\` — Display whitelist directory\n` +
-    `> • \`antiraid whitelist reset\` — Clear all whitelisted users\n\n` +
-    `> **Aliases:** \`antiraid\`, \`raiddefense\`, \`raidguard\` • \`whitelist\`, \`wl\``;
+    `> • \`antiraid enable / disable\` — Toggle master protection\n\n` +
+    `**🚨 Emergency Lockdown**\n` +
+    `> • \`raidmode on / off\` — Emergency join freeze (bans raiders)\n` +
+    `> • \`raidlock / raidunlock\` — Global public channel lockdown\n` +
+    `> • \`raidwipe <time> <ban|kick>\` — Mass purge recent raiders\n\n` +
+    `**⚡ Module Settings & Whitelist**\n` +
+    `> • \`antiraid massjoin on/off --limit <n> --do <ban|kick>\`\n` +
+    `> • \`antiraid namefilter on/off --add <pattern> --do <ban|kick>\`\n` +
+    `> • \`antiraid whitelist add/remove <@user>\``;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
 
@@ -539,10 +585,111 @@ function buildAntiraidCommandsManualView() {
     .setEmoji("🛡️")
     .setStyle(ButtonStyle.Primary);
 
+  const navRow = new ActionRowBuilder().addComponents(buildAntiraidNavMenu("commands"));
   const btnRow = new ActionRowBuilder().addComponents(cpBtn);
 
-  container.addActionRowComponents(new ActionRowBuilder().addComponents(buildAntiraidNavMenu("commands")));
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Documentation`));
+
+  return container;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 8. SERVER LOCKDOWN / UNLOCK VIEW
+// ─────────────────────────────────────────────────────────────────────────────
+function buildRaidLockContainer({ isLocked, count = 0, reason = "", executorTag = "" }) {
+  const container = new ContainerBuilder();
+
+  if (isLocked) {
+    container
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `### 🔒 **Anti-Raid • Server Lockdown Executed**\n` +
+            `-# Sending messages has been locked across public text channels for @everyone\n\n` +
+            `> **Channels Locked:** \`${count}\` text channel(s)\n` +
+            `> **Lockdown Reason:** \`${reason || "Emergency server lockdown"}\`\n\n` +
+            `-# Click 'Unlock Server' below to restore normal channel communication.`
+        )
+      )
+      .addSeparatorComponents(
+        new SeparatorBuilder()
+          .setSpacing(SeparatorSpacingSize.Small)
+          .setDivider(true)
+      );
+
+    const navRow = new ActionRowBuilder().addComponents(buildAntiraidNavMenu("overview"));
+
+    const unlockBtn = new ButtonBuilder()
+      .setCustomId("antiraid_action_do_unlock")
+      .setLabel("Unlock Server")
+      .setEmoji("🔓")
+      .setStyle(ButtonStyle.Success);
+
+    const cpBtn = new ButtonBuilder()
+      .setCustomId("antiraid_nav_overview")
+      .setLabel("Control Center")
+      .setEmoji("🛡️")
+      .setStyle(ButtonStyle.Primary);
+
+    const refreshBtn = new ButtonBuilder()
+      .setCustomId("antiraid_btn_refresh")
+      .setLabel("Refresh")
+      .setEmoji("🔄")
+      .setStyle(ButtonStyle.Secondary);
+
+    const btnRow = new ActionRowBuilder().addComponents(unlockBtn, cpBtn, refreshBtn);
+
+    container.addActionRowComponents(navRow);
+    container.addActionRowComponents(btnRow);
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(`-# ${executorTag ? `Executed by ${executorTag} • ` : ""}ASTRIXCODE™ Security • Emergency Lockdown`)
+    );
+  } else {
+    container
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `### 🔓 **Anti-Raid • Server Lockdown Lifted**\n` +
+            `-# Sending messages permissions restored for @everyone across text channels\n\n` +
+            `> **Channels Unlocked:** \`${count}\` text channel(s)\n` +
+            `> **Server Status:** Normal public channel communication restored.\n\n` +
+            `-# Click 'Lockdown Server' below to re-lock channels if a raid resumes.`
+        )
+      )
+      .addSeparatorComponents(
+        new SeparatorBuilder()
+          .setSpacing(SeparatorSpacingSize.Small)
+          .setDivider(true)
+      );
+
+    const navRow = new ActionRowBuilder().addComponents(buildAntiraidNavMenu("overview"));
+
+    const lockBtn = new ButtonBuilder()
+      .setCustomId("antiraid_action_do_lockdown")
+      .setLabel("Lockdown Server")
+      .setEmoji("🔒")
+      .setStyle(ButtonStyle.Danger);
+
+    const cpBtn = new ButtonBuilder()
+      .setCustomId("antiraid_nav_overview")
+      .setLabel("Control Center")
+      .setEmoji("🛡️")
+      .setStyle(ButtonStyle.Primary);
+
+    const refreshBtn = new ButtonBuilder()
+      .setCustomId("antiraid_btn_refresh")
+      .setLabel("Refresh")
+      .setEmoji("🔄")
+      .setStyle(ButtonStyle.Secondary);
+
+    const btnRow = new ActionRowBuilder().addComponents(lockBtn, cpBtn, refreshBtn);
+
+    container.addActionRowComponents(navRow);
+    container.addActionRowComponents(btnRow);
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(`-# ${executorTag ? `Executed by ${executorTag} • ` : ""}ASTRIXCODE™ Security • Emergency Protocol`)
+    );
+  }
 
   return container;
 }
@@ -609,6 +756,102 @@ async function handleAntiRaidInteraction(client, interaction) {
     const updated = buildAntiraidContainer(config, guild, targetTab);
     await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
     return true;
+  }
+
+  // 1.1 Overview Action Select Menu
+  if (isMenu && customId === "antiraid_overview_select_action") {
+    const val = interaction.values[0];
+    if (val === "action_toggle_master") {
+      antiraidManager.toggleMaster(guildId);
+      const freshConfig = antiraidManager.getGuildAntiraid(guildId);
+      const updated = buildAntiraidContainer(freshConfig, guild, "overview");
+      await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+    if (val === "action_toggle_raidmode") {
+      config.raidState = !config.raidState;
+      if (config.raidState) antiraidManager.incrementStats(guildId, "raidsDetected");
+      antiraidManager.setGuildAntiraid(guildId, config);
+      const updated = buildAntiraidContainer(config, guild, "overview");
+      await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+    if (val.startsWith("nav_")) {
+      const targetTab = val.replace("nav_", "");
+      const updated = buildAntiraidContainer(config, guild, targetTab);
+      await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+  }
+
+  // 1.2 Mass Join Action Select Menu
+  if (isMenu && customId === "antiraid_massjoin_select_action") {
+    const val = interaction.values[0];
+    if (val === "action_toggle_mj") {
+      antiraidManager.toggleSubmodule(guildId, "massjoin");
+    } else if (val === "action_toggle_lock") {
+      config.massjoin.lockChannels = !config.massjoin.lockChannels;
+      antiraidManager.setGuildAntiraid(guildId, config);
+    } else if (val === "action_toggle_action") {
+      config.massjoin.action = config.massjoin.action === "ban" ? "kick" : "ban";
+      antiraidManager.setGuildAntiraid(guildId, config);
+    }
+    const freshConfig = antiraidManager.getGuildAntiraid(guildId);
+    const updated = buildAntiraidContainer(freshConfig, guild, "massjoin");
+    await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    return true;
+  }
+
+  // 1.3 Name Filter Action Select Menu
+  if (isMenu && customId === "antiraid_namefilter_select_action") {
+    const val = interaction.values[0];
+    if (val === "action_toggle_nf") {
+      antiraidManager.toggleSubmodule(guildId, "namefilter");
+    } else if (val === "action_toggle_action") {
+      if (!config.namefilter) config.namefilter = { enabled: false, action: "ban", patterns: [] };
+      config.namefilter.action = config.namefilter.action === "ban" ? "kick" : "ban";
+      antiraidManager.setGuildAntiraid(guildId, config);
+    }
+    const freshConfig = antiraidManager.getGuildAntiraid(guildId);
+    const updated = buildAntiraidContainer(freshConfig, guild, "namefilter");
+    await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    return true;
+  }
+
+  // 1.4 Filters Action Select Menu
+  if (isMenu && customId === "antiraid_filters_select_action") {
+    const val = interaction.values[0];
+    if (val === "action_toggle_avatar") {
+      antiraidManager.toggleSubmodule(guildId, "avatar");
+    } else if (val === "action_toggle_newacc") {
+      antiraidManager.toggleSubmodule(guildId, "newaccounts");
+    }
+    const freshConfig = antiraidManager.getGuildAntiraid(guildId);
+    const updated = buildAntiraidContainer(freshConfig, guild, "filters");
+    await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    return true;
+  }
+
+  // 1.5 Whitelist Action Select Menu
+  if (isMenu && customId === "antiraid_wl_select_action") {
+    const val = interaction.values[0];
+    if (val === "action_add") {
+      const updated = buildAntiraidContainer(config, guild, "whitelist", "add");
+      await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+    if (val === "action_remove") {
+      const updated = buildAntiraidContainer(config, guild, "whitelist", "remove");
+      await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+    if (val === "action_reset") {
+      antiraidManager.clearWhitelist(guildId);
+      const freshConfig = antiraidManager.getGuildAntiraid(guildId);
+      const updated = buildAntiraidContainer(freshConfig, guild, "whitelist", "main");
+      await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
   }
 
   // 2. Direct Navigation Buttons
@@ -856,6 +1099,139 @@ async function handleAntiRaidInteraction(client, interaction) {
     return true;
   }
 
+  if (isMenu && customId === "antiraid_raidwipe_select_preset") {
+    const val = interaction.values[0];
+    let durationMs = 5 * 60 * 1000;
+    let action = "ban";
+    if (val === "preset_1m_ban") { durationMs = 60 * 1000; action = "ban"; }
+    else if (val === "preset_5m_ban") { durationMs = 5 * 60 * 1000; action = "ban"; }
+    else if (val === "preset_10m_ban") { durationMs = 10 * 60 * 1000; action = "ban"; }
+    else if (val === "preset_5m_kick") { durationMs = 5 * 60 * 1000; action = "kick"; }
+    else if (val === "preset_15m_kick") { durationMs = 15 * 60 * 1000; action = "kick"; }
+
+    const cutoff = Date.now() - durationMs;
+    await interaction.guild.members.fetch().catch(() => null);
+    const filtered = interaction.guild.members.cache.filter(
+      (m) => m.joinedTimestamp && m.joinedTimestamp >= cutoff && m.id !== interaction.user.id && !m.user.bot
+    );
+
+    if (filtered.size === 0) {
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `### ℹ️ **No Matching Raiders Found**\n` +
+            `-# No members joined within the selected time window.`
+          )
+        );
+      await interaction.update({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+
+    const sessionId = `raidwipe_confirm_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    if (!client.raidwipeConfirmations) client.raidwipeConfirmations = new Map();
+    client.raidwipeConfirmations.set(sessionId, {
+      authorId: interaction.user.id,
+      action,
+      reason: `Rapid Raidwipe Preset by ${interaction.user.tag}`,
+      toProcessIds: Array.from(filtered.keys()),
+    });
+
+    const confirmContainer = new ContainerBuilder()
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `### ⚠️ **Confirm Rapid Raidwipe Purge**\n\n` +
+          `> • **Target Count:** \`${filtered.size}\` member(s)\n` +
+          `> • **Action:** \`${action.toUpperCase()}\` (Messages Cleared)\n\n` +
+          `Are you sure you want to execute this mass purge?`
+        )
+      )
+      .addSeparatorComponents(
+        new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+      );
+
+    const confirmBtn = new ButtonBuilder()
+      .setCustomId(sessionId)
+      .setLabel(`Confirm ${action.toUpperCase()}`)
+      .setStyle(ButtonStyle.Danger);
+
+    const cancelBtn = new ButtonBuilder()
+      .setCustomId(`raidwipe_cancel_${Date.now()}`)
+      .setLabel("Cancel")
+      .setStyle(ButtonStyle.Secondary);
+
+    confirmContainer.addActionRowComponents(new ActionRowBuilder().addComponents(confirmBtn, cancelBtn));
+    await interaction.update({ components: [confirmContainer], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    return true;
+  }
+
+  if (customId === "antiraid_action_do_lockdown") {
+    await interaction.deferUpdate().catch(() => null);
+
+    const textChannels = interaction.guild.channels.cache.filter(
+      (c) =>
+        c.type === ChannelType.GuildText &&
+        c.permissionsFor(interaction.guild.roles.everyone).has(PermissionFlagsBits.SendMessages)
+    );
+
+    let lockedCount = 0;
+    const promises = [];
+    for (const [, channel] of textChannels) {
+      promises.push(
+        channel.permissionOverwrites
+          .edit(
+            interaction.guild.roles.everyone,
+            { SendMessages: false },
+            { reason: `Emergency lockdown invoked by ${interaction.user.tag}` }
+          )
+          .then(() => lockedCount++)
+          .catch(() => null)
+      );
+    }
+    await Promise.allSettled(promises);
+
+    const updated = buildRaidLockContainer({
+      isLocked: true,
+      count: lockedCount,
+      reason: `Emergency lockdown invoked by ${interaction.user.tag}`,
+      executorTag: interaction.user.tag,
+    });
+    await interaction.editReply({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    return true;
+  }
+
+  if (customId === "antiraid_action_do_unlock") {
+    await interaction.deferUpdate().catch(() => null);
+
+    const textChannels = interaction.guild.channels.cache.filter(
+      (c) => c.type === ChannelType.GuildText
+    );
+
+    let unlockedCount = 0;
+    const promises = [];
+    for (const [, channel] of textChannels) {
+      promises.push(
+        channel.permissionOverwrites
+          .edit(
+            interaction.guild.roles.everyone,
+            { SendMessages: null },
+            { reason: `Emergency unlock invoked by ${interaction.user.tag}` }
+          )
+          .then(() => unlockedCount++)
+          .catch(() => null)
+      );
+    }
+    await Promise.allSettled(promises);
+
+    const updated = buildRaidLockContainer({
+      isLocked: false,
+      count: unlockedCount,
+      reason: "Server unlocked",
+      executorTag: interaction.user.tag,
+    });
+    await interaction.editReply({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    return true;
+  }
+
   return false;
 }
 
@@ -868,6 +1244,7 @@ module.exports = {
   buildAntiraidWhitelistView,
   buildAntiraidLogsView,
   buildAntiraidCommandsManualView,
+  buildRaidLockContainer,
   buildAntiraidContainer,
   handleAntiRaidInteraction,
 };

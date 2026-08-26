@@ -77,19 +77,13 @@ function buildAutomodOverviewView(config, guild) {
   const isEnabled = Boolean(config.enabled);
 
   const headerText =
-    `### 🤖 **Astrix AutoMod Control Center**\n` +
-    `-# *Real-time intelligent message filtering, rate-limiting & strike enforcement for **${guild?.name || "Your Server"}***`;
+    `### 🤖 **Astrix AutoMod • Control Center**\n` +
+    `-# Real-time intelligent message filtering & strike enforcement for **${guild?.name || "Your Server"}**`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
-
-  const statusHeadline = isEnabled
-    ? `### 🟢 **Status: AutoMod Active & Enforcing**\n> Sub-0.1s message analysis and automated strike punishment is active.`
-    : `### 🔴 **Status: AutoMod Disabled**\n> Message moderation is offline. Click **[ 🟢 Enable System ]** below to arm defense.`;
-
-  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(statusHeadline));
 
   const activePreset = config.activePreset
     ? `\`${config.activePreset.toUpperCase()}\``
@@ -99,17 +93,13 @@ function buildAutomodOverviewView(config, guild) {
     ? Object.values(config.modules || {}).filter((m) => m.enabled).length
     : 0;
   const totalCount = Object.keys(automodManager.MODULES).length;
-
-  const logChan = config.logChannel ? `<#${config.logChannel}>` : "*None (Select in Logs tab)*";
-  const ign = config.ignore || { channels: [], roles: [], users: [] };
+  const logChan = config.logChannel ? `<#${config.logChannel}>` : "*None*";
 
   const telemetryText =
-    `**📊 System Telemetry:**\n` +
-    `> • 🛡️ **Active Preset:** ${activePreset} • **Armed Filters:** \`${enabledCount}/${totalCount}\` Modules\n` +
-    `> • ⚖️ **Strike Enforcement:** ${config.strikesEnabled ? "🟢 `ENABLED`" : "🔴 `DISABLED`"} (\`${config.strikeExpiry || 24}h\` strike decay)\n` +
-    `> • 📜 **Audit Log Channel:** ${logChan}\n` +
-    `> • 🚫 **Ignored Entities:** \`${ign.channels?.length || 0}\` Channels • \`${ign.roles?.length || 0}\` Roles • \`${ign.users?.length || 0}\` Users\n` +
-    `> • 📈 **Intercepted Stats:** \`${config.stats?.violationsIntercepted || 0}\` blocked • \`${config.stats?.strikesIssued || 0}\` strikes • \`${config.stats?.messagesDeleted || 0}\` deleted`;
+    `> **Master Status:** ${isEnabled ? "🟢 `ARMED & ACTIVE`" : "🔴 `OFFLINE & DISABLED`"} • **Preset:** ${activePreset}\n` +
+    `> **Filter Matrix:** \`${enabledCount}/${totalCount}\` filters active • **Strikes:** ${config.strikesEnabled ? "🟢 `ENABLED`" : "🔴 `DISABLED`"}\n` +
+    `> **Telemetry:** \`${config.stats?.violationsIntercepted || 0}\` blocked • \`${config.stats?.messagesDeleted || 0}\` deleted • Log: ${logChan}\n\n` +
+    `-# Select an action below or switch dashboard using the navigation menu.`;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(telemetryText));
 
@@ -117,57 +107,77 @@ function buildAutomodOverviewView(config, guild) {
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  const isMod = (key) => (isEnabled && config.modules?.[key]?.enabled ? "🟢 `ACTIVE`" : "🔴 `OFF`");
+  // 1. Quick Action Dropdown
+  const actionMenu = new StringSelectMenuBuilder()
+    .setCustomId("automod_overview_select_action")
+    .setPlaceholder("⚡ AutoMod Actions & Quick Controls...")
+    .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel(isEnabled ? "Deactivate AutoMod Master Shield" : "Activate AutoMod Master Shield")
+        .setValue("action_toggle_master")
+        .setDescription(isEnabled ? "Disables all automated chat message moderation" : "Enables real-time 24/7 message filtering")
+        .setEmoji(isEnabled ? "🔴" : "🟢"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Apply Strict Preset (All 14 Modules)")
+        .setValue("action_preset_strict")
+        .setDescription("Maximum zero-tolerance chat safety matrix")
+        .setEmoji("🔒"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Apply Moderate Preset (Recommended)")
+        .setValue("action_preset_moderate")
+        .setDescription("Balanced protection for active community servers")
+        .setEmoji("⚖️"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Apply Light Preset (Essential Only)")
+        .setValue("action_preset_light")
+        .setDescription("Basic protection against invites, spam and mass pings")
+        .setEmoji("🪶"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Protection Modules Matrix (14 Filters)")
+        .setValue("nav_modules")
+        .setDescription("Toggle individual filters or customize behaviors")
+        .setEmoji("📦"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Bad Words & Blacklist Directory")
+        .setValue("nav_badwords")
+        .setDescription("Manage custom banned words and profanity filter")
+        .setEmoji("🤬"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Ignore Rules & Whitelist Bypasses")
+        .setValue("nav_ignore")
+        .setDescription("Configure channels, roles, and users exempt from filters")
+        .setEmoji("🚫"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Audit Logging Channel")
+        .setValue("nav_logs")
+        .setDescription("Configure log channel for AutoMod violation alerts")
+        .setEmoji("📜")
+    );
 
-  const modulesText =
-    `**🛡️ Core Protection Filters:**\n` +
-    `> • 📨 **Anti-Spam:** ${isMod("antispam")} • 🌐 **Anti-Link:** ${isMod("antilink")} • 🔗 **Anti-Invite:** ${isMod("antiinvite")}\n` +
-    `> • 🔠 **Anti-Caps:** ${isMod("anticaps")} • 📢 **Anti-Mention:** ${isMod("antimention")} • 🤬 **Bad Words:** ${isMod("badwords")}\n` +
-    `> • 📣 **Anti-Everyone:** ${isMod("antieveryone")} • 🎭 **Anti-Role:** ${isMod("antirole")} • 👾 **Anti-Zalgo:** ${isMod("antizalgo")}\n` +
-    `> • 🧪 **AI Toxicity Check:** ${isMod("antiai")}`;
+  const actionRow = new ActionRowBuilder().addComponents(actionMenu);
 
-  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(modulesText));
-
-  container.addSeparatorComponents(
-    new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-  );
-
+  // 2. Global Navigation Dropdown
   const navRow = new ActionRowBuilder().addComponents(buildAutomodNavMenu("overview"));
 
-  const toggleBtn = new ButtonBuilder()
-    .setCustomId("automod_btn_toggle_master")
-    .setLabel(isEnabled ? "Disable AutoMod" : "Enable AutoMod")
-    .setEmoji(isEnabled ? "🔴" : "🟢")
-    .setStyle(isEnabled ? ButtonStyle.Danger : ButtonStyle.Success);
-
-  const strictBtn = new ButtonBuilder()
-    .setCustomId("automod_preset_strict")
-    .setLabel("Strict Preset")
-    .setEmoji("🔒")
-    .setStyle(config.activePreset === "strict" ? ButtonStyle.Success : ButtonStyle.Secondary);
-
-  const modBtn = new ButtonBuilder()
-    .setCustomId("automod_preset_moderate")
-    .setLabel("Moderate Preset")
-    .setEmoji("⚖️")
-    .setStyle(config.activePreset === "moderate" ? ButtonStyle.Success : ButtonStyle.Secondary);
-
-  const modulesBtn = new ButtonBuilder()
-    .setCustomId("automod_nav_modules")
-    .setLabel("Module Toggles")
-    .setEmoji("📦")
-    .setStyle(ButtonStyle.Primary);
-
+  // 3. Minimal 2-button control row
   const refreshBtn = new ButtonBuilder()
     .setCustomId("automod_btn_refresh")
     .setLabel("Refresh")
     .setEmoji("🔄")
     .setStyle(ButtonStyle.Secondary);
 
-  const btnRow = new ActionRowBuilder().addComponents(toggleBtn, strictBtn, modBtn, modulesBtn, refreshBtn);
+  const cpBtn = new ButtonBuilder()
+    .setCustomId("automod_nav_overview")
+    .setLabel("Control Center")
+    .setEmoji("🤖")
+    .setStyle(ButtonStyle.Primary);
 
+  const btnRow = new ActionRowBuilder().addComponents(refreshBtn, cpBtn);
+
+  container.addActionRowComponents(actionRow);
   container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • AutoMod Guard`));
 
   return container;
 }
@@ -180,8 +190,8 @@ function buildAutomodModulesView(config, guild) {
   const isMaster = Boolean(config.enabled);
 
   const headerText =
-    `### 📦 **Protection Modules Matrix (14 Filters)**\n` +
-    `-# Toggle individual filters or adjust punishment behaviors for specific violation types.`;
+    `### 📦 **AutoMod • Protection Modules Matrix (14 Filters)**\n` +
+    `-# Toggle individual filters or adjust punishment behaviors for **${guild?.name || "Your Server"}**`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
@@ -189,13 +199,15 @@ function buildAutomodModulesView(config, guild) {
   );
 
   const modEntries = Object.entries(automodManager.MODULES);
-  const rows = modEntries.map(([key, mod]) => {
-    const isModEnabled = isMaster && config.modules?.[key]?.enabled;
-    const punishment = (config.modules?.[key]?.punishments?.[0] || mod.defaultPunishment).toUpperCase();
-    return `> • ${mod.emoji} **${mod.name}:** ${isModEnabled ? "🟢 `ENABLED`" : "🔴 `DISABLED`"} • \`${punishment}\``;
-  });
+  const activeCount = isMaster
+    ? modEntries.filter(([k]) => config.modules?.[k]?.enabled).length
+    : 0;
 
-  const content = `**⚙️ Current Modules Configuration:**\n${rows.join("\n")}\n\n💡 *Select any module from the dropdown below to toggle it instantly.*`;
+  const content =
+    `> **Matrix Status:** ${isMaster ? "🟢 `ARMED & ACTIVE`" : "🔴 `OFFLINE`"} • **Active Filters:** \`${activeCount}/${modEntries.length}\`\n` +
+    `> **Fast Control:** Select any module from the dropdown below to toggle it instantly.\n\n` +
+    `-# Select a module below to toggle status or change views.`;
+
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
 
   container.addSeparatorComponents(
@@ -218,6 +230,7 @@ function buildAutomodModulesView(config, guild) {
     .addOptions(options.slice(0, 14));
 
   const menuRow = new ActionRowBuilder().addComponents(moduleSelect);
+  const navRow = new ActionRowBuilder().addComponents(buildAutomodNavMenu("modules"));
 
   const enableAllBtn = new ButtonBuilder()
     .setCustomId("automod_preset_strict")
@@ -239,9 +252,10 @@ function buildAutomodModulesView(config, guild) {
 
   const btnRow = new ActionRowBuilder().addComponents(enableAllBtn, disableAllBtn, cpBtn);
 
-  container.addActionRowComponents(new ActionRowBuilder().addComponents(buildAutomodNavMenu("modules")));
   container.addActionRowComponents(menuRow);
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Modules Matrix`));
 
   return container;
 }
@@ -253,8 +267,8 @@ function buildAutomodPresetsView(config, guild) {
   const container = new ContainerBuilder();
 
   const headerText =
-    `### ⚡ **AutoMod Security Presets Hub**\n` +
-    `-# 1-click pre-configured rule matrices optimized for different community safety requirements.`;
+    `### ⚡ **AutoMod • Security Presets Hub**\n` +
+    `-# 1-click pre-configured rule matrices optimized for different community safety requirements`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
@@ -264,17 +278,11 @@ function buildAutomodPresetsView(config, guild) {
   const currentPreset = config.activePreset ? config.activePreset.toUpperCase() : "CUSTOM";
 
   const content =
-    `**🛡️ Available AutoMod Presets:**\n\n` +
-    `🔒 **Strict Preset (Maximum Defense)** ${currentPreset === "STRICT" ? "🟢 `[ACTIVE]`" : ""}\n` +
-    `> • Enables **all 14 modules** with aggressive zero-tolerance filtering\n` +
-    `> • Filters: Invites, Links, Spam, Caps, Mentions, Emojis, Bad Words, Zalgo, Toxicity\n\n` +
-    `⚖️ **Moderate Preset (Recommended)** ${currentPreset === "MODERATE" ? "🟢 `[ACTIVE]`" : ""}\n` +
-    `> • Balanced protection for active community servers without false positives\n` +
-    `> • Filters: Invites, Links, Rapid Spam, Mass Mentions, Bad Words, @everyone\n\n` +
-    `🪶 **Light Preset (Essential Only)** ${currentPreset === "LIGHT" ? "🟢 `[ACTIVE]`" : ""}\n` +
-    `> • Minimal baseline protection keeping chat open and friendly\n` +
-    `> • Filters: Discord Invites, @everyone Mentions, Extreme Message Spam\n\n` +
-    `💡 *Click a button below to apply any preset immediately.*`;
+    `> **Current Active Preset:** \`${currentPreset}\`\n` +
+    `> • 🔒 **Strict:** All 14 modules armed with aggressive zero-tolerance filtering\n` +
+    `> • ⚖️ **Moderate:** Balanced defense (Spam, Invites, Links, Bad Words, @everyone)\n` +
+    `> • 🪶 **Light:** Essential baseline (Discord Invites, Mass Spam, @everyone)\n\n` +
+    `-# Select a preset below to apply instantly.`;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
 
@@ -282,34 +290,48 @@ function buildAutomodPresetsView(config, guild) {
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  const strictBtn = new ButtonBuilder()
-    .setCustomId("automod_preset_strict")
-    .setLabel("Apply Strict Preset")
-    .setEmoji("🔒")
-    .setStyle(currentPreset === "STRICT" ? ButtonStyle.Success : ButtonStyle.Primary);
+  const presetMenu = new StringSelectMenuBuilder()
+    .setCustomId("automod_preset_select_action")
+    .setPlaceholder("⚡ Select a preset to apply instantly...")
+    .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Apply Strict Preset (Maximum Defense)")
+        .setValue("preset_strict")
+        .setDescription("Enables all 14 protection modules with strict limits")
+        .setEmoji("🔒"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Apply Moderate Preset (Recommended)")
+        .setValue("preset_moderate")
+        .setDescription("Balanced protection for active community servers")
+        .setEmoji("⚖️"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Apply Light Preset (Essential Only)")
+        .setValue("preset_light")
+        .setDescription("Minimal baseline protection keeping chat open")
+        .setEmoji("🪶")
+    );
 
-  const modBtn = new ButtonBuilder()
-    .setCustomId("automod_preset_moderate")
-    .setLabel("Apply Moderate Preset")
-    .setEmoji("⚖️")
-    .setStyle(currentPreset === "MODERATE" ? ButtonStyle.Success : ButtonStyle.Primary);
-
-  const lightBtn = new ButtonBuilder()
-    .setCustomId("automod_preset_light")
-    .setLabel("Apply Light Preset")
-    .setEmoji("🪶")
-    .setStyle(currentPreset === "LIGHT" ? ButtonStyle.Success : ButtonStyle.Secondary);
+  const menuRow = new ActionRowBuilder().addComponents(presetMenu);
+  const navRow = new ActionRowBuilder().addComponents(buildAutomodNavMenu("presets"));
 
   const cpBtn = new ButtonBuilder()
     .setCustomId("automod_nav_overview")
     .setLabel("Control Center")
     .setEmoji("🤖")
+    .setStyle(ButtonStyle.Primary);
+
+  const refreshBtn = new ButtonBuilder()
+    .setCustomId("automod_btn_refresh")
+    .setLabel("Refresh")
+    .setEmoji("🔄")
     .setStyle(ButtonStyle.Secondary);
 
-  const btnRow = new ActionRowBuilder().addComponents(strictBtn, modBtn, lightBtn, cpBtn);
+  const btnRow = new ActionRowBuilder().addComponents(cpBtn, refreshBtn);
 
-  container.addActionRowComponents(new ActionRowBuilder().addComponents(buildAutomodNavMenu("presets")));
+  container.addActionRowComponents(menuRow);
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Presets Hub`));
 
   return container;
 }
@@ -323,25 +345,23 @@ function buildAutomodBadWordsView(config, guild) {
   const isEnabled = config.enabled && config.modules?.badwords?.enabled;
 
   const headerText =
-    `### 🤬 **Bad Words & Blacklist Directory**\n` +
-    `-# Custom keyword & phrase blacklist automatically deleted upon message send.`;
+    `### 🤬 **AutoMod • Bad Words & Blacklist Directory**\n` +
+    `-# Custom keyword & phrase blacklist automatically deleted upon message send`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  const wordsList =
+  const wordsFormatted =
     words.length > 0
-      ? words.map((w, i) => `> \`${i + 1}.\` ||${w}||`).join("\n")
-      : "> *No custom banned words configured yet.*";
+      ? words.slice(0, 10).map((w) => `||${w}||`).join(", ") + (words.length > 10 ? ` *(+${words.length - 10} more)*` : "")
+      : "*No custom banned words configured*";
 
   const content =
-    `**⚙️ Bad Words Filter Status:**\n` +
-    `> • 🤬 **Module Status:** ${isEnabled ? "🟢 `ENABLED`" : "🔴 `DISABLED`"}\n` +
-    `> • 📊 **Total Banned Words:** \`${words.length}\` words\n\n` +
-    `**📋 Blacklist Directory:**\n${wordsList}\n\n` +
-    `💡 *Command Syntax:* \`automod badwords add <word>\` • \`automod badwords remove <word>\``;
+    `> **Module Status:** ${isEnabled ? "🟢 `ARMED & ACTIVE`" : "🔴 `DISABLED`"} • **Banned Words:** \`${words.length}\`\n` +
+    `> **Active Words:** ${wordsFormatted}\n\n` +
+    `-# Select an action below or manage words via \`automod badwords add <word>\``;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
 
@@ -349,18 +369,24 @@ function buildAutomodBadWordsView(config, guild) {
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  const toggleBwBtn = new ButtonBuilder()
-    .setCustomId("automod_toggle_badwords")
-    .setLabel(isEnabled ? "Disable Filter" : "Enable Filter")
-    .setEmoji("🤬")
-    .setStyle(isEnabled ? ButtonStyle.Danger : ButtonStyle.Success);
+  const actionMenu = new StringSelectMenuBuilder()
+    .setCustomId("automod_badwords_select_action")
+    .setPlaceholder("🤬 Bad Words Actions (Toggle / Clear)...")
+    .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel(isEnabled ? "Disable Bad Words Filter" : "Enable Bad Words Filter")
+        .setValue("action_toggle_bw")
+        .setDescription("Toggles profanity & custom bad words filter")
+        .setEmoji(isEnabled ? "🔴" : "🟢"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Clear All Banned Words")
+        .setValue("action_clear_bw")
+        .setDescription("Reset custom banned words blacklist")
+        .setEmoji("🧹")
+    );
 
-  const clearBwBtn = new ButtonBuilder()
-    .setCustomId("automod_clear_badwords")
-    .setLabel("Clear All Words")
-    .setEmoji("🧹")
-    .setStyle(ButtonStyle.Danger)
-    .setDisabled(words.length === 0);
+  const actionRow = new ActionRowBuilder().addComponents(actionMenu);
+  const navRow = new ActionRowBuilder().addComponents(buildAutomodNavMenu("badwords"));
 
   const cpBtn = new ButtonBuilder()
     .setCustomId("automod_nav_overview")
@@ -368,10 +394,18 @@ function buildAutomodBadWordsView(config, guild) {
     .setEmoji("🤖")
     .setStyle(ButtonStyle.Primary);
 
-  const btnRow = new ActionRowBuilder().addComponents(toggleBwBtn, clearBwBtn, cpBtn);
+  const refreshBtn = new ButtonBuilder()
+    .setCustomId("automod_btn_refresh")
+    .setLabel("Refresh")
+    .setEmoji("🔄")
+    .setStyle(ButtonStyle.Secondary);
 
-  container.addActionRowComponents(new ActionRowBuilder().addComponents(buildAutomodNavMenu("badwords")));
+  const btnRow = new ActionRowBuilder().addComponents(cpBtn, refreshBtn);
+
+  container.addActionRowComponents(actionRow);
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Bad Words Hub`));
 
   return container;
 }
@@ -384,8 +418,8 @@ function buildAutomodIgnoreView(config, guild) {
   const ign = config.ignore || { channels: [], roles: [], users: [] };
 
   const headerText =
-    `### 🚫 **AutoMod Ignore Rules & Bypasses**\n` +
-    `-# Exclude designated text channels, staff roles, and users from AutoMod filtering.`;
+    `### 🚫 **AutoMod • Ignore Rules & Bypasses**\n` +
+    `-# Exclude designated text channels, staff roles, and users from AutoMod filtering`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
@@ -397,11 +431,10 @@ function buildAutomodIgnoreView(config, guild) {
   const usersText = ign.users?.length > 0 ? ign.users.map((id) => `<@${id}>`).join(", ") : "*None*";
 
   const content =
-    `**🚫 Current Bypass Rules:**\n` +
-    `> • 📜 **Ignored Channels (${ign.channels?.length || 0}):** ${chansText}\n` +
-    `> • 🎭 **Ignored Roles (${ign.roles?.length || 0}):** ${rolesText}\n` +
-    `> • 👤 **Ignored Users (${ign.users?.length || 0}):** ${usersText}\n\n` +
-    `💡 *To whitelist a user across all security systems, use \`.whitelist add @user\`.*`;
+    `> **Ignored Channels (${ign.channels?.length || 0}):** ${chansText}\n` +
+    `> **Ignored Roles (${ign.roles?.length || 0}):** ${rolesText}\n` +
+    `> **Ignored Users (${ign.users?.length || 0}):** ${usersText}\n\n` +
+    `-# To whitelist a user across all security systems, use \`.whitelist add @user\``;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
 
@@ -415,10 +448,18 @@ function buildAutomodIgnoreView(config, guild) {
     .setEmoji("🤖")
     .setStyle(ButtonStyle.Primary);
 
-  const btnRow = new ActionRowBuilder().addComponents(cpBtn);
+  const refreshBtn = new ButtonBuilder()
+    .setCustomId("automod_btn_refresh")
+    .setLabel("Refresh")
+    .setEmoji("🔄")
+    .setStyle(ButtonStyle.Secondary);
 
-  container.addActionRowComponents(new ActionRowBuilder().addComponents(buildAutomodNavMenu("ignore")));
+  const navRow = new ActionRowBuilder().addComponents(buildAutomodNavMenu("ignore"));
+  const btnRow = new ActionRowBuilder().addComponents(cpBtn, refreshBtn);
+
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Ignore Directory`));
 
   return container;
 }
@@ -428,11 +469,11 @@ function buildAutomodIgnoreView(config, guild) {
 // ─────────────────────────────────────────────────────────────────────────────
 function buildAutomodLogsView(config, guild) {
   const container = new ContainerBuilder();
-  const currentChan = config.logChannel ? `<#${config.logChannel}>` : "*None (Select below)*";
+  const currentChan = config.logChannel ? `<#${config.logChannel}>` : "*None configured*";
 
   const headerText =
-    `### 📜 **AutoMod Audit Logging Channel**\n` +
-    `-# Select the text channel where automated chat moderation violations and strike alerts are broadcast.`;
+    `### 📜 **AutoMod • Audit Logging Channel**\n` +
+    `-# Channel where automated chat moderation violations and strike alerts are broadcast`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
@@ -440,10 +481,9 @@ function buildAutomodLogsView(config, guild) {
   );
 
   const content =
-    `**📋 Logging Configuration:**\n` +
-    `> • 📜 **Current Channel:** ${currentChan}\n` +
-    `> • ⚡ **Alert Frequency:** Real-time (<0.1s message analysis)\n` +
-    `> • 🚨 **Dispatched Events:** Message Deletions, Timeout Warnings, Strikes Issued`;
+    `> **Current Log Channel:** ${currentChan}\n` +
+    `> **Event Dispatch:** Real-time (<0.1s) alerts for Deletions, Timeout Warnings & Strikes.\n\n` +
+    `-# Select a text channel below to configure or update logging.`;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
 
@@ -457,6 +497,7 @@ function buildAutomodLogsView(config, guild) {
     .setChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement);
 
   const menuRow = new ActionRowBuilder().addComponents(channelMenu);
+  const navRow = new ActionRowBuilder().addComponents(buildAutomodNavMenu("logs"));
 
   const disableBtn = new ButtonBuilder()
     .setCustomId("automod_logs_disable")
@@ -473,9 +514,10 @@ function buildAutomodLogsView(config, guild) {
 
   const btnRow = new ActionRowBuilder().addComponents(disableBtn, cpBtn);
 
-  container.addActionRowComponents(new ActionRowBuilder().addComponents(buildAutomodNavMenu("logs")));
   container.addActionRowComponents(menuRow);
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Audit Logs`));
 
   return container;
 }
@@ -487,8 +529,8 @@ function buildAutomodCommandsManualView() {
   const container = new ContainerBuilder();
 
   const headerText =
-    `### 📖 **AutoMod Command Manual**\n` +
-    `-# Complete reference guide for all AutoMod commands, subcommands, and quick toggles.`;
+    `### 📖 **AutoMod • Command Manual**\n` +
+    `-# Quick reference for all AutoMod commands, subcommands, and quick toggles`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
@@ -496,20 +538,16 @@ function buildAutomodCommandsManualView() {
   );
 
   const content =
-    `🤖 **Master Commands**\n` +
-    `> • \`automod\` / \`automodstatus\` — Open interactive AutoMod Control Center\n` +
-    `> • \`automodenable\` — Turn on master AutoMod protection system\n` +
-    `> • \`automoddisable\` — Turn off master AutoMod protection system\n` +
+    `**🤖 Core Commands**\n` +
+    `> • \`automod\` — Open interactive AutoMod Control Center\n` +
+    `> • \`automodenable / automoddisable\` — Toggle master protection\n` +
     `> • \`automod preset <strict|moderate|light>\` — Apply safety preset\n\n` +
-    `⚡ **Quick Filter Toggles**\n` +
-    `> • \`antispam [enable|disable]\` / \`antispamenable\` / \`antispamdisable\` — Rapid message spam filter\n` +
-    `> • \`antilink [enable|disable]\` / \`antilinkenable\` / \`antilinkdisable\` — Web link & URL block\n` +
-    `> • \`anticaps [enable|disable]\` — Excessive uppercase capital letter filter\n\n` +
-    `🤬 **Bad Words Management**\n` +
-    `> • \`automod badwords add <word>\` — Add word to blacklist\n` +
-    `> • \`automod badwords remove <word>\` — Remove word from blacklist\n` +
-    `> • \`automod badwords list\` — Display all banned words\n\n` +
-    `> **Aliases:** \`automod\`, \`am\` • \`antispam\`, \`spamfilter\` • \`antilink\`, \`linkblock\` • \`anticaps\`, \`capsfilter\``;
+    `**⚡ Quick Filter Commands**\n` +
+    `> • \`antispam [enable|disable]\` — Rapid message spam filter\n` +
+    `> • \`antilink [enable|disable]\` — Web link & Discord invite block\n` +
+    `> • \`anticaps [enable|disable]\` — Excessive uppercase letter filter\n\n` +
+    `**🤬 Bad Words Management**\n` +
+    `> • \`automod badwords add/remove/list <word>\``;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
 
@@ -523,10 +561,245 @@ function buildAutomodCommandsManualView() {
     .setEmoji("🤖")
     .setStyle(ButtonStyle.Primary);
 
+  const navRow = new ActionRowBuilder().addComponents(buildAutomodNavMenu("commands"));
   const btnRow = new ActionRowBuilder().addComponents(cpBtn);
 
-  container.addActionRowComponents(new ActionRowBuilder().addComponents(buildAutomodNavMenu("commands")));
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Documentation`));
+
+  return container;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 8. SUBMODULE VIEWS (ANTICAPS, ANTILINK, ANTISPAM)
+// ─────────────────────────────────────────────────────────────────────────────
+function buildAnticapsContainer(config, guild) {
+  const container = new ContainerBuilder();
+  const isEnabled = config.enabled && config.modules?.anticaps?.enabled;
+  const threshold = config.modules?.anticaps?.threshold || 70;
+
+  const headerText =
+    `### 🔠 **AutoMod • Anti-Caps Filter**\n` +
+    `-# Automatically purges shouting messages containing excessive uppercase letters for **${guild?.name || "Your Server"}**`;
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
+
+  container.addSeparatorComponents(
+    new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+  );
+
+  const content =
+    `> **Module Status:** ${isEnabled ? "🟢 `ARMED & ACTIVE`" : "🔴 `DISABLED`"} • **Threshold:** \`>${threshold}% Caps (Min 8 chars)\`\n` +
+    `> **Violation Action:** \`Instant Message Deletion + Strike Warning\`\n\n` +
+    `-# Select an action below to toggle status or adjust caps percentage threshold.`;
+
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
+
+  container.addSeparatorComponents(
+    new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+  );
+
+  const actionMenu = new StringSelectMenuBuilder()
+    .setCustomId("automod_anticaps_select_action")
+    .setPlaceholder("🔠 Anti-Caps Actions (Toggle / Threshold)...")
+    .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel(isEnabled ? "Disable Anti-Caps Filter" : "Enable Anti-Caps Filter")
+        .setValue("action_toggle")
+        .setDescription("Toggles uppercase shouting filter")
+        .setEmoji(isEnabled ? "🔴" : "🟢"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Set Threshold: >60% Caps (Strict)")
+        .setValue("threshold_60")
+        .setDescription("Filters messages with over 60% capital letters")
+        .setEmoji("📊"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Set Threshold: >70% Caps (Balanced)")
+        .setValue("threshold_70")
+        .setDescription("Filters messages with over 70% capital letters")
+        .setEmoji("📊"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Set Threshold: >85% Caps (Relaxed)")
+        .setValue("threshold_85")
+        .setDescription("Filters messages with over 85% capital letters")
+        .setEmoji("📊")
+    );
+
+  const actionRow = new ActionRowBuilder().addComponents(actionMenu);
+  const navRow = new ActionRowBuilder().addComponents(buildAutomodNavMenu("modules"));
+
+  const cpBtn = new ButtonBuilder()
+    .setCustomId("automod_nav_overview")
+    .setLabel("Control Center")
+    .setEmoji("🤖")
+    .setStyle(ButtonStyle.Primary);
+
+  const refreshBtn = new ButtonBuilder()
+    .setCustomId("automod_btn_refresh")
+    .setLabel("Refresh")
+    .setEmoji("🔄")
+    .setStyle(ButtonStyle.Secondary);
+
+  const btnRow = new ActionRowBuilder().addComponents(cpBtn, refreshBtn);
+
+  container.addActionRowComponents(actionRow);
+  container.addActionRowComponents(navRow);
+  container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Caps Filter`));
+
+  return container;
+}
+
+function buildAntilinkContainer(config, guild) {
+  const container = new ContainerBuilder();
+  const isLinkEnabled = config.enabled && config.modules?.antilink?.enabled;
+  const isInviteEnabled = config.enabled && config.modules?.antiinvite?.enabled;
+
+  const headerText =
+    `### 🌐 **AutoMod • Anti-Link & Anti-Invite Filter**\n` +
+    `-# Automatically deletes unauthorized web links, IP grabbers, and Discord invite links for **${guild?.name || "Your Server"}**`;
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
+
+  container.addSeparatorComponents(
+    new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+  );
+
+  const content =
+    `> **Link Filter:** ${isLinkEnabled ? "🟢 `ARMED & ACTIVE`" : "🔴 `DISABLED`"} • **Invite Filter:** ${isInviteEnabled ? "🟢 `ARMED & ACTIVE`" : "🔴 `DISABLED`"}\n` +
+    `> **Blocked URL Types:** \`http://\`, \`https://\`, \`discord.gg/\`, \`discord.com/invite/\`\n` +
+    `> **Violation Action:** \`Instant Message Deletion + Strike Warning\`\n\n` +
+    `-# Select an action below to toggle links or Discord invite filters.`;
+
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
+
+  container.addSeparatorComponents(
+    new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+  );
+
+  const actionMenu = new StringSelectMenuBuilder()
+    .setCustomId("automod_antilink_select_action")
+    .setPlaceholder("🌐 Anti-Link Actions (Toggle Links / Invites)...")
+    .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel(isLinkEnabled ? "Disable Web Links Filter" : "Enable Web Links Filter")
+        .setValue("action_toggle_links")
+        .setDescription("Toggles http/https link blocking")
+        .setEmoji(isLinkEnabled ? "🔴" : "🟢"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel(isInviteEnabled ? "Disable Discord Invites Filter" : "Enable Discord Invites Filter")
+        .setValue("action_toggle_invites")
+        .setDescription("Toggles discord.gg invite link blocking")
+        .setEmoji(isInviteEnabled ? "🔴" : "🟢"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Enable Both (Links & Invites)")
+        .setValue("action_enable_both")
+        .setDescription("Arms full URL and invite protection")
+        .setEmoji("🛡️"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Disable Both")
+        .setValue("action_disable_both")
+        .setDescription("Turns off all link and invite filtering")
+        .setEmoji("❌")
+    );
+
+  const actionRow = new ActionRowBuilder().addComponents(actionMenu);
+  const navRow = new ActionRowBuilder().addComponents(buildAutomodNavMenu("modules"));
+
+  const cpBtn = new ButtonBuilder()
+    .setCustomId("automod_nav_overview")
+    .setLabel("Control Center")
+    .setEmoji("🤖")
+    .setStyle(ButtonStyle.Primary);
+
+  const refreshBtn = new ButtonBuilder()
+    .setCustomId("automod_btn_refresh")
+    .setLabel("Refresh")
+    .setEmoji("🔄")
+    .setStyle(ButtonStyle.Secondary);
+
+  const btnRow = new ActionRowBuilder().addComponents(cpBtn, refreshBtn);
+
+  container.addActionRowComponents(actionRow);
+  container.addActionRowComponents(navRow);
+  container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Link Filter`));
+
+  return container;
+}
+
+function buildAntispamContainer(config, guild) {
+  const container = new ContainerBuilder();
+  const isEnabled = config.enabled && config.modules?.antispam?.enabled;
+  const threshold = config.modules?.antispam?.threshold || 5;
+  const windowSec = config.modules?.antispam?.window || 5;
+
+  const headerText =
+    `### 📨 **AutoMod • Anti-Spam Filter**\n` +
+    `-# Rate-limits rapid message flooding and punishes spam bots for **${guild?.name || "Your Server"}**`;
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
+
+  container.addSeparatorComponents(
+    new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+  );
+
+  const content =
+    `> **Module Status:** ${isEnabled ? "🟢 `ARMED & ACTIVE`" : "🔴 `DISABLED`"} • **Rate Limit:** \`${threshold} messages / ${windowSec} seconds\`\n` +
+    `> **Violation Action:** \`Message Deletion + Auto-Timeout + Strike\`\n\n` +
+    `-# Select an action below to toggle status or adjust spam burst thresholds.`;
+
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
+
+  container.addSeparatorComponents(
+    new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+  );
+
+  const actionMenu = new StringSelectMenuBuilder()
+    .setCustomId("automod_antispam_select_action")
+    .setPlaceholder("📨 Anti-Spam Actions (Toggle / Rate Limit)...")
+    .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel(isEnabled ? "Disable Anti-Spam Filter" : "Enable Anti-Spam Filter")
+        .setValue("action_toggle")
+        .setDescription("Toggles chat rate-limiting protection")
+        .setEmoji(isEnabled ? "🔴" : "🟢"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Strict: 3 msgs / 3 seconds")
+        .setValue("rate_3_3")
+        .setDescription("High sensitivity for fast raiding mitigation")
+        .setEmoji("⚡"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Balanced: 5 msgs / 5 seconds (Recommended)")
+        .setValue("rate_5_5")
+        .setDescription("Standard anti-flood threshold for general chats")
+        .setEmoji("⚖️"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Relaxed: 8 msgs / 5 seconds")
+        .setValue("rate_8_5")
+        .setDescription("Permissive rate for high-traffic active chat channels")
+        .setEmoji("🪶")
+    );
+
+  const actionRow = new ActionRowBuilder().addComponents(actionMenu);
+  const navRow = new ActionRowBuilder().addComponents(buildAutomodNavMenu("modules"));
+
+  const cpBtn = new ButtonBuilder()
+    .setCustomId("automod_nav_overview")
+    .setLabel("Control Center")
+    .setEmoji("🤖")
+    .setStyle(ButtonStyle.Primary);
+
+  const refreshBtn = new ButtonBuilder()
+    .setCustomId("automod_btn_refresh")
+    .setLabel("Refresh")
+    .setEmoji("🔄")
+    .setStyle(ButtonStyle.Secondary);
+
+  const btnRow = new ActionRowBuilder().addComponents(cpBtn, refreshBtn);
+
+  container.addActionRowComponents(actionRow);
+  container.addActionRowComponents(navRow);
+  container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Spam Defense`));
 
   return container;
 }
@@ -588,6 +861,139 @@ async function handleAutomodInteraction(client, interaction) {
     const selected = interaction.values[0];
     const targetTab = selected.replace("automod_nav_", "");
     const updated = buildAutomodContainer(config, guild, targetTab);
+    await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    return true;
+  }
+
+  // 1.1 Overview Action Select
+  if (isMenu && customId === "automod_overview_select_action") {
+    const val = interaction.values[0];
+    if (val === "action_toggle_master") {
+      automodManager.toggleMaster(guildId);
+      const freshConfig = automodManager.getGuildAutomod(guildId);
+      const updated = buildAutomodContainer(freshConfig, guild, "overview");
+      await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+    if (val === "action_preset_strict") {
+      automodManager.applyPreset(guildId, "strict");
+      const freshConfig = automodManager.getGuildAutomod(guildId);
+      const updated = buildAutomodContainer(freshConfig, guild, "overview");
+      await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+    if (val === "action_preset_moderate") {
+      automodManager.applyPreset(guildId, "moderate");
+      const freshConfig = automodManager.getGuildAutomod(guildId);
+      const updated = buildAutomodContainer(freshConfig, guild, "overview");
+      await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+    if (val === "action_preset_light") {
+      automodManager.applyPreset(guildId, "light");
+      const freshConfig = automodManager.getGuildAutomod(guildId);
+      const updated = buildAutomodContainer(freshConfig, guild, "overview");
+      await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+    if (val.startsWith("nav_")) {
+      const targetTab = val.replace("nav_", "");
+      const updated = buildAutomodContainer(config, guild, targetTab);
+      await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+  }
+
+  // 1.2 Preset Action Select
+  if (isMenu && customId === "automod_preset_select_action") {
+    const val = interaction.values[0].replace("preset_", "");
+    automodManager.applyPreset(guildId, val);
+    const freshConfig = automodManager.getGuildAutomod(guildId);
+    const updated = buildAutomodContainer(freshConfig, guild, "presets");
+    await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    return true;
+  }
+
+  // 1.3 Bad Words Action Select
+  if (isMenu && customId === "automod_badwords_select_action") {
+    const val = interaction.values[0];
+    if (val === "action_toggle_bw") {
+      automodManager.toggleModule(guildId, "badwords");
+    } else if (val === "action_clear_bw") {
+      if (config.modules?.badwords) config.modules.badwords.words = [];
+      automodManager.setGuildAutomod(guildId, config);
+    }
+    const freshConfig = automodManager.getGuildAutomod(guildId);
+    const updated = buildAutomodContainer(freshConfig, guild, "badwords");
+    await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    return true;
+  }
+
+  // 1.4 Anti-Caps Action Select
+  if (isMenu && customId === "automod_anticaps_select_action") {
+    const val = interaction.values[0];
+    if (val === "action_toggle") {
+      automodManager.toggleModule(guildId, "anticaps");
+    } else if (val.startsWith("threshold_")) {
+      const num = parseInt(val.replace("threshold_", ""), 10);
+      if (!config.modules.anticaps) config.modules.anticaps = { enabled: true, punishments: ["delete"], threshold: 70 };
+      config.modules.anticaps.threshold = num;
+      automodManager.setGuildAutomod(guildId, config);
+    }
+    const freshConfig = automodManager.getGuildAutomod(guildId);
+    const updated = buildAnticapsContainer(freshConfig, guild);
+    await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    return true;
+  }
+
+  // 1.5 Anti-Link Action Select
+  if (isMenu && customId === "automod_antilink_select_action") {
+    const val = interaction.values[0];
+    if (val === "action_toggle_links") {
+      automodManager.toggleModule(guildId, "antilink");
+    } else if (val === "action_toggle_invites") {
+      automodManager.toggleModule(guildId, "antiinvite");
+    } else if (val === "action_enable_both") {
+      if (!config.modules.antilink) config.modules.antilink = { enabled: true, punishments: ["delete"] };
+      if (!config.modules.antiinvite) config.modules.antiinvite = { enabled: true, punishments: ["delete"] };
+      config.modules.antilink.enabled = true;
+      config.modules.antiinvite.enabled = true;
+      config.enabled = true;
+      automodManager.setGuildAutomod(guildId, config);
+    } else if (val === "action_disable_both") {
+      if (config.modules.antilink) config.modules.antilink.enabled = false;
+      if (config.modules.antiinvite) config.modules.antiinvite.enabled = false;
+      automodManager.setGuildAutomod(guildId, config);
+    }
+    const freshConfig = automodManager.getGuildAutomod(guildId);
+    const updated = buildAntilinkContainer(freshConfig, guild);
+    await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    return true;
+  }
+
+  // 1.6 Anti-Spam Action Select
+  if (isMenu && customId === "automod_antispam_select_action") {
+    const val = interaction.values[0];
+    if (val === "action_toggle") {
+      automodManager.toggleModule(guildId, "antispam");
+    } else if (val === "rate_3_3") {
+      if (!config.modules.antispam) config.modules.antispam = { enabled: true, punishments: ["warn"] };
+      config.modules.antispam.threshold = 3;
+      config.modules.antispam.window = 3;
+      automodManager.setGuildAutomod(guildId, config);
+    } else if (val === "rate_5_5") {
+      if (!config.modules.antispam) config.modules.antispam = { enabled: true, punishments: ["warn"] };
+      config.modules.antispam.threshold = 5;
+      config.modules.antispam.window = 5;
+      automodManager.setGuildAutomod(guildId, config);
+    } else if (val === "rate_8_5") {
+      if (!config.modules.antispam) config.modules.antispam = { enabled: true, punishments: ["warn"] };
+      config.modules.antispam.threshold = 8;
+      config.modules.antispam.window = 5;
+      automodManager.setGuildAutomod(guildId, config);
+    }
+    const freshConfig = automodManager.getGuildAutomod(guildId);
+    const updated = buildAntispamContainer(freshConfig, guild);
     await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
     return true;
   }
@@ -737,6 +1143,9 @@ module.exports = {
   buildAutomodIgnoreView,
   buildAutomodLogsView,
   buildAutomodCommandsManualView,
+  buildAnticapsContainer,
+  buildAntilinkContainer,
+  buildAntispamContainer,
   buildAutomodContainer,
   handleAutomodInteraction,
 };

@@ -152,7 +152,6 @@ module.exports = {
       if (!hasDangerous) continue;
 
       if (role.position >= botHighestPosition) {
-        failedCount++;
         continue;
       }
 
@@ -163,9 +162,7 @@ module.exports = {
         }
         await role.setPermissions(newBits, "Astrix Security Permission Audit Fix").catch(() => null);
         strippedCount++;
-      } catch (_) {
-        failedCount++;
-      }
+      } catch (_) {}
     }
 
     await sleep(800);

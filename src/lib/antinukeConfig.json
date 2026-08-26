@@ -36,21 +36,27 @@
     }
   },
   "1526109131042459678": {
-    "enabled": false,
+    "enabled": true,
     "superAntinuke": false,
-    "logChannel": "1541037729565904936",
+    "logChannel": "1542168253315547136",
     "superLogChannel": null,
-    "modLogChannel": "1541037731663188078",
-    "securityWallRole": null,
-    "antivanityAdminRole": "1541037714072277063",
-    "criminalsRole": "1541037715838206013",
-    "unbypassableRole": "1541037718232899654",
-    "wallRoles": [],
+    "modLogChannel": "1542168255068766239",
+    "securityWallRole": "1542168235796078663",
+    "antivanityAdminRole": "1542168239554044108",
+    "criminalsRole": "1542168237884710912",
+    "unbypassableRole": "1542168233770090572",
+    "wallRoles": [
+      "1542168235796078663"
+    ],
     "extraOwners": [],
+    "admins": [
+      "1299394763933618239"
+    ],
     "whitelist": [],
     "superWhitelist": [],
+    "protocolUsers": {},
     "punishment": "ban",
-    "threshold": 3,
+    "threshold": 1,
     "windowMs": 60000,
     "autoRevert": true,
     "modules": {
@@ -69,6 +75,7 @@
       "nukesIntercepted": 0,
       "reversionsExecuted": 0,
       "lastNukeTimestamp": null
-    }
+    },
+    "bypassRole": "1542168231836651701"
   }
 }

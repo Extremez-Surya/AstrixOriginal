@@ -11,6 +11,7 @@ const {
   StringSelectMenuOptionBuilder,
   UserSelectMenuBuilder,
   ChannelSelectMenuBuilder,
+  RoleSelectMenuBuilder,
   ChannelType,
 } = require("discord.js");
 const antinukeManager = require("../antinukeManager");
@@ -83,9 +84,12 @@ const MODULE_METADATA = {
 /**
  * Main dispatcher to build the appropriate V2 container view
  */
-function buildAntinukeContainer(config, guild = null, view = "overview", extra = {}) {
+function buildAntinukeContainer(config, guild = null, view = "home", extra = {}) {
   switch (view) {
+    case "home":
+      return buildHomeContainer(config, guild);
     case "menu":
+    case "help":
       return buildCommandDirectoryView(config, guild);
     case "modules":
       return buildModulesView(config, guild);
@@ -95,6 +99,8 @@ function buildAntinukeContainer(config, guild = null, view = "overview", extra =
       return buildSettingsView(config, guild);
     case "trust":
       return buildTrustView(config, guild, extra.subTab || "main");
+    case "wallroles":
+      return buildWallRolesView(config, guild, extra.subTab || "main");
     case "security":
       return buildSecurityView(config, guild);
     case "confirm":
@@ -108,11 +114,17 @@ function buildAntinukeContainer(config, guild = null, view = "overview", extra =
 // ─────────────────────────────────────────────────────────────────────────────
 // GLOBAL NAVIGATION SELECT MENU BUILDER (Terminal Style)
 // ─────────────────────────────────────────────────────────────────────────────
-function buildGlobalNavMenu(currentView = "overview") {
+function buildGlobalNavMenu(currentView = "home") {
   return new StringSelectMenuBuilder()
     .setCustomId("antinuke_nav_select_menu")
     .setPlaceholder("🧭 Quick Navigation • Switch Anti-Nuke Dashboard...")
     .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Main Home Menu")
+        .setValue("nav_home")
+        .setDescription("Minimal security overview, system status & quick actions")
+        .setEmoji("🏠")
+        .setDefault(currentView === "home"),
       new StringSelectMenuOptionBuilder()
         .setLabel("Control Center & Status")
         .setValue("nav_overview")
@@ -120,23 +132,29 @@ function buildGlobalNavMenu(currentView = "overview") {
         .setEmoji("🛡️")
         .setDefault(currentView === "overview"),
       new StringSelectMenuOptionBuilder()
-        .setLabel("1-Click Auto Setup (Hardening)")
-        .setValue("nav_autosetup")
-        .setDescription("Auto-create security wall, quarantine roles & log channels")
-        .setEmoji("🚀")
-        .setDefault(currentView === "autosetup"),
-      new StringSelectMenuOptionBuilder()
-        .setLabel("Protection Modules Matrix")
-        .setValue("nav_modules")
-        .setDescription("Inspect & toggle channel, role, ban, kick, webhook & emoji defense")
-        .setEmoji("🧩")
-        .setDefault(currentView === "modules" || currentView === "mod_detail"),
+        .setLabel("Help & Guide (Commands Manual)")
+        .setValue("nav_help")
+        .setDescription("View all antinuke commands, syntax & usage instructions")
+        .setEmoji("📖")
+        .setDefault(currentView === "help" || currentView === "menu"),
       new StringSelectMenuOptionBuilder()
         .setLabel("Trust Directory & Whitelist")
         .setValue("nav_trust")
         .setDescription("Manage immune operators, whitelist & extra owners")
         .setEmoji("📋")
         .setDefault(currentView === "trust"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Security Wall Barrier Roles")
+        .setValue("nav_wallroles")
+        .setDescription("View and configure security barrier wall roles")
+        .setEmoji("🧱")
+        .setDefault(currentView === "wallroles"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Protection Modules Matrix")
+        .setValue("nav_modules")
+        .setDescription("Inspect & toggle channel, role, ban, kick, webhook & emoji defense")
+        .setEmoji("🧩")
+        .setDefault(currentView === "modules" || currentView === "mod_detail"),
       new StringSelectMenuOptionBuilder()
         .setLabel("Security Policies & Punishments")
         .setValue("nav_settings")
@@ -150,12 +168,6 @@ function buildGlobalNavMenu(currentView = "overview") {
         .setEmoji("📊")
         .setDefault(currentView === "security"),
       new StringSelectMenuOptionBuilder()
-        .setLabel("Command Manual & Syntax")
-        .setValue("nav_menu")
-        .setDescription("View all antinuke commands, syntax & alias directory")
-        .setEmoji("📜")
-        .setDefault(currentView === "menu"),
-      new StringSelectMenuOptionBuilder()
         .setLabel("Deactivate Shield & Auto-Cleanup")
         .setValue("nav_cleanup")
         .setDescription("Deactivate antinuke and automatically purge created roles & channels")
@@ -164,29 +176,22 @@ function buildGlobalNavMenu(currentView = "overview") {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 0. COMMAND DIRECTORY MENU VIEW (Beginner-Friendly & Intuitive)
+// 0. HOME VIEW (Minimal, Medium-Sized, Clean & Professional)
 // ─────────────────────────────────────────────────────────────────────────────
-function buildCommandDirectoryView(config, guild) {
+function buildHomeContainer(config, guild) {
   const container = new ContainerBuilder();
   const isEnabled = Boolean(config.enabled);
+  const wallRoles = config.wallRoles || (config.securityWallRole ? [config.securityWallRole] : []);
+  const protocolCount = Object.keys(config.protocolUsers || {}).length;
 
   const content =
-    `### 🛡️ **Astrix Anti-Nuke • Help & Guide**\n` +
-    `-# Protect your Discord server against mass deletions, unauthorized bots, and raids.\n\n` +
-    `**⚡ Quick Start Commands:**\n` +
-    `> • \`antinuke\` (or \`an\`) — Open the interactive Control Center\n` +
-    `> • \`autosetup\` — 1-Click complete server hardening & security setup\n` +
-    `> • \`antinuke enable\` — Turn on server protection\n` +
-    `> • \`antinuke disable\` — Turn off server protection\n\n` +
-    `**📋 Whitelist Commands (Add Trusted Admins):**\n` +
-    `> • \`antinuke whitelist add @user\` — Add trusted user (immune from punishments)\n` +
-    `> • \`antinuke whitelist remove @user\` — Remove user from whitelist\n` +
-    `> • \`antinuke whitelist show\` — View all whitelisted staff members\n` +
-    `> • \`antinuke whitelist reset\` — Clear all whitelisted users\n\n` +
-    `**⚙️ Logs & Security Wall:**\n` +
-    `> • \`setantinukelogs #channel\` — Set where attack alerts are sent\n` +
-    `> • \`wallroles\` — View and configure Security Wall barrier roles\n\n` +
-    `💡 *Tip: Use the buttons or dropdown below to manage everything without typing commands!*`;
+    `### 🛡️ **Astrix Anti-Nuke • Defense System**\n` +
+    `-# Enterprise-grade real-time Discord server defense and anti-raid barrier.\n\n` +
+    `> **Master Shield:** ${isEnabled ? "`🟢 Active & Enforced`" : "`🔴 Inactive (Standby)`"}\n` +
+    `> **Protection Level:** \`Hardened Zero-Bypass (10 Modules)\`\n` +
+    `> **Defense Wall:** \`${wallRoles.length > 0 ? `${wallRoles.length} Active Barrier Role(s)` : "Auto Setup Ready"}\`\n` +
+    `> **Emergency Protocol:** \`${protocolCount > 0 ? `${protocolCount} Users Quarantined` : "Ready • Sub-0.1s Response"}\`\n\n` +
+    `-# Click **Control Center** to access real-time telemetry, **Help & Guide** for command manual, or **Whitelist** to manage trusted staff.`;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
 
@@ -194,7 +199,7 @@ function buildCommandDirectoryView(config, guild) {
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  const navRow = new ActionRowBuilder().addComponents(buildGlobalNavMenu("menu"));
+  const navRow = new ActionRowBuilder().addComponents(buildGlobalNavMenu("home"));
 
   const btnPanel = new ButtonBuilder()
     .setCustomId("antinuke_nav_overview")
@@ -202,28 +207,92 @@ function buildCommandDirectoryView(config, guild) {
     .setEmoji("🛡️")
     .setStyle(ButtonStyle.Primary);
 
-  const btnAutoSetup = new ButtonBuilder()
-    .setCustomId("antinuke_nav_autosetup")
-    .setLabel("1-Click Auto Setup")
-    .setEmoji("🚀")
-    .setStyle(ButtonStyle.Success);
+  const btnHelp = new ButtonBuilder()
+    .setCustomId("antinuke_nav_help")
+    .setLabel("Help & Guide")
+    .setEmoji("📖")
+    .setStyle(ButtonStyle.Secondary);
 
   const btnWhitelist = new ButtonBuilder()
     .setCustomId("antinuke_nav_trust")
-    .setLabel("Whitelist Staff")
+    .setLabel("Whitelist")
     .setEmoji("📋")
     .setStyle(ButtonStyle.Secondary);
 
-  const btnSettings = new ButtonBuilder()
-    .setCustomId("antinuke_nav_settings")
-    .setLabel("Settings")
-    .setEmoji("⚙️")
-    .setStyle(ButtonStyle.Secondary);
-
-  const btnRow = new ActionRowBuilder().addComponents(btnPanel, btnAutoSetup, btnWhitelist, btnSettings);
+  const btnRow = new ActionRowBuilder().addComponents(btnPanel, btnHelp, btnWhitelist);
 
   container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Hardened Protection Engine`));
+
+  return container;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 0.1 COMMAND DIRECTORY MENU VIEW (Help & Guide with Rich -# Formatting)
+// ─────────────────────────────────────────────────────────────────────────────
+function buildCommandDirectoryView(config, guild) {
+  const container = new ContainerBuilder();
+  const isEnabled = Boolean(config.enabled);
+
+  const content =
+    `### 🛡️ **Astrix Anti-Nuke • Command Manual & Guide**\n` +
+    `-# Complete documentation, syntax guidelines, and module execution manual.\n\n` +
+    `**🛡️ Core Commands**\n` +
+    `> • \`.antinuke on\` / \`.antinuke off\` — *Toggle master shield on or off*\n` +
+    `> • \`.antinuke list\` — *View real-time status and active modules overview*\n` +
+    `> • \`.antinuke config\` — *Open interactive control dashboard*\n` +
+    `-# Control master defense and view overall security telemetry.\n\n` +
+    `**📋 Access & Permission Management**\n` +
+    `> • \`.antinuke admin @user\` — *Toggle antinuke administrator*\n` +
+    `> • \`.antinuke trustedadmin @user\` — *Toggle trusted admin (super-immune bypass)*\n` +
+    `> • \`.antinuke extraowner @user\` — *Toggle extra owner (can manage antinuke)*\n` +
+    `> • \`.antinuke whitelist @user\` — *Toggle whitelisted staff member*\n` +
+    `-# Whitelisted users bypass security triggers and are protected from penalties.\n\n` +
+    `**🧩 Module & Policy Configuration**\n` +
+    `> • \`.antinuke <module> on/off\` — *Toggle specific module (\`ban\`, \`role\`, \`channel\`, etc.)*\n` +
+    `> • \`.antinuke punishment <ban|kick|strip|timeout>\` — *Set default enforcement action*\n` +
+    `> • \`.antinuke threshold <1-20>\` — *Set action strike threshold per 60s*\n` +
+    `-# Customize action limits and default punitive measures for rogue actors.\n\n` +
+    `**🚨 Emergency Protocol**\n` +
+    `> • \`.antinuke protocol @user\` — *Emergency lockdown: strip all roles + 28d timeout*\n` +
+    `> • \`.antinuke unprotocol @user\` — *Lift protocol: remove timeout and restore saved roles*\n` +
+    `> • \`.antinuke protocol-list\` — *View all users currently under emergency protocol*\n` +
+    `-# Instantly neutralize compromised accounts with one command.\n\n` +
+    `**Available Modules:**\n` +
+    `\`ban\` • \`kick\` • \`role\` • \`channel\` • \`webhook\` • \`emoji\` • \`botadd\` • \`vanity\` • \`prune\` • \`permissions\``;
+
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
+
+  container.addSeparatorComponents(
+    new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+  );
+
+  const navRow = new ActionRowBuilder().addComponents(buildGlobalNavMenu("help"));
+
+  const btnHome = new ButtonBuilder()
+    .setCustomId("antinuke_nav_home")
+    .setLabel("Main Menu")
+    .setEmoji("🏠")
+    .setStyle(ButtonStyle.Secondary);
+
+  const btnPanel = new ButtonBuilder()
+    .setCustomId("antinuke_nav_overview")
+    .setLabel("Control Center")
+    .setEmoji("🛡️")
+    .setStyle(ButtonStyle.Primary);
+
+  const btnWhitelist = new ButtonBuilder()
+    .setCustomId("antinuke_nav_trust")
+    .setLabel("Whitelist")
+    .setEmoji("📋")
+    .setStyle(ButtonStyle.Secondary);
+
+  const btnRow = new ActionRowBuilder().addComponents(btnHome, btnPanel, btnWhitelist);
+
+  container.addActionRowComponents(navRow);
+  container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Command Documentation`));
 
   return container;
 }
@@ -233,105 +302,52 @@ function buildCommandDirectoryView(config, guild) {
 // ─────────────────────────────────────────────────────────────────────────────
 function buildOverviewView(config, guild) {
   const container = new ContainerBuilder();
+  const isEnabled = Boolean(config.enabled);
 
   // Header
-  const headerText = `### 🛡️ **Astrix Anti-Nuke Control Center**\n-# Complete 24/7 Security for **${guild?.name || "Your Server"}**`;
+  const headerText =
+    `### 🛡️ **Astrix Anti-Nuke • Control Dashboard**\n` +
+    `-# Real-time security telemetry & active defense monitoring for **${guild?.name || "Server"}**`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  // Status Banner
-  const isEnabled = Boolean(config.enabled);
-  const statusHeadline = isEnabled
-    ? `### 🟢 **Status: Protected & Active**\n> Your server is safe! Any unauthorized attacker will be instantly punished and changes will be reverted.`
-    : `### 🔴 **Status: Not Protected**\n> Protection is currently turned off. Click **[ 🚀 1-Click Auto Setup ]** below to secure your server immediately.`;
-
-  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(statusHeadline));
-
-  // Security Summary (Clean & Easy to Read)
   const punishment = (config.punishment || "ban").toUpperCase();
-  const revertStatus = config.autoRevert ? "🟢 `Enabled (Auto-Restores Deleted Assets)`" : "🔴 `Disabled`";
-  const logChanText = config.logChannel ? `<#${config.logChannel}>` : "*Not set (Click Settings to configure)*";
+  const revertBadge = config.autoRevert ? "`🟢 ENABLED`" : "`🔴 DISABLED`";
+  const logChanText = config.logChannel ? `<#${config.logChannel}>` : "`#antinuke-logs`";
   const extraOwnersCount = (config.extraOwners || []).length;
   const whitelistCount = (config.whitelist || []).length;
+  const wallRoles = config.wallRoles || (config.securityWallRole ? [config.securityWallRole] : []);
+  const activeCount = Object.keys(MODULE_METADATA).filter((k) => isEnabled && config.modules?.[k]).length;
+  const totalCount = Object.keys(MODULE_METADATA).length;
 
-  const activeModulesCount = Object.keys(MODULE_METADATA).filter(
-    (key) => isEnabled && config.modules?.[key]
-  ).length;
-  const totalModulesCount = Object.keys(MODULE_METADATA).length;
-
-  const summaryText =
-    `**📊 Current Security Setup:**\n` +
-    `> • 🛡️ **Active Protections:** \`${activeModulesCount}/${totalModulesCount}\` Modules Guarding\n` +
-    `> • ⚖️ **Attacker Punishment:** \`${punishment}\` (Inflicted immediately)\n` +
-    `> • 🔄 **Auto-Restore Deletions:** ${revertStatus}\n` +
-    `> • 📋 **Alert Log Channel:** ${logChanText}\n` +
-    `> • 👥 **Trusted Staff:** \`${whitelistCount}\` Whitelisted • \`${extraOwnersCount}\` Extra Owners`;
-
-  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(summaryText));
-
-  container.addSeparatorComponents(
-    new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-  );
-
-  // What is protected (Visual Emojis)
   const isModOn = (key) => (isEnabled && config.modules?.[key] ? "🟢" : "🔴");
-  const matrixText =
-    `**🛡️ Protected Server Assets:**\n` +
-    `> ${isModOn("channel")} Channels • ${isModOn("role")} Roles • ${isModOn("ban")} Bans • ${isModOn("kick")} Kicks\n` +
-    `> ${isModOn("botAdd")} Bots • ${isModOn("webhook")} Webhooks • ${isModOn("guildUpdate")} Server Vanity • ${isModOn("emoji")} Emojis\n` +
-    `> ${isModOn("permissions")} Admin Permissions • ${isModOn("prune")} Member Pruning`;
 
-  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(matrixText));
+  const inlineDashboard =
+    `> **Master Defense:** ${isEnabled ? "`🟢 ARMED & ENFORCING`" : "`🔴 INACTIVE (STANDBY)`"} • **Speed:** \`< 0.1s\`\n` +
+    `> **Punishment:** \`${punishment}\` • **Auto-Revert:** ${revertBadge} • **Strikes:** \`${config.threshold || 3} / 60s\`\n` +
+    `> **Audit Logs:** ${logChanText} • **Barrier:** \`${wallRoles.length} Roles\` • **Staff:** \`${whitelistCount + extraOwnersCount} Immune\`\n\n` +
+    `**🛡️ Protected Vector Matrix (${activeCount}/${totalCount}):**\n` +
+    `> ${isModOn("channel")} \`Channels\` ${isModOn("role")} \`Roles\` ${isModOn("ban")} \`Bans\` ${isModOn("kick")} \`Kicks\` ${isModOn("botAdd")} \`Bots\`\n` +
+    `> ${isModOn("webhook")} \`Webhooks\` ${isModOn("guildUpdate")} \`Vanity\` ${isModOn("emoji")} \`Emojis\` ${isModOn("permissions")} \`Perms\` ${isModOn("prune")} \`Pruning\``;
+
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(inlineDashboard));
 
   container.addSeparatorComponents(
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  // Global Navigation Dropdown
+  // Global Navigation Dropdown (Replaces multiple rows of buttons)
   const selectRow = new ActionRowBuilder().addComponents(buildGlobalNavMenu("overview"));
 
-  // Quick Action Buttons Row 1 (Navigation)
-  const btnModules = new ButtonBuilder()
-    .setCustomId("antinuke_nav_modules")
-    .setLabel("Protection Modules")
-    .setEmoji("🛡️")
-    .setStyle(ButtonStyle.Primary);
-
-  const btnWhitelist = new ButtonBuilder()
-    .setCustomId("antinuke_nav_trust")
-    .setLabel("Whitelist Staff")
-    .setEmoji("📋")
-    .setStyle(ButtonStyle.Secondary);
-
-  const btnSettings = new ButtonBuilder()
-    .setCustomId("antinuke_nav_settings")
-    .setLabel("Settings")
-    .setEmoji("⚙️")
-    .setStyle(ButtonStyle.Secondary);
-
-  const btnSecurity = new ButtonBuilder()
-    .setCustomId("antinuke_nav_security")
-    .setLabel("Activity & Stats")
-    .setEmoji("📊")
-    .setStyle(ButtonStyle.Secondary);
-
-  const navRow = new ActionRowBuilder().addComponents(btnModules, btnWhitelist, btnSettings, btnSecurity);
-
-  // Controls Row 2 (Primary Actions)
+  // Minimal Essential Control Actions Row (Clean 3-button layout)
   const toggleMasterBtn = new ButtonBuilder()
     .setCustomId(isEnabled ? "antinuke_confirm_disable_prompt" : "antinuke_toggle_master_direct")
-    .setLabel(isEnabled ? "Turn Off Protection" : "Turn On Protection")
+    .setLabel(isEnabled ? "Turn Off" : "Turn On")
     .setEmoji(isEnabled ? "🔴" : "🟢")
     .setStyle(isEnabled ? ButtonStyle.Danger : ButtonStyle.Success);
-
-  const btnAutoSetup = new ButtonBuilder()
-    .setCustomId("antinuke_nav_autosetup")
-    .setLabel("1-Click Auto Setup")
-    .setEmoji("🚀")
-    .setStyle(ButtonStyle.Primary);
 
   const refreshBtn = new ButtonBuilder()
     .setCustomId("antinuke_refresh")
@@ -339,17 +355,19 @@ function buildOverviewView(config, guild) {
     .setEmoji("🔄")
     .setStyle(ButtonStyle.Secondary);
 
-  const btnBackToMenu = new ButtonBuilder()
-    .setCustomId("antinuke_nav_menu")
-    .setLabel("Help & Guide")
-    .setEmoji("📜")
+  const homeBtn = new ButtonBuilder()
+    .setCustomId("antinuke_nav_home")
+    .setLabel("Main Menu")
+    .setEmoji("🏠")
     .setStyle(ButtonStyle.Secondary);
 
-  const controlRow = new ActionRowBuilder().addComponents(toggleMasterBtn, btnAutoSetup, refreshBtn, btnBackToMenu);
+  const controlRow = new ActionRowBuilder().addComponents(toggleMasterBtn, refreshBtn, homeBtn);
 
   container.addActionRowComponents(selectRow);
-  container.addActionRowComponents(navRow);
   container.addActionRowComponents(controlRow);
+  container.addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Active & Enforced`)
+  );
 
   return container;
 }
@@ -359,80 +377,89 @@ function buildOverviewView(config, guild) {
 // ─────────────────────────────────────────────────────────────────────────────
 function buildModulesView(config, guild) {
   const container = new ContainerBuilder();
+  const isEnabled = Boolean(config.enabled);
 
   const headerText =
-    `### 🛡️ **Anti-Nuke Protection Modules**\n` +
-    `-# Customize which parts of your server are guarded by Anti-Nuke.`;
+    `### 🛡️ **Anti-Nuke • Protection Modules Matrix**\n` +
+    `-# Real-time asset interception & active defense filters for **${guild?.name || "Server"}**`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  const isEnabled = Boolean(config.enabled);
+  const isModOn = (key) => (isEnabled && config.modules?.[key] ? "`🟢 ARMED`" : "`🔴 OFF`");
+  const activeCount = Object.keys(MODULE_METADATA).filter((k) => isEnabled && config.modules?.[k]).length;
+  const totalCount = Object.keys(MODULE_METADATA).length;
 
-  // Module List with Simple Explanations
-  let summaryLines = "";
-  for (const [key, meta] of Object.entries(MODULE_METADATA)) {
-    const status = isEnabled && config.modules?.[key] ? "🟢 `ACTIVE`" : "🔴 `OFF`";
-    summaryLines += `> ${meta.emoji} **${meta.label}:** ${status} — *${meta.desc}*\n`;
-  }
+  const matrixGrid =
+    `> **Master Armor:** ${activeCount === totalCount ? "`🟢 10/10 MODULES ARMED`" : `\`🟡 ${activeCount}/${totalCount} MODULES ARMED\``} • **Speed:** \`< 0.1s\`\n\n` +
+    `**🛡️ Active Defense Vectors:**\n` +
+    `> 📁 **Channels:** ${isModOn("channel")} • 🎭 **Roles:** ${isModOn("role")}\n` +
+    `> 🚫 **Anti-Ban:** ${isModOn("ban")} • 👢 **Anti-Kick:** ${isModOn("kick")}\n` +
+    `> 🤖 **Rogue Bots:** ${isModOn("botAdd")} • 🔗 **Webhooks:** ${isModOn("webhook")}\n` +
+    `> 👑 **Vanity & Name:** ${isModOn("guildUpdate")} • 😃 **Emojis:** ${isModOn("emoji")}\n` +
+    `> ⚠️ **Permissions:** ${isModOn("permissions")} • 🧹 **Pruning:** ${isModOn("prune")}\n\n` +
+    `-# Select any module below to inspect or configure, or toggle all modules at once.`;
 
-  container.addTextDisplayComponents(
-    new TextDisplayBuilder().setContent(`**Current Protection Statuses:**\n${summaryLines}`)
-  );
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(matrixGrid));
 
   container.addSeparatorComponents(
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  // Module Select Dropdown
+  // 1. Module Selector & Batch Action Dropdown
   const selectMenu = new StringSelectMenuBuilder()
     .setCustomId("antinuke_mod_select")
-    .setPlaceholder("🛡️ Select a module to customize or view details...");
+    .setPlaceholder("🧩 Select a Module or Batch Action...")
+    .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Turn On All Modules (Full Armor)")
+        .setValue("mod_action_enable_all")
+        .setDescription("Arm all 10 defense modules simultaneously")
+        .setEmoji("🟢"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Turn Off All Modules (Disarm)")
+        .setValue("mod_action_disable_all")
+        .setDescription("Disable all 10 defense modules")
+        .setEmoji("🔴")
+    );
 
   for (const [key, meta] of Object.entries(MODULE_METADATA)) {
-    const isModOn = isEnabled && config.modules?.[key];
+    const isArmed = isEnabled && config.modules?.[key];
     selectMenu.addOptions(
       new StringSelectMenuOptionBuilder()
         .setLabel(meta.label)
         .setValue(`antinuke_view_mod_${key}`)
-        .setDescription(`${isModOn ? "[ON]" : "[OFF]"} ${meta.desc}`.slice(0, 100))
+        .setDescription(`${isArmed ? "[ARMED]" : "[OFF]"} ${meta.desc}`.slice(0, 100))
         .setEmoji(meta.emoji)
     );
   }
 
-  const menuRow = new ActionRowBuilder().addComponents(selectMenu);
+  const selectRow = new ActionRowBuilder().addComponents(selectMenu);
 
-  // Action Buttons
-  const enableAllBtn = new ButtonBuilder()
-    .setCustomId("antinuke_mod_enable_all")
-    .setLabel("Turn On All")
-    .setEmoji("🟢")
-    .setStyle(ButtonStyle.Success);
+  // 2. Global Navigation Dropdown
+  const navRow = new ActionRowBuilder().addComponents(buildGlobalNavMenu("modules"));
 
-  const disableAllBtn = new ButtonBuilder()
-    .setCustomId("antinuke_mod_disable_all")
-    .setLabel("Turn Off All")
-    .setEmoji("🔴")
-    .setStyle(ButtonStyle.Danger);
-
-  const backBtn = new ButtonBuilder()
+  // 3. Minimal Action Buttons (Just 2 buttons)
+  const cpBtn = new ButtonBuilder()
     .setCustomId("antinuke_nav_overview")
     .setLabel("Control Center")
     .setEmoji("🛡️")
     .setStyle(ButtonStyle.Primary);
 
-  const menuBtn = new ButtonBuilder()
-    .setCustomId("antinuke_nav_menu")
-    .setLabel("Help & Guide")
-    .setEmoji("📜")
+  const homeBtn = new ButtonBuilder()
+    .setCustomId("antinuke_nav_home")
+    .setLabel("Main Menu")
+    .setEmoji("🏠")
     .setStyle(ButtonStyle.Secondary);
 
-  const buttonRow = new ActionRowBuilder().addComponents(enableAllBtn, disableAllBtn, backBtn, menuBtn);
+  const buttonRow = new ActionRowBuilder().addComponents(cpBtn, homeBtn);
 
-  container.addActionRowComponents(menuRow);
+  container.addActionRowComponents(selectRow);
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(buttonRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Protection Matrix`));
 
   return container;
 }
@@ -445,11 +472,11 @@ function buildModuleDetailView(config, guild, moduleKey) {
   const meta = MODULE_METADATA[moduleKey] || MODULE_METADATA.channel;
 
   const isEnabled = Boolean(config.enabled && config.modules?.[moduleKey]);
-  const statusBadge = isEnabled ? "🟢 `ENABLED & GUARDING`" : "🔴 `DISABLED`";
+  const statusBadge = isEnabled ? "`🟢 ENABLED & GUARDING`" : "`🔴 DISABLED`";
   const punishment = (config.punishment || "ban").toUpperCase();
-  const autoRevert = config.autoRevert ? "🟢 `ENABLED (Will restore deletions)`" : "🔴 `DISABLED`";
+  const autoRevert = config.autoRevert ? "`🟢 ENABLED`" : "`🔴 DISABLED`";
 
-  const headerText = `### ${meta.emoji} **${meta.label} Protection**\n-# Module Settings for **${guild?.name || "Server"}**`;
+  const headerText = `### ${meta.emoji} **${meta.label} Protection**\n-# Security parameters for **${guild?.name || "Server"}**`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
@@ -457,14 +484,9 @@ function buildModuleDetailView(config, guild, moduleKey) {
   );
 
   const detailText =
-    `**Status:** ${statusBadge}\n` +
-    `> **What it does:** ${meta.desc}\n\n` +
-    `**Actions Protected Against:**\n` +
-    meta.actions.map((act) => `> • ${act}`).join("\n") +
-    `\n\n` +
-    `**Punishment on Unauthorized Attack:**\n` +
-    `> • **Punishment:** \`${punishment}\` attacker immediately\n` +
-    `> • **Auto-Restore Changes:** ${autoRevert}`;
+    `> **Current Status:** ${statusBadge}\n` +
+    `> **Punishment:** \`${punishment}\` • **Auto-Revert:** ${autoRevert}\n` +
+    `> **Protection Scope:** *${meta.desc}*`;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(detailText));
 
@@ -472,34 +494,33 @@ function buildModuleDetailView(config, guild, moduleKey) {
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
+  // Global Navigation Dropdown
+  const navRow = new ActionRowBuilder().addComponents(buildGlobalNavMenu("modules"));
+
   // Action Buttons
   const toggleBtn = new ButtonBuilder()
     .setCustomId(`antinuke_toggle_mod_${moduleKey}`)
-    .setLabel(isEnabled ? "Turn Off Module" : "Turn On Module")
+    .setLabel(isEnabled ? "Turn Off" : "Turn On")
     .setEmoji(isEnabled ? "🔴" : "🟢")
     .setStyle(isEnabled ? ButtonStyle.Danger : ButtonStyle.Success);
-
-  const settingsBtn = new ButtonBuilder()
-    .setCustomId("antinuke_nav_settings")
-    .setLabel("Change Punishment")
-    .setEmoji("⚙️")
-    .setStyle(ButtonStyle.Primary);
 
   const backToModsBtn = new ButtonBuilder()
     .setCustomId("antinuke_nav_modules")
     .setLabel("Back to Modules")
-    .setEmoji("◀")
+    .setEmoji("🧩")
     .setStyle(ButtonStyle.Secondary);
 
-  const menuBtn = new ButtonBuilder()
-    .setCustomId("antinuke_nav_menu")
-    .setLabel("Help & Guide")
-    .setEmoji("📜")
-    .setStyle(ButtonStyle.Secondary);
+  const cpBtn = new ButtonBuilder()
+    .setCustomId("antinuke_nav_overview")
+    .setLabel("Control Center")
+    .setEmoji("🛡️")
+    .setStyle(ButtonStyle.Primary);
 
-  const btnRow = new ActionRowBuilder().addComponents(toggleBtn, settingsBtn, backToModsBtn, menuBtn);
+  const btnRow = new ActionRowBuilder().addComponents(toggleBtn, backToModsBtn, cpBtn);
 
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Module Detail`));
 
   return container;
 }
@@ -510,7 +531,7 @@ function buildModuleDetailView(config, guild, moduleKey) {
 function buildSettingsView(config, guild) {
   const container = new ContainerBuilder();
 
-  const headerText = `### ⚙️ **Anti-Nuke Settings**\n-# Easily change punishments, strike limits, and log channels.`;
+  const headerText = `### ⚙️ **Anti-Nuke • Security Policies & Settings**\n-# Configure attacker punishment actions, strike limits, and audit logs.`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
@@ -518,15 +539,13 @@ function buildSettingsView(config, guild) {
   );
 
   const punishment = (config.punishment || "ban").toUpperCase();
-  const revertStatus = config.autoRevert ? "🟢 `Enabled (Auto-restores deleted channels & roles)`" : "🔴 `Disabled`";
-  const logChan = config.logChannel ? `<#${config.logChannel}>` : "*None (Select one below)*";
+  const revertStatus = config.autoRevert ? "`🟢 ENABLED`" : "`🔴 DISABLED`";
+  const logChan = config.logChannel ? `<#${config.logChannel}>` : "*None*";
 
   const settingsInfo =
-    `**Current Configurations:**\n` +
-    `> • ⚖️ **Attacker Punishment:** \`${punishment}\`\n` +
-    `> • 🔄 **Auto-Restore Deletions:** ${revertStatus}\n` +
-    `> • 📋 **Alert Log Channel:** ${logChan}\n` +
-    `> • ⚡ **Strike Limit:** \`${config.threshold || 3} actions in 60s (Triggers punishment)\``;
+    `> **⚖️ Attacker Punishment:** \`${punishment}\` (Enforced immediately)\n` +
+    `> **🔄 Auto-Restore:** ${revertStatus} • **⚡ Strike Limit:** \`${config.threshold || 3} actions / 60s\`\n` +
+    `> **📋 Audit Log Channel:** ${logChan}`;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(settingsInfo));
 
@@ -576,17 +595,17 @@ function buildSettingsView(config, guild) {
       new StringSelectMenuOptionBuilder()
         .setLabel("1 Action — Instant Punishment (Strict)")
         .setValue("1")
-        .setDescription("Punish on the very first unauthorized deletion/action")
+        .setDescription("Punish on the very first unauthorized action")
         .setEmoji("⚡")
         .setDefault(currentThreshold === 1),
       new StringSelectMenuOptionBuilder()
         .setLabel("2 Actions — Strict (1 Warning Strike)")
         .setValue("2")
-        .setDescription("Allows 1 mistake before punishing on the 2nd action")
+        .setDescription("Punishes on the 2nd action")
         .setEmoji("🛡️")
         .setDefault(currentThreshold === 2),
       new StringSelectMenuOptionBuilder()
-        .setLabel("3 Actions — Balanced (Recommended for Active Staff)")
+        .setLabel("3 Actions — Balanced (Recommended)")
         .setValue("3")
         .setDescription("Punishes on 3 rapid actions within 60 seconds")
         .setEmoji("⚖️")
@@ -594,34 +613,22 @@ function buildSettingsView(config, guild) {
       new StringSelectMenuOptionBuilder()
         .setLabel("5 Actions — Relaxed")
         .setValue("5")
-        .setDescription("Best for large servers with busy admins")
+        .setDescription("Allows up to 5 actions before punishment")
         .setEmoji("📊")
         .setDefault(currentThreshold === 5)
     );
 
   const thresholdRow = new ActionRowBuilder().addComponents(thresholdMenu);
 
-  // Native Channel Select Menu for Audit Logging
-  const logMenu = new ChannelSelectMenuBuilder()
-    .setCustomId("antinuke_set_log_channel_select")
-    .setPlaceholder("📋 Select channel where security alerts will be sent...")
-    .setChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement);
-
-  const logRow = new ActionRowBuilder().addComponents(logMenu);
+  // Global Navigation Dropdown
+  const navRow = new ActionRowBuilder().addComponents(buildGlobalNavMenu("settings"));
 
   // Control Buttons
   const toggleRevertBtn = new ButtonBuilder()
     .setCustomId("antinuke_toggle_revert_btn")
-    .setLabel(config.autoRevert ? "Disable Auto-Restore" : "Enable Auto-Restore")
+    .setLabel(config.autoRevert ? "Disable Restore" : "Enable Restore")
     .setEmoji("🔄")
     .setStyle(config.autoRevert ? ButtonStyle.Secondary : ButtonStyle.Success);
-
-  const disableLogBtn = new ButtonBuilder()
-    .setCustomId("antinuke_disable_log_channel")
-    .setLabel("Disable Log Channel")
-    .setEmoji("🔕")
-    .setStyle(ButtonStyle.Secondary)
-    .setDisabled(!config.logChannel);
 
   const resetBtn = new ButtonBuilder()
     .setCustomId("antinuke_confirm_reset_prompt")
@@ -635,12 +642,13 @@ function buildSettingsView(config, guild) {
     .setEmoji("🛡️")
     .setStyle(ButtonStyle.Primary);
 
-  const btnRow = new ActionRowBuilder().addComponents(toggleRevertBtn, disableLogBtn, resetBtn, cpBtn);
+  const btnRow = new ActionRowBuilder().addComponents(toggleRevertBtn, resetBtn, cpBtn);
 
   container.addActionRowComponents(punishRow);
   container.addActionRowComponents(thresholdRow);
-  container.addActionRowComponents(logRow);
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Policy Configuration`));
 
   return container;
 }
@@ -652,8 +660,8 @@ function buildTrustView(config, guild, subTab = "main") {
   const container = new ContainerBuilder();
 
   const headerText =
-    `### 📋 **Anti-Nuke Whitelist & Trusted Staff**\n` +
-    `-# Whitelisted users are trusted admins who will **never** be punished by Anti-Nuke.`;
+    `### 📋 **Anti-Nuke • Whitelist & Trust Directory**\n` +
+    `-# Immune staff members bypass all defense triggers and are never punished`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
@@ -664,95 +672,109 @@ function buildTrustView(config, guild, subTab = "main") {
   const extraOwners = config.extraOwners || [];
   const whitelist = config.whitelist || [];
 
-  const eoText =
-    extraOwners.length > 0
-      ? extraOwners.map((id, i) => `> \`${i + 1}.\` <@${id}>`).join("\n")
-      : "> *No extra owners designated.*";
+  const eoFormatted = extraOwners.length > 0
+    ? extraOwners.map((id) => `<@${id}>`).join(", ")
+    : "*None*";
 
-  const wlText =
-    whitelist.length > 0
-      ? whitelist.map((id, i) => `> \`${i + 1}.\` <@${id}>`).join("\n")
-      : "> *No users whitelisted yet. Click [ Add Whitelist ] below!*";
+  const wlFormatted = whitelist.length > 0
+    ? whitelist.map((id) => `<@${id}>`).join(", ")
+    : "*No users whitelisted*";
 
-  const trustBody =
-    `👑 **Server Owner (Full Control & Immune):**\n> ${ownerMention}\n\n` +
-    `🛡️ **Extra Owners (Can Change Anti-Nuke Settings):**\n${eoText}\n\n` +
-    `📋 **Whitelisted Staff (${whitelist.length} Trusted Admins):**\n${wlText}\n\n` +
-    `💡 *Tip: Only whitelist trusted admins who create/delete channels and roles regularly.*`;
+  const inlineTrustBody =
+    `> **👑 Server Owner:** ${ownerMention} \`[Root Immune]\`\n` +
+    `> **🛡️ Extra Owners (${extraOwners.length}):** ${eoFormatted}\n` +
+    `> **📋 Whitelisted Staff (${whitelist.length}):** ${wlFormatted}\n\n` +
+    `-# Whitelisted staff can manage channels & roles freely without triggering anti-nuke.`;
 
-  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(trustBody));
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(inlineTrustBody));
 
   container.addSeparatorComponents(
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  // Sub-Tab view controls / User Select Menus
+  // Sub-Tab User Select Menus
   if (subTab === "add_wl") {
     const addWlMenu = new UserSelectMenuBuilder()
       .setCustomId("antinuke_do_add_wl_user")
-      .setPlaceholder("➕ Select a user to add to Whitelist (Make Immune)...");
+      .setPlaceholder("➕ Select user to add to Whitelist (Make Immune)...");
     container.addActionRowComponents(new ActionRowBuilder().addComponents(addWlMenu));
   } else if (subTab === "remove_wl") {
     const removeWlMenu = new UserSelectMenuBuilder()
       .setCustomId("antinuke_do_remove_wl_user")
-      .setPlaceholder("➖ Select a user to remove from Whitelist...");
+      .setPlaceholder("➖ Select user to remove from Whitelist...");
     container.addActionRowComponents(new ActionRowBuilder().addComponents(removeWlMenu));
   } else if (subTab === "add_eo") {
     const addEoMenu = new UserSelectMenuBuilder()
       .setCustomId("antinuke_do_add_eo_user")
-      .setPlaceholder("👑 Select a user to add as Extra Owner...");
+      .setPlaceholder("👑 Select user to designate as Extra Owner...");
     container.addActionRowComponents(new ActionRowBuilder().addComponents(addEoMenu));
   } else if (subTab === "remove_eo") {
     const removeEoMenu = new UserSelectMenuBuilder()
       .setCustomId("antinuke_do_remove_eo_user")
-      .setPlaceholder("👑 Select an Extra Owner to remove...");
+      .setPlaceholder("🚫 Select Extra Owner to remove...");
     container.addActionRowComponents(new ActionRowBuilder().addComponents(removeEoMenu));
   }
 
-  // Action Buttons
-  const addWlBtn = new ButtonBuilder()
-    .setCustomId("antinuke_trust_tab_add_wl")
-    .setLabel("Add Whitelist")
-    .setEmoji("➕")
-    .setStyle(subTab === "add_wl" ? ButtonStyle.Primary : ButtonStyle.Success);
+  // 1. Whitelist Action Select Dropdown (Replaces messy 6 buttons)
+  const actionSelect = new StringSelectMenuBuilder()
+    .setCustomId("antinuke_trust_select_action")
+    .setPlaceholder("⚡ Whitelist Action (Add/Remove Staff or Extra Owner)...")
+    .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Add Staff to Whitelist")
+        .setValue("action_add_wl")
+        .setDescription("Select a staff member to make completely immune")
+        .setEmoji("➕")
+        .setDefault(subTab === "add_wl"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Remove Staff from Whitelist")
+        .setValue("action_remove_wl")
+        .setDescription("Revoke whitelist immunity from a user")
+        .setEmoji("➖")
+        .setDefault(subTab === "remove_wl"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Add Extra Owner")
+        .setValue("action_add_eo")
+        .setDescription("Authorize a trusted user to change Anti-Nuke settings")
+        .setEmoji("👑")
+        .setDefault(subTab === "add_eo"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Remove Extra Owner")
+        .setValue("action_remove_eo")
+        .setDescription("Remove extra owner authorization")
+        .setEmoji("🚫")
+        .setDefault(subTab === "remove_eo"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Clear All Whitelisted Staff")
+        .setValue("action_clear_wl")
+        .setDescription("Remove all whitelisted users at once")
+        .setEmoji("🧹")
+    );
 
-  const removeWlBtn = new ButtonBuilder()
-    .setCustomId("antinuke_trust_tab_remove_wl")
-    .setLabel("Remove Whitelist")
-    .setEmoji("➖")
-    .setStyle(subTab === "remove_wl" ? ButtonStyle.Primary : ButtonStyle.Secondary)
-    .setDisabled(whitelist.length === 0);
+  const actionSelectRow = new ActionRowBuilder().addComponents(actionSelect);
 
-  const addEoBtn = new ButtonBuilder()
-    .setCustomId("antinuke_trust_tab_add_eo")
-    .setLabel("Add Extra Owner")
-    .setEmoji("👑")
-    .setStyle(subTab === "add_eo" ? ButtonStyle.Primary : ButtonStyle.Secondary);
+  // 2. Global Navigation Dropdown (For switching pages)
+  const navRow = new ActionRowBuilder().addComponents(buildGlobalNavMenu("trust"));
 
-  const removeEoBtn = new ButtonBuilder()
-    .setCustomId("antinuke_trust_tab_remove_eo")
-    .setLabel("Remove Extra Owner")
-    .setStyle(subTab === "remove_eo" ? ButtonStyle.Primary : ButtonStyle.Secondary)
-    .setDisabled(extraOwners.length === 0);
-
-  const clearWlBtn = new ButtonBuilder()
-    .setCustomId("antinuke_confirm_clear_wl_prompt")
-    .setLabel("Clear All Whitelist")
-    .setEmoji("🧹")
-    .setStyle(ButtonStyle.Danger)
-    .setDisabled(whitelist.length === 0);
-
+  // 3. Clean Essential Controls
   const cpBtn = new ButtonBuilder()
     .setCustomId("antinuke_nav_overview")
     .setLabel("Control Center")
     .setEmoji("🛡️")
     .setStyle(ButtonStyle.Primary);
 
-  const row1 = new ActionRowBuilder().addComponents(addWlBtn, removeWlBtn, addEoBtn, removeEoBtn);
-  const row2 = new ActionRowBuilder().addComponents(clearWlBtn, cpBtn);
+  const homeBtn = new ButtonBuilder()
+    .setCustomId("antinuke_nav_home")
+    .setLabel("Main Menu")
+    .setEmoji("🏠")
+    .setStyle(ButtonStyle.Secondary);
 
-  container.addActionRowComponents(row1);
-  container.addActionRowComponents(row2);
+  const buttonRow = new ActionRowBuilder().addComponents(cpBtn, homeBtn);
+
+  container.addActionRowComponents(actionSelectRow);
+  container.addActionRowComponents(navRow);
+  container.addActionRowComponents(buttonRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Whitelist Manager`));
 
   return container;
 }
@@ -764,8 +786,8 @@ function buildSecurityView(config, guild) {
   const container = new ContainerBuilder();
 
   const headerText =
-    `### 📊 **Security Activity & Statistics**\n` +
-    `-# View real-time protection statistics for **${guild?.name || "Server"}**`;
+    `### 📊 **Anti-Nuke • Telemetry & Threat Analytics**\n` +
+    `-# Real-time threat mitigation metrics for **${guild?.name || "Server"}**`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
@@ -776,21 +798,17 @@ function buildSecurityView(config, guild) {
   const reversionsExecuted = config.stats?.reversionsExecuted || 0;
   const lastIncident = config.stats?.lastNukeTimestamp
     ? `<t:${Math.floor(config.stats.lastNukeTimestamp / 1000)}:R>`
-    : "*No attacks detected yet. Your server is completely safe!*";
+    : "*No attacks detected yet*";
 
   const isEnabled = Boolean(config.enabled);
   const activeMods = Object.keys(MODULE_METADATA).filter((k) => isEnabled && config.modules?.[k]).length;
   const totalMods = Object.keys(MODULE_METADATA).length;
 
   const telemetryText =
-    `**Attack Mitigation Statistics:**\n` +
-    `> ⚡ **Attacks Blocked:** \`${nukesIntercepted}\` Attacks Neutralized\n` +
-    `> 🔄 **Auto-Restorations:** \`${reversionsExecuted}\` Deleted Assets Restored\n` +
-    `> ⏱️ **Last Attack Attempt:** ${lastIncident}\n\n` +
-    `**Protection Health:**\n` +
-    `> • **Current State:** ${isEnabled ? "🟢 `Active & Guarding 24/7`" : "🔴 `Turned Off`"}\n` +
-    `> • **Guarded Assets:** \`${activeMods}/${totalMods} Protection Modules Active\`\n` +
-    `> • **Reaction Speed:** \`< 0.1 seconds (Instant Attack Interception)\``;
+    `> **🛡️ Defense State:** ${isEnabled ? "`🟢 ACTIVE & GUARDING 24/7`" : "`🔴 TURNED OFF`"} • **Speed:** \`< 0.1s\`\n` +
+    `> **⚡ Attacks Blocked:** \`${nukesIntercepted} Neutralized\` • **🔄 Restorations:** \`${reversionsExecuted} Restored\`\n` +
+    `> **🧩 Guarded Assets:** \`${activeMods}/${totalMods} Modules Active\` • **⏱️ Last Incident:** ${lastIncident}\n\n` +
+    `-# Threat detection engine runs non-stop to protect roles, channels, and members.`;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(telemetryText));
 
@@ -798,6 +816,10 @@ function buildSecurityView(config, guild) {
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
+  // 1. Global Navigation Dropdown (Connects to all other pages)
+  const navRow = new ActionRowBuilder().addComponents(buildGlobalNavMenu("security"));
+
+  // 2. Minimal Essential Controls
   const refreshBtn = new ButtonBuilder()
     .setCustomId("antinuke_refresh_security")
     .setLabel("Refresh Stats")
@@ -810,15 +832,135 @@ function buildSecurityView(config, guild) {
     .setEmoji("🛡️")
     .setStyle(ButtonStyle.Secondary);
 
-  const menuBtn4 = new ButtonBuilder()
-    .setCustomId("antinuke_nav_menu")
-    .setLabel("Help & Guide")
-    .setEmoji("📜")
+  const homeBtn = new ButtonBuilder()
+    .setCustomId("antinuke_nav_home")
+    .setLabel("Main Menu")
+    .setEmoji("🏠")
     .setStyle(ButtonStyle.Secondary);
 
-  const btnRow = new ActionRowBuilder().addComponents(refreshBtn, cpBtn, menuBtn4);
+  const btnRow = new ActionRowBuilder().addComponents(refreshBtn, cpBtn, homeBtn);
 
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Threat Analytics`));
+
+  return container;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 6.5. SECURITY WALL ROLES VIEW (Minimal Embed Style)
+// ─────────────────────────────────────────────────────────────────────────────
+function buildWallRolesView(config, guild, subTab = "main") {
+  const container = new ContainerBuilder();
+  const guildId = guild.id;
+
+  const rawWallRoles = config.wallRoles || (config.securityWallRole ? [config.securityWallRole] : []);
+  const activeRoles = rawWallRoles.filter((id) => guild.roles.cache.has(id));
+
+  // Auto-clean deleted roles if any were found
+  if (activeRoles.length !== rawWallRoles.length) {
+    config.wallRoles = activeRoles;
+    antinukeManager.setGuildAntinuke(guildId, config);
+  }
+
+  const headerText =
+    `### 🛡️ **Astrix Security • Wall Roles Matrix**\n` +
+    `-# Barrier roles separating verified human members from untrusted accounts`;
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
+
+  container.addSeparatorComponents(
+    new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+  );
+
+  const formattedRoles =
+    activeRoles.length > 0
+      ? activeRoles.map((id) => `<@&${id}>`).join(", ")
+      : "*No security wall roles registered*";
+
+  const content =
+    `> **🛡️ Active Security Barrier (${activeRoles.length}):** ${formattedRoles}\n` +
+    `> **🔒 Protection Scope:** Strips dangerous administrative permissions from untrusted roles below the barrier.\n\n` +
+    `-# Roles registered as Security Walls create a protected permission ceiling across the server.`;
+
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
+
+  container.addSeparatorComponents(
+    new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
+  );
+
+  if (subTab === "add") {
+    const roleMenu = new RoleSelectMenuBuilder()
+      .setCustomId("antinuke_wallroles_do_add_role")
+      .setPlaceholder("➕ Select a role to add to Security Wall barrier...");
+    container.addActionRowComponents(new ActionRowBuilder().addComponents(roleMenu));
+  } else if (subTab === "remove" && activeRoles.length > 0) {
+    const roleSelect = new StringSelectMenuBuilder()
+      .setCustomId("antinuke_wallroles_do_remove_role")
+      .setPlaceholder("➖ Select a Security Wall role to remove...");
+
+    for (const rId of activeRoles) {
+      const r = guild.roles.cache.get(rId);
+      if (r) {
+        roleSelect.addOptions(
+          new StringSelectMenuOptionBuilder()
+            .setLabel(r.name.slice(0, 50))
+            .setValue(r.id)
+            .setDescription(`${r.members?.size || 0} members | Pos: ${r.position}`.slice(0, 100))
+            .setEmoji("🛡️")
+        );
+      }
+    }
+    container.addActionRowComponents(new ActionRowBuilder().addComponents(roleSelect));
+  }
+
+  // 1. Whitelist Action Select Dropdown (Add / Remove / Clear)
+  const actionMenu = new StringSelectMenuBuilder()
+    .setCustomId("antinuke_wallroles_select_action")
+    .setPlaceholder("⚡ Security Wall Actions (Add / Remove / Reset)...")
+    .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Add Role to Security Wall")
+        .setValue("action_add")
+        .setDescription("Register a server role as a security barrier")
+        .setEmoji("➕")
+        .setDefault(subTab === "add"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Remove Role from Security Wall")
+        .setValue("action_remove")
+        .setDescription("Remove an existing role from the security barrier")
+        .setEmoji("➖")
+        .setDefault(subTab === "remove"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Reset All Security Wall Roles")
+        .setValue("action_reset")
+        .setDescription("Clear all registered security wall roles")
+        .setEmoji("🧹")
+    );
+
+  const actionRow = new ActionRowBuilder().addComponents(actionMenu);
+
+  // 2. Global Navigation Dropdown
+  const navRow = new ActionRowBuilder().addComponents(buildGlobalNavMenu("wallroles"));
+
+  // 3. Clean 2-button Action Row
+  const cpBtn = new ButtonBuilder()
+    .setCustomId("antinuke_nav_overview")
+    .setLabel("Control Center")
+    .setEmoji("🛡️")
+    .setStyle(ButtonStyle.Primary);
+
+  const homeBtn = new ButtonBuilder()
+    .setCustomId("antinuke_nav_home")
+    .setLabel("Main Menu")
+    .setEmoji("🏠")
+    .setStyle(ButtonStyle.Secondary);
+
+  const btnRow = new ActionRowBuilder().addComponents(cpBtn, homeBtn);
+
+  container.addActionRowComponents(actionRow);
+  container.addActionRowComponents(navRow);
+  container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Barrier Management`));
 
   return container;
 }
@@ -904,8 +1046,9 @@ async function handleAntiNukeInteraction(client, interaction) {
   const isStringMenu = interaction.isStringSelectMenu();
   const isUserMenu = interaction.isUserSelectMenu();
   const isChannelMenu = interaction.isChannelSelectMenu();
+  const isRoleMenu = interaction.isRoleSelectMenu ? interaction.isRoleSelectMenu() : false;
 
-  if (!isBtn && !isStringMenu && !isUserMenu && !isChannelMenu) return false;
+  if (!isBtn && !isStringMenu && !isUserMenu && !isChannelMenu && !isRoleMenu) return false;
 
   const customId = interaction.customId;
   if (!customId.startsWith("antinuke_")) return false;
@@ -936,12 +1079,23 @@ async function handleAntiNukeInteraction(client, interaction) {
   if (isStringMenu && customId === "antinuke_nav_select_menu") {
     const selected = interaction.values[0];
     const fresh = antinukeManager.getGuildAntinuke(guildId);
-    if (selected === "nav_menu") {
-      const view = buildAntinukeContainer(fresh, interaction.guild, "menu");
+    if (selected === "nav_home") {
+      const view = buildAntinukeContainer(fresh, interaction.guild, "home");
+      await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+    if (selected === "nav_help" || selected === "nav_menu") {
+      const view = buildAntinukeContainer(fresh, interaction.guild, "help");
       await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
       return true;
     }
     if (selected === "nav_overview") {
+      if (!fresh.enabled) {
+        const { buildEnableRecommendationContainer } = require("./handleAutoSetup");
+        const promptContainer = buildEnableRecommendationContainer(interaction.guild, interaction.user);
+        await interaction.update({ components: [promptContainer], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+        return true;
+      }
       const view = buildAntinukeContainer(fresh, interaction.guild, "overview");
       await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
       return true;
@@ -962,6 +1116,11 @@ async function handleAntiNukeInteraction(client, interaction) {
       await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
       return true;
     }
+    if (selected === "nav_wallroles") {
+      const view = buildAntinukeContainer(fresh, interaction.guild, "wallroles", { subTab: "main" });
+      await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
     if (selected === "nav_settings") {
       const view = buildAntinukeContainer(fresh, interaction.guild, "settings");
       await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
@@ -979,15 +1138,28 @@ async function handleAntiNukeInteraction(client, interaction) {
     }
   }
 
-  if (customId === "antinuke_nav_menu") {
+  if (customId === "antinuke_nav_home") {
     const fresh = antinukeManager.getGuildAntinuke(guildId);
-    const view = buildAntinukeContainer(fresh, interaction.guild, "menu");
+    const view = buildAntinukeContainer(fresh, interaction.guild, "home");
+    await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    return true;
+  }
+
+  if (customId === "antinuke_nav_help" || customId === "antinuke_nav_menu") {
+    const fresh = antinukeManager.getGuildAntinuke(guildId);
+    const view = buildAntinukeContainer(fresh, interaction.guild, "help");
     await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
     return true;
   }
 
   if (customId === "antinuke_nav_overview" || customId === "antinuke_refresh") {
     const fresh = antinukeManager.getGuildAntinuke(guildId);
+    if (!fresh.enabled) {
+      const { buildEnableRecommendationContainer } = require("./handleAutoSetup");
+      const promptContainer = buildEnableRecommendationContainer(interaction.guild, interaction.user);
+      await interaction.update({ components: [promptContainer], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
     const view = buildAntinukeContainer(fresh, interaction.guild, "overview");
     await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
     return true;
@@ -1025,10 +1197,9 @@ async function handleAntiNukeInteraction(client, interaction) {
   // B. MASTER TOGGLE & DIRECT ACTIONS & AUTOSETUP PROMPTS
   // ---------------------------------------------------------------------------
   if (customId === "antinuke_toggle_master_direct") {
-    antinukeManager.enableMaster(guildId);
-    const fresh = antinukeManager.getGuildAntinuke(guildId);
-    const view = buildAntinukeContainer(fresh, interaction.guild, "overview");
-    await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    const { buildEnableRecommendationContainer } = require("./handleAutoSetup");
+    const promptContainer = buildEnableRecommendationContainer(interaction.guild, interaction.user);
+    await interaction.update({ components: [promptContainer], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
     return true;
   }
 
@@ -1045,16 +1216,14 @@ async function handleAntiNukeInteraction(client, interaction) {
   }
 
   if (customId === "antinuke_enable_prompt_continue") {
-    antinukeManager.enableMaster(guildId);
-    const fresh = antinukeManager.getGuildAntinuke(guildId);
-    const view = buildAntinukeContainer(fresh, interaction.guild, "overview");
-    await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    const { executeAutoSetup } = require("./handleAutoSetup");
+    await executeAutoSetup(interaction.guild, interaction.user, "create_new_wall", interaction);
     return true;
   }
 
   if (customId === "antinuke_enable_prompt_cancel" || customId === "antinuke_autosetup_cancel") {
     const fresh = antinukeManager.getGuildAntinuke(guildId);
-    const view = buildAntinukeContainer(fresh, interaction.guild, "overview");
+    const view = buildAntinukeContainer(fresh, interaction.guild, "home");
     await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
     return true;
   }
@@ -1098,7 +1267,25 @@ async function handleAntiNukeInteraction(client, interaction) {
   // C. MODULES MANAGEMENT
   // ---------------------------------------------------------------------------
   if (isStringMenu && customId === "antinuke_mod_select") {
-    const selected = interaction.values[0]; // e.g. "antinuke_view_mod_channel"
+    const selected = interaction.values[0];
+    if (selected === "mod_action_enable_all") {
+      antinukeManager.enableMaster(guildId);
+      const fresh = antinukeManager.getGuildAntinuke(guildId);
+      const view = buildAntinukeContainer(fresh, interaction.guild, "modules");
+      await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+    if (selected === "mod_action_disable_all") {
+      const fresh = antinukeManager.getGuildAntinuke(guildId);
+      for (const k of Object.keys(MODULE_METADATA)) {
+        if (fresh.modules) fresh.modules[k] = false;
+      }
+      fresh.enabled = false;
+      antinukeManager.setGuildAntinuke(guildId, fresh);
+      const view = buildAntinukeContainer(fresh, interaction.guild, "modules");
+      await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
     const modKey = selected.replace("antinuke_view_mod_", "");
     const fresh = antinukeManager.getGuildAntinuke(guildId);
     const view = buildAntinukeContainer(fresh, interaction.guild, "mod_detail", { moduleKey: modKey });
@@ -1158,6 +1345,24 @@ async function handleAntiNukeInteraction(client, interaction) {
     return true;
   }
 
+  if (isChannelMenu && customId === "antinuke_set_log_channel_select") {
+    const channelId = interaction.values[0];
+    antinukeManager.setAntinukeLogs(guildId, channelId);
+    const fresh = antinukeManager.getGuildAntinuke(guildId);
+    const view = buildAntinukeContainer(fresh, interaction.guild, "settings");
+    await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    return true;
+  }
+
+  if (isChannelMenu && customId === "antinuke_set_modlog_channel_select") {
+    const channelId = interaction.values[0];
+    antinukeManager.setModLogs(guildId, channelId);
+    const fresh = antinukeManager.getGuildAntinuke(guildId);
+    const view = buildAntinukeContainer(fresh, interaction.guild, "settings");
+    await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    return true;
+  }
+
   if (customId === "antinuke_toggle_revert_btn") {
     const fresh = antinukeManager.getGuildAntinuke(guildId);
     fresh.autoRevert = !fresh.autoRevert;
@@ -1201,6 +1406,36 @@ async function handleAntiNukeInteraction(client, interaction) {
   // ---------------------------------------------------------------------------
   // E. TRUST DIRECTORY & WHITELIST / EXTRA OWNERS
   // ---------------------------------------------------------------------------
+  if (isStringMenu && customId === "antinuke_trust_select_action") {
+    const act = interaction.values[0];
+    const fresh = antinukeManager.getGuildAntinuke(guildId);
+    if (act === "action_add_wl") {
+      const view = buildAntinukeContainer(fresh, interaction.guild, "trust", { subTab: "add_wl" });
+      await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+    if (act === "action_remove_wl") {
+      const view = buildAntinukeContainer(fresh, interaction.guild, "trust", { subTab: "remove_wl" });
+      await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+    if (act === "action_add_eo") {
+      const view = buildAntinukeContainer(fresh, interaction.guild, "trust", { subTab: "add_eo" });
+      await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+    if (act === "action_remove_eo") {
+      const view = buildAntinukeContainer(fresh, interaction.guild, "trust", { subTab: "remove_eo" });
+      await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+    if (act === "action_clear_wl") {
+      const view = buildAntinukeContainer(fresh, interaction.guild, "confirm", { actionType: "clear_whitelist" });
+      await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+  }
+
   if (customId === "antinuke_trust_tab_add_wl") {
     const fresh = antinukeManager.getGuildAntinuke(guildId);
     const view = buildAntinukeContainer(fresh, interaction.guild, "trust", { subTab: "add_wl" });
@@ -1279,11 +1514,59 @@ async function handleAntiNukeInteraction(client, interaction) {
     return true;
   }
 
+  // ---------------------------------------------------------------------------
+  // F. SECURITY WALL ROLES INTERACTION ROUTER
+  // ---------------------------------------------------------------------------
+  if (isStringMenu && customId === "antinuke_wallroles_select_action") {
+    const val = interaction.values[0];
+    const fresh = antinukeManager.getGuildAntinuke(guildId);
+    if (val === "action_add") {
+      const view = buildWallRolesView(fresh, interaction.guild, "add");
+      await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+    if (val === "action_remove") {
+      const view = buildWallRolesView(fresh, interaction.guild, "remove");
+      await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+    if (val === "action_reset") {
+      antinukeManager.clearWallRoles(guildId);
+      const updated = antinukeManager.getGuildAntinuke(guildId);
+      const view = buildWallRolesView(updated, interaction.guild, "main");
+      await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+  }
+
+  if (isRoleMenu && customId === "antinuke_wallroles_do_add_role") {
+    const roleId = interaction.values[0];
+    if (roleId) {
+      antinukeManager.addWallRole(guildId, roleId);
+    }
+    const fresh = antinukeManager.getGuildAntinuke(guildId);
+    const view = buildWallRolesView(fresh, interaction.guild, "main");
+    await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    return true;
+  }
+
+  if (isStringMenu && customId === "antinuke_wallroles_do_remove_role") {
+    const roleId = interaction.values[0];
+    if (roleId) {
+      antinukeManager.removeWallRole(guildId, roleId);
+    }
+    const fresh = antinukeManager.getGuildAntinuke(guildId);
+    const view = buildWallRolesView(fresh, interaction.guild, "main");
+    await interaction.update({ components: [view], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    return true;
+  }
+
   return false;
 }
 
 module.exports = {
   buildAntinukeContainer,
+  buildWallRolesView,
   handleAntiNukeInteraction,
   MODULE_METADATA,
 };

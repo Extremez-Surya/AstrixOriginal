@@ -186,20 +186,37 @@ function getDefaultLoggingConfig() {
   };
 }
 
-function initCache() {
-  if (isInitialized) return;
+function readDiskConfig() {
   try {
     if (fs.existsSync(CONFIG_FILE)) {
-      const parsed = JSON.parse(fs.readFileSync(CONFIG_FILE, "utf8"));
-      for (const [guildId, cfg] of Object.entries(parsed)) {
-        configCache.set(guildId, cfg);
-      }
+      return JSON.parse(fs.readFileSync(CONFIG_FILE, "utf8"));
     }
+  } catch (e) {
+    console.error("[LoggingManager] Read config error:", e);
+  }
+  return {};
+}
+
+function readDiskData() {
+  try {
     if (fs.existsSync(DATA_FILE)) {
-      const parsed = JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
-      for (const [guildId, logs] of Object.entries(parsed)) {
-        logsCache.set(guildId, logs);
-      }
+      return JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
+    }
+  } catch (e) {
+    console.error("[LoggingManager] Read data error:", e);
+  }
+  return {};
+}
+
+function initCache() {
+  try {
+    const configParsed = readDiskConfig();
+    for (const [guildId, cfg] of Object.entries(configParsed)) {
+      configCache.set(guildId, cfg);
+    }
+    const dataParsed = readDiskData();
+    for (const [guildId, logs] of Object.entries(dataParsed)) {
+      logsCache.set(guildId, logs);
     }
   } catch (e) {
     console.error("[LoggingManager] Cache init error:", e);
@@ -207,36 +224,40 @@ function initCache() {
   isInitialized = true;
 }
 
-let savePending = false;
-function saveDiskAsync() {
-  if (savePending) return;
-  savePending = true;
-  setImmediate(() => {
-    try {
-      const configObj = {};
-      for (const [guildId, cfg] of configCache.entries()) {
-        configObj[guildId] = cfg;
-      }
-      fs.writeFileSync(CONFIG_FILE, JSON.stringify(configObj, null, 2), "utf8");
-
-      const dataObj = {};
-      for (const [guildId, logs] of logsCache.entries()) {
-        dataObj[guildId] = logs;
-      }
-      fs.writeFileSync(DATA_FILE, JSON.stringify(dataObj, null, 2), "utf8");
-    } catch (e) {
-      console.error("[LoggingManager] Save disk error:", e);
-    } finally {
-      savePending = false;
+function flushDiskSync() {
+  try {
+    const configObj = readDiskConfig();
+    for (const [guildId, cfg] of configCache.entries()) {
+      configObj[guildId] = cfg;
     }
-  });
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify(configObj, null, 2), "utf8");
+
+    const dataObj = readDiskData();
+    for (const [guildId, logs] of logsCache.entries()) {
+      dataObj[guildId] = logs;
+    }
+    fs.writeFileSync(DATA_FILE, JSON.stringify(dataObj, null, 2), "utf8");
+  } catch (e) {
+    console.error("[LoggingManager] Flush disk error:", e);
+  }
+}
+
+function saveDiskAsync() {
+  flushDiskSync();
 }
 
 function getGuildLogging(guildId) {
   if (!isInitialized) initCache();
   if (!guildId) return getDefaultLoggingConfig();
 
-  const raw = configCache.get(guildId);
+  let raw = configCache.get(guildId);
+  if (!raw) {
+    const diskData = readDiskConfig();
+    if (diskData[guildId]) {
+      raw = diskData[guildId];
+      configCache.set(guildId, raw);
+    }
+  }
   if (!raw) return getDefaultLoggingConfig();
 
   const defaults = getDefaultLoggingConfig();
@@ -255,7 +276,7 @@ function setGuildLogging(guildId, config) {
   if (!guildId) return false;
 
   configCache.set(guildId, config);
-  saveDiskAsync();
+  flushDiskSync();
   return true;
 }
 

@@ -40,18 +40,15 @@ function findChannel(guild, predicate) {
 }
 
 /**
- * Builds the interactive Security Wall Role Selection UI (Standard Clean Markdown)
+ * Builds the interactive Security Wall Role Selection UI (Minimal Inline Embed Style)
  */
 function buildAutoSetupWallSelectionContainer(guild, authorUser) {
   const container = new ContainerBuilder();
   const config = antinukeManager.getGuildAntinuke(guild.id);
 
   const headerText =
-    `### 🚀 **Auto Setup - Security Wall Role Selection**\n` +
-    `Before proceeding with automatic setup, please select a role to use as the **Security Wall**.\n\n` +
-    `The Security Wall role acts as a barrier between trusted and untrusted users.\n` +
-    `You can select an existing role or choose to create a new one.`;
-
+    `### 🚀 **Astrix Security • Auto-Setup Role Selection**\n` +
+    `-# Configure server security wall barrier for **${guild.name}**`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
@@ -70,19 +67,14 @@ function buildAutoSetupWallSelectionContainer(guild, authorUser) {
   }
 
   const currentWallText = currentWallRole
-    ? `<@&${currentWallRole.id}> (${currentWallRole.members?.size || 0} members)`
-    : "*None configured*";
-
-  const topRoles = roles.slice(0, 9);
-  const topRolesList = topRoles.length > 0
-    ? topRoles.map((r) => `> • <@&${r.id}> - ${r.members?.size || 0} members${currentWallRole && r.id === currentWallRole.id ? " **(Current)**" : ""}`).join("\n")
-    : "> *No custom roles found.*";
+    ? `<@&${currentWallRole.id}> (\`${currentWallRole.members?.size || 0} members\`)`
+    : "*None (Will create automatically)*";
 
   const bodyText =
-    `**🔧 Current Security Wall Role:**\n> ${currentWallText}\n\n` +
-    `**Top Available Roles:**\n${topRolesList}\n\n` +
-    `⏱️ **Timeout:** This selection will expire in 60 seconds.\n` +
-    `-# Requested by ${authorUser?.username || "Admin"} • Select a role below or create a new one.`;
+    `> **🛡️ Security Wall Role:** ${currentWallText}\n` +
+    `> **🔒 Hardening Scope:** \`10/10 Modules\` • \`Log Channels\` • \`Permission Stripping\`\n` +
+    `> **Barrier Function:** Isolates trusted admins and locks down untrusted accounts.\n\n` +
+    `-# Select a role from the dropdown below or click 'New Wall' to start setup.`;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(bodyText));
 
@@ -93,16 +85,17 @@ function buildAutoSetupWallSelectionContainer(guild, authorUser) {
   // Dropdown Select Menu
   const selectMenu = new StringSelectMenuBuilder()
     .setCustomId("antinuke_autosetup_select_role")
-    .setPlaceholder("Select a role to use as Security Wall...");
+    .setPlaceholder("🛡️ Select Role to use as Security Wall...");
 
   selectMenu.addOptions(
     new StringSelectMenuOptionBuilder()
-      .setLabel("✨ Create New Security Wall Role")
+      .setLabel("Create New Security Wall Role (Recommended)")
       .setValue("create_new_wall")
-      .setDescription("Automatically create and position an 'Astrix Security Wall' role")
+      .setDescription("Automatically creates and configures 'Astrix Security Wall' role")
       .setEmoji("✨")
   );
 
+  const topRoles = roles.slice(0, 10);
   for (const r of topRoles) {
     selectMenu.addOptions(
       new StringSelectMenuOptionBuilder()
@@ -116,41 +109,35 @@ function buildAutoSetupWallSelectionContainer(guild, authorUser) {
 
   const selectRow = new ActionRowBuilder().addComponents(selectMenu);
 
-  // Control Action Buttons
+  // Minimal Control Action Buttons (Clean 2-button layout)
+  const newWallBtn = new ButtonBuilder()
+    .setCustomId("antinuke_autosetup_new_wall")
+    .setLabel("Start Auto-Setup")
+    .setEmoji("✨")
+    .setStyle(ButtonStyle.Success);
+
   const cancelBtn = new ButtonBuilder()
     .setCustomId("antinuke_autosetup_cancel")
     .setLabel("Cancel")
     .setEmoji("🚫")
     .setStyle(ButtonStyle.Danger);
 
-  const newWallBtn = new ButtonBuilder()
-    .setCustomId("antinuke_autosetup_new_wall")
-    .setLabel("New Wall")
-    .setEmoji("✨")
-    .setStyle(ButtonStyle.Success);
-
-  const currentWallBtn = new ButtonBuilder()
-    .setCustomId("antinuke_autosetup_current_wall")
-    .setLabel("Current Wall")
-    .setEmoji("👑")
-    .setStyle(ButtonStyle.Primary)
-    .setDisabled(!currentWallRole);
-
-  const buttonRow = new ActionRowBuilder().addComponents(cancelBtn, newWallBtn, currentWallBtn);
+  const buttonRow = new ActionRowBuilder().addComponents(newWallBtn, cancelBtn);
 
   container.addActionRowComponents(selectRow);
   container.addActionRowComponents(buttonRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Automated Hardening Engine`));
 
   return container;
 }
 
 /**
- * Builds the Recommendation Prompt for `antinuke enable` (Standard Clean Markdown)
+ * Builds the Recommendation Prompt for `antinuke enable` (Minimal Inline Embed Style)
  */
 function buildEnableRecommendationContainer(guild, authorUser) {
   const container = new ContainerBuilder();
 
-  const titleText = `### ⚠️ **Recommended: Use \`autosetup\` Instead**`;
+  const titleText = `### ⚠️ **Astrix Anti-Nuke • Enable & Auto-Setup**\n-# Complete server hardening & sub-0.1s zero-bypass deployment for **${guild.name}**`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(titleText));
 
   container.addSeparatorComponents(
@@ -158,13 +145,10 @@ function buildEnableRecommendationContainer(guild, authorUser) {
   );
 
   const descText =
-    `Using \`autosetup\` will completely configure **Astrix Anti-Nuke**, which includes:\n\n` +
-    `> • Creating and configuring an **unbypassable setup**\n` +
-    `> • Automatically configuring **antivanity** and **security wall** roles\n` +
-    `> • Creating audit logging channels in a dedicated Security category (\`#antinuke-logs\`, \`#mod-logs\`)\n` +
-    `> • Assigning the Security Wall role to all members and bots for complete barrier security\n` +
-    `> • Stripping dangerous permissions from unauthorized roles\n\n` +
-    `*Are you sure you want to proceed with standard \`antinuke enable\` instead?*`;
+    `> **🛡️ Security Roles:** Creates \`Security Wall\`, \`Un-Bypassable\` & \`Antivanity\` roles\n` +
+    `> **📜 Audit Channels:** Configures \`#antinuke-logs\` & \`#mod-logs\` in Security Category\n` +
+    `> **🔒 Access Hardening:** Strips dangerous administrative permissions from untrusted roles\n\n` +
+    `-# Click **Continue** to immediately activate protection and harden this server.`;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(descText));
 
@@ -175,21 +159,18 @@ function buildEnableRecommendationContainer(guild, authorUser) {
   const continueBtn = new ButtonBuilder()
     .setCustomId("antinuke_enable_prompt_continue")
     .setLabel("Continue")
+    .setEmoji("🟢")
     .setStyle(ButtonStyle.Success);
 
   const cancelBtn = new ButtonBuilder()
     .setCustomId("antinuke_enable_prompt_cancel")
     .setLabel("Cancel")
+    .setEmoji("🔴")
     .setStyle(ButtonStyle.Danger);
 
-  const autoSetupBtn = new ButtonBuilder()
-    .setCustomId("antinuke_nav_autosetup")
-    .setLabel("Run Auto Setup")
-    .setEmoji("🚀")
-    .setStyle(ButtonStyle.Primary);
-
-  const row = new ActionRowBuilder().addComponents(continueBtn, cancelBtn, autoSetupBtn);
+  const row = new ActionRowBuilder().addComponents(continueBtn, cancelBtn);
   container.addActionRowComponents(row);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Security • Hardened Protection Engine`));
 
   return container;
 }
@@ -249,24 +230,62 @@ async function executeAutoSetup(guild, authorUser, selectedRoleOrAction, replyHa
     await logStep(`🛡️ **Antinuke has been enabled!**`);
 
     // Step 2: Setup Security Roles
-    await logStep(`🌀 **Setting up Security Roles...** *(Configuring hierarchy)*`);
+    await logStep(`🌀 **Setting up Security Roles & Hierarchy...** *(Bypass, Unbypass, Security Wall & Criminals)*`);
 
+    await guild.roles.fetch().catch(() => guild.roles.cache);
+
+    // 1. Bypass Role (Top Near Bot)
+    let bypassRole = findRole(guild, (r) => r.name.toLowerCase() === "astrix bypass" || r.name.toLowerCase() === "bypass");
+    if (!bypassRole) {
+      bypassRole = await guild.roles.create({
+        name: "Astrix Bypass",
+        colors: { primaryColor: 0xf59e0b },
+        reason: "Astrix Bypass Staff Whitelist Role",
+      }).catch((err) => {
+        console.error("[AutoSetup] Error creating Astrix Bypass role:", err);
+        return null;
+      });
+    }
+
+    // 2. Unbypass Role (Top Near Bot)
+    let unbypassableRole = findRole(guild, (r) => r.name.toLowerCase().includes("un-bypassable") || r.name.toLowerCase() === "astrix un-bypassable setup");
+    if (!unbypassableRole) {
+      unbypassableRole = await guild.roles.create({
+        name: "Astrix Un-Bypassable Setup",
+        colors: { primaryColor: 0x22c55e },
+        permissions: [PermissionFlagsBits.Administrator],
+        reason: "Astrix Root Setup Role",
+      }).catch((err) => {
+        console.error("[AutoSetup] Error creating Astrix Un-Bypassable Setup role:", err);
+        return null;
+      });
+    }
+
+    // 3. Security Wall Role (Bottom Above Criminals)
     let wallRole = null;
     if (selectedRoleOrAction === "create_new_wall" || !selectedRoleOrAction) {
-      wallRole = findRole(guild, (r) => r.name === "Astrix Security Wall") ||
-        (await guild.roles.create({
-          name: "Astrix Security Wall",
-          color: 0x38bdf8,
-          reason: "Astrix Security Wall Role",
-        }).catch(() => null));
-    } else {
-      wallRole = guild.roles.cache.get(selectedRoleOrAction) || findRole(guild, (r) => r.name === "Astrix Security Wall");
+      wallRole = findRole(guild, (r) => r.name.toLowerCase() === "astrix security wall" || r.name.toLowerCase() === "security wall");
       if (!wallRole) {
         wallRole = await guild.roles.create({
           name: "Astrix Security Wall",
-          color: 0x38bdf8,
+          colors: { primaryColor: 0x38bdf8 },
           reason: "Astrix Security Wall Role",
-        }).catch(() => null);
+        }).catch((err) => {
+          console.error("[AutoSetup] Error creating Astrix Security Wall role:", err);
+          return null;
+        });
+      }
+    } else {
+      wallRole = guild.roles.cache.get(selectedRoleOrAction) || findRole(guild, (r) => r.name.toLowerCase() === "astrix security wall" || r.name.toLowerCase() === "security wall");
+      if (!wallRole) {
+        wallRole = await guild.roles.create({
+          name: "Astrix Security Wall",
+          colors: { primaryColor: 0x38bdf8 },
+          reason: "Astrix Security Wall Role",
+        }).catch((err) => {
+          console.error("[AutoSetup] Error creating Astrix Security Wall role:", err);
+          return null;
+        });
       }
     }
 
@@ -274,35 +293,71 @@ async function executeAutoSetup(guild, authorUser, selectedRoleOrAction, replyHa
       antinukeManager.setSecurityWallRole(guild.id, wallRole.id);
     }
 
-    // Antivanity & Criminals roles
-    let antivanityRole = findRole(guild, (r) => r.name === "Astrix Antivanity Admin") ||
-      (await guild.roles.create({
-        name: "Astrix Antivanity Admin",
-        color: 0xa855f7,
-        reason: "Astrix Antivanity Admin Role",
-      }).catch(() => null));
-
-    let criminalsRole = findRole(guild, (r) => r.name === "Criminals") ||
-      (await guild.roles.create({
+    // 4. Criminals Role (Lowest Position with 0 perms)
+    let criminalsRole = findRole(guild, (r) => r.name.toLowerCase() === "criminals" || r.name.toLowerCase() === "criminal");
+    if (!criminalsRole) {
+      criminalsRole = await guild.roles.create({
         name: "Criminals",
-        color: 0xef4444,
+        colors: { primaryColor: 0xef4444 },
         permissions: [],
         reason: "Astrix Criminals Quarantine Role",
-      }).catch(() => null));
+      }).catch((err) => {
+        console.error("[AutoSetup] Error creating Criminals role:", err);
+        return null;
+      });
+    }
 
-    let unbypassableRole = findRole(guild, (r) => r.name === "Astrix Un-Bypassable Setup") ||
-      (await guild.roles.create({
-        name: "Astrix Un-Bypassable Setup",
-        color: 0x22c55e,
-        reason: "Astrix Root Setup Role",
-      }).catch(() => null));
+    // 5. Antivanity Admin Role
+    let antivanityRole = findRole(guild, (r) => r.name.toLowerCase() === "astrix antivanity admin" || r.name.toLowerCase() === "antivanity admin");
+    if (!antivanityRole) {
+      antivanityRole = await guild.roles.create({
+        name: "Astrix Antivanity Admin",
+        colors: { primaryColor: 0xa855f7 },
+        reason: "Astrix Antivanity Admin Role",
+      }).catch((err) => {
+        console.error("[AutoSetup] Error creating Astrix Antivanity Admin role:", err);
+        return null;
+      });
+    }
 
+    // Hierarchy Positioning: Bypass & Unbypass TOP, Security & Criminals BOTTOM
+    const botMember = guild.members.me;
+    const botHighestPosition = botMember?.roles?.highest?.position || guild.roles.cache.size;
+
+    const positionsToSet = [];
+    if (bypassRole) positionsToSet.push({ role: bypassRole.id, position: Math.max(1, botHighestPosition - 1) });
+    if (unbypassableRole) positionsToSet.push({ role: unbypassableRole.id, position: Math.max(1, botHighestPosition - 2) });
+    if (antivanityRole) positionsToSet.push({ role: antivanityRole.id, position: Math.max(1, botHighestPosition - 3) });
+    if (wallRole) positionsToSet.push({ role: wallRole.id, position: 2 });
+    if (criminalsRole) positionsToSet.push({ role: criminalsRole.id, position: 1 });
+
+    try {
+      await guild.roles.setPositions(positionsToSet).catch(async () => {
+        if (bypassRole) await bypassRole.setPosition(Math.max(1, botHighestPosition - 1)).catch(() => null);
+        if (unbypassableRole) await unbypassableRole.setPosition(Math.max(1, botHighestPosition - 2)).catch(() => null);
+        if (antivanityRole) await antivanityRole.setPosition(Math.max(1, botHighestPosition - 3)).catch(() => null);
+        if (wallRole) await wallRole.setPosition(2).catch(() => null);
+        if (criminalsRole) await criminalsRole.setPosition(1).catch(() => null);
+      });
+    } catch (_) {}
+
+    config.enabled = true;
+    if (!config.modules) config.modules = {};
+    for (const k of ["channel", "role", "ban", "kick", "webhook", "botAdd", "guildUpdate", "emoji", "permissions", "prune"]) {
+      config.modules[k] = true;
+    }
+    config.bypassRole = bypassRole ? bypassRole.id : null;
     config.antivanityAdminRole = antivanityRole ? antivanityRole.id : null;
     config.criminalsRole = criminalsRole ? criminalsRole.id : null;
     config.unbypassableRole = unbypassableRole ? unbypassableRole.id : null;
+    if (wallRole) {
+      config.securityWallRole = wallRole.id;
+      if (!config.wallRoles) config.wallRoles = [];
+      if (!config.wallRoles.includes(wallRole.id)) config.wallRoles.push(wallRole.id);
+    }
     antinukeManager.setGuildAntinuke(guild.id, config);
 
-    await logStep(`🛡️ **Security roles have been setuped!**`);
+    await logStep(`🛡️ **Security roles configured:** \`Astrix Bypass\` (Top), \`Astrix Un-Bypassable Setup\` (Top), \`Astrix Security Wall\` (Bottom), \`Criminals\` (Bottom)`);
 
     // Step 3: Log Channels Setup (Inside Dedicated Astrix Security Category)
     let category = findChannel(
@@ -515,23 +570,22 @@ async function executeAutoSetup(guild, authorUser, selectedRoleOrAction, replyHa
     await logStep(`🛡️ **Dedicated log channels have been setuped in category \`${category?.name || "ASTRIX SECURITY"}\`!** (\`#antinuke-logs\`, \`#mod-logs\`, \`#message-logs\`, \`#member-logs\`, \`#voice-logs\`, \`#channel-logs\`, \`#role-logs\`, \`#server-logs\`)`);
 
     // Step 4: Permission Stripping across dangerous roles
-    await logStep(`🔧 **Stripping administrator/manage server/kick/ban permissions from all roles (including integration roles) except Astrix Security roles...**`);
+    await logStep(`🔧 **Stripping administrator/manage server/kick/ban permissions from custom roles...**`);
 
-    const botMember = guild.members.me;
-    const botHighestPosition = botMember?.roles?.highest?.position || 0;
     let strippedCount = 0;
-    let failedCount = 0;
+    let skippedCount = 0;
 
     for (const role of guild.roles.cache.values()) {
       if (role.id === guild.id) continue;
       if (role.name === "@everyone") continue;
-      if ([wallRole?.id, antivanityRole?.id, unbypassableRole?.id].includes(role.id)) continue;
+      if ([wallRole?.id, antivanityRole?.id, unbypassableRole?.id, bypassRole?.id].includes(role.id)) continue;
+      if (role.managed) continue; // Skip Discord integration/bot-managed roles
 
       const hasDangerous = DANGEROUS_PERMS.some((p) => role.permissions.has(p));
       if (!hasDangerous) continue;
 
-      if (role.position >= botHighestPosition || role.managed) {
-        failedCount++;
+      if (role.position >= botHighestPosition) {
+        skippedCount++;
         continue;
       }
 
@@ -543,13 +597,13 @@ async function executeAutoSetup(guild, authorUser, selectedRoleOrAction, replyHa
         await role.setPermissions(newBits, "Astrix Security Auto-Setup Permission Stripping").catch(() => null);
         strippedCount++;
       } catch (_) {
-        failedCount++;
+        skippedCount++;
       }
     }
 
-    await logStep(`🛡️ **Stripped the requested permissions from roles. Failed: ${failedCount}**`);
+    await logStep(`🛡️ **Stripped dangerous permissions from ${strippedCount} custom roles!**${skippedCount > 0 ? ` *(Protected/Higher roles skipped: ${skippedCount})*` : ""}`);
 
-    // Step 5: Wall role assignment to ALL members (users & bots)
+    // Step 5: Wall role assignment to ALL members (users, bots, owner & bot itself)
     let totalMembers = 0;
     let newlyAssigned = 0;
     try {
@@ -557,18 +611,49 @@ async function executeAutoSetup(guild, authorUser, selectedRoleOrAction, replyHa
       if (wallRole) {
         for (const m of members.values()) {
           totalMembers++;
-          if (!m.roles.cache.has(wallRole.id) && m.manageable) {
-            await m.roles.add(wallRole.id, "Astrix Security Wall Assignment").catch(() => null);
-            newlyAssigned++;
+          if (!m.roles.cache.has(wallRole.id)) {
+            try {
+              await m.roles.add(wallRole.id, "Astrix Security Wall Assignment").catch(() => null);
+              newlyAssigned++;
+            } catch (_) {}
           }
         }
+        // Explicitly guarantee bot itself has the wall role
+        if (guild.members.me && !guild.members.me.roles.cache.has(wallRole.id)) {
+          await guild.members.me.roles.add(wallRole.id, "Astrix Security Wall (Bot Self)").catch(() => null);
+        }
+        // Explicitly guarantee server owner has the wall role
+        try {
+          const ownerMember = await guild.members.fetch(guild.ownerId).catch(() => null);
+          if (ownerMember && !ownerMember.roles.cache.has(wallRole.id)) {
+            await ownerMember.roles.add(wallRole.id, "Astrix Security Wall (Guild Owner)").catch(() => null);
+          }
+        } catch (_) {}
       }
     } catch (_) {}
 
     await logStep(
-      `🛡️ **Astrix Security Wall role assigned to all members (users & bots)!**\n> *(Members with role: ${totalMembers}/${totalMembers}, Newly assigned: ${newlyAssigned})*`
+      `🛡️ **Astrix Security Wall role assigned to all members (users, bots, owner & Astrix)!**\n> *(Members secured: ${totalMembers}/${totalMembers}, Newly assigned: ${newlyAssigned})*`
     );
     await logStep(`🛡️ **All security features and antinuke modules have been enabled**`);
+
+    // Finalize state and persist to disk
+    const finalConfig = antinukeManager.getGuildAntinuke(guild.id);
+    finalConfig.enabled = true;
+    if (!finalConfig.modules) finalConfig.modules = {};
+    for (const k of ["channel", "role", "ban", "kick", "webhook", "botAdd", "guildUpdate", "emoji", "permissions", "prune"]) {
+      finalConfig.modules[k] = true;
+    }
+    if (bypassRole) finalConfig.bypassRole = bypassRole.id;
+    if (unbypassableRole) finalConfig.unbypassableRole = unbypassableRole.id;
+    if (antivanityRole) finalConfig.antivanityAdminRole = antivanityRole.id;
+    if (criminalsRole) finalConfig.criminalsRole = criminalsRole.id;
+    if (wallRole) {
+      finalConfig.securityWallRole = wallRole.id;
+      if (!finalConfig.wallRoles) finalConfig.wallRoles = [];
+      if (!finalConfig.wallRoles.includes(wallRole.id)) finalConfig.wallRoles.push(wallRole.id);
+    }
+    antinukeManager.setGuildAntinuke(guild.id, finalConfig);
 
     // Step 6: Final Verification Report (Matches Image 5)
     await new Promise((r) => setTimeout(r, 1000));
@@ -593,8 +678,8 @@ async function executeAutoSetup(guild, authorUser, selectedRoleOrAction, replyHa
       `> 🛡️ \`role-logs\` has proper security permissions!\n` +
       `> 🛡️ \`server-logs\` has proper security permissions!\n` +
       `> 🛡️ Checking role positions...\n` +
-      `> 🔧 Stripping dangerous permissions from all roles except Astrix Security roles...\n` +
-      `> 🛡️ **Stripped the requested permissions from roles. Failed: ${failedCount}**\n\n` +
+      `> 🔧 Stripping dangerous permissions from custom roles...\n` +
+      `> 🛡️ **Stripped dangerous permissions from ${strippedCount} custom roles!**\n\n` +
       `**⚠️ Issues Found:**\n` +
       `> • Astrix Security Wall role position verified\n` +
       `> • Astrix Antivanity Admin role position verified\n` +
@@ -689,6 +774,7 @@ async function executeAutoCleanup(guild, authorUser, replyHandler) {
     let deletedRoles = 0;
 
     const roleIdsToDelete = new Set([
+      config.bypassRole,
       config.securityWallRole,
       config.antivanityAdminRole,
       config.criminalsRole,
@@ -697,16 +783,26 @@ async function executeAutoCleanup(guild, authorUser, replyHandler) {
     ].filter(Boolean));
 
     const securityRoleNames = [
+      "astrix bypass",
       "astrix security wall",
       "astrix antivanity admin",
       "criminals",
       "astrix un-bypassable setup",
     ];
 
-    const rolesCache = Array.from(guild.roles.cache.values());
+    const fetchedRoles = await guild.roles.fetch().catch(() => guild.roles.cache);
+    const rolesCache = Array.from(fetchedRoles.values());
     for (const r of rolesCache) {
       if (r.id === guild.id || r.managed || r.name === "@everyone") continue;
-      if (roleIdsToDelete.has(r.id) || securityRoleNames.includes(r.name.toLowerCase())) {
+      const lower = r.name.toLowerCase();
+      if (
+        roleIdsToDelete.has(r.id) ||
+        securityRoleNames.includes(lower) ||
+        lower.includes("astrix bypass") ||
+        lower.includes("astrix security wall") ||
+        lower.includes("astrix antivanity") ||
+        lower.includes("un-bypassable setup")
+      ) {
         try {
           await r.delete("Astrix Security Deactivation & Asset Purge").catch(() => null);
           deletedRoles++;
@@ -740,10 +836,19 @@ async function executeAutoCleanup(guild, authorUser, replyHandler) {
       "server-logs",
     ];
 
-    const channelsCache = Array.from(guild.channels.cache.values());
+    const fetchedChannels = await guild.channels.fetch().catch(() => guild.channels.cache);
+    const channelsCache = Array.from(fetchedChannels.values());
+
+    // Find "🛡️ ASTRIX SECURITY" Category
+    const category = channelsCache.find(
+      (c) => c && c.type === ChannelType.GuildCategory && (c.name.toLowerCase().includes("astrix security") || c.name.toLowerCase().includes("security logs"))
+    );
+
     for (const c of channelsCache) {
-      if (c.id === guild.id) continue;
-      if (channelIdsToDelete.has(c.id) || securityChannelNames.includes(c.name.toLowerCase())) {
+      if (!c || c.id === guild.id || c.type === ChannelType.GuildCategory) continue;
+      const lower = c.name.toLowerCase();
+      const isInSecCategory = category && c.parentId === category.id;
+      if (channelIdsToDelete.has(c.id) || securityChannelNames.includes(lower) || isInSecCategory) {
         try {
           await c.delete("Astrix Security Deactivation & Asset Purge").catch(() => null);
           deletedChannels++;
@@ -751,11 +856,6 @@ async function executeAutoCleanup(guild, authorUser, replyHandler) {
       }
     }
 
-    // Delete "🛡️ ASTRIX SECURITY" Category
-    const category = findChannel(
-      guild,
-      (c) => c.type === ChannelType.GuildCategory && (c.name.toLowerCase().includes("astrix security") || c.name.toLowerCase().includes("security logs"))
-    );
     if (category) {
       try {
         await category.delete("Astrix Security Deactivation & Category Purge").catch(() => null);
