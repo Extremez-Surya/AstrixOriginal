@@ -159,31 +159,44 @@ async function handleSuggestionInteraction(client, interaction) {
   const downCount = votes.downvotes.length;
 
   const message = interaction.message;
-  let updatedComponents = message.components;
 
-  if (message.components && message.components.length > 0) {
-    const actionRow = new ActionRowBuilder();
-    const upBtn = new ButtonBuilder()
-      .setCustomId(`suggest_upvote_${messageId}`)
-      .setLabel(`${upCount}`)
-      .setEmoji(EMOJIS.upvote || "👍")
-      .setStyle(ButtonStyle.Success);
+  const upBtn = new ButtonBuilder()
+    .setCustomId(`suggest_upvote_${messageId}`)
+    .setLabel(`${upCount}`)
+    .setEmoji(EMOJIS.upvote || "👍")
+    .setStyle(ButtonStyle.Success);
 
-    const downBtn = new ButtonBuilder()
-      .setCustomId(`suggest_downvote_${messageId}`)
-      .setLabel(`${downCount}`)
-      .setEmoji(EMOJIS.downvote || "👎")
-      .setStyle(ButtonStyle.Danger);
+  const downBtn = new ButtonBuilder()
+    .setCustomId(`suggest_downvote_${messageId}`)
+    .setLabel(`${downCount}`)
+    .setEmoji(EMOJIS.downvote || "👎")
+    .setStyle(ButtonStyle.Danger);
 
-    actionRow.addComponents(upBtn, downBtn);
+  const actionRow = new ActionRowBuilder().addComponents(upBtn, downBtn);
 
-    if (message.flags.has(MessageFlags.IsComponentsV2)) {
-      const container = ContainerBuilder.from(message.components[0]);
-      if (container && typeof container.addActionRowComponents === "function") {
+  let updatedComponents = [];
+
+  const rawContainer = message.components?.[0];
+  if (rawContainer && (rawContainer.type === 17 || rawContainer.components)) {
+    const container = new ContainerBuilder();
+    for (const comp of rawContainer.components) {
+      if (comp.type === 1) {
+        // ActionRow
         container.addActionRowComponents(actionRow);
-        updatedComponents = [container];
+      } else if (comp.type === 10) {
+        // TextDisplay
+        container.addTextDisplayComponents(new TextDisplayBuilder().setContent(comp.content || ""));
+      } else if (comp.type === 14) {
+        // Separator
+        const sep = new SeparatorBuilder();
+        if (comp.spacing) sep.setSpacing(comp.spacing);
+        if (typeof comp.divider === "boolean") sep.setDivider(comp.divider);
+        container.addSeparatorComponents(sep);
       }
     }
+    updatedComponents = [container];
+  } else {
+    updatedComponents = [actionRow];
   }
 
   let feedbackText = "Vote recorded!";
@@ -199,6 +212,7 @@ async function handleSuggestionInteraction(client, interaction) {
 
   await message.edit({
     components: updatedComponents,
+    flags: MessageFlags.IsComponentsV2,
   }).catch(() => null);
 
   return true;

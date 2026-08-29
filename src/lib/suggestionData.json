@@ -2,10 +2,17 @@
   "guilds": {
     "1526109131042459678": {
       "suggestChannelId": null,
-      "suggestAllowAllChannels": true,
+      "suggestAllowAllChannels": false,
       "suggestThreadChannelId": null,
       "suggestThreadEnabled": false
     }
   },
-  "votes": {}
+  "votes": {
+    "1542933229982449846": {
+      "upvotes": [
+        "1299394763933618239"
+      ],
+      "downvotes": []
+    }
+  }
 }

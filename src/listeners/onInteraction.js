@@ -52,6 +52,21 @@ module.exports = {
     );
     if (handledSugHub) return;
 
+    // Handle Poll Real-time Voting Interactions
+    const { handlePollInteraction } = require("../lib/pollManager");
+    const handledPoll = await handlePollInteraction(client, interaction);
+    if (handledPoll) return;
+
+    // Handle Community Feedback & Bug Reporting Interactions
+    const { handleFeedbackInteraction } = require("../lib/feedbackManager");
+    const handledFeedback = await handleFeedbackInteraction(client, interaction);
+    if (handledFeedback) return;
+
+    // Handle Embed Studio & Interactive Embed Interactions
+    const { handleEmbedInteraction } = require("../lib/embedManager");
+    const handledEmbed = await handleEmbedInteraction(client, interaction);
+    if (handledEmbed) return;
+
     // Handle Anti-Raid Interactions (Buttons, Control Panels & Confirmation Dialogs)
     const {
       handleAntiRaidInteraction,

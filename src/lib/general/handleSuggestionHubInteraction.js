@@ -15,6 +15,7 @@ const {
 } = require("discord.js");
 const suggestionManager = require("../suggestionManager");
 const noprefixManager = require("../noprefixManager");
+const EMOJIS = require("../emojis");
 
 function isAuthorized(client, member, guild) {
   if (!member || !guild) return false;
@@ -31,24 +32,24 @@ function isAuthorized(client, member, guild) {
 function buildSuggestionNavMenu(activeId = "overview") {
   return new StringSelectMenuBuilder()
     .setCustomId("sug_nav_menu")
-    .setPlaceholder("🧭 Suggestion System Control Navigation...")
+    .setPlaceholder("🧭 Suggestion System Hub Navigation...")
     .addOptions(
       new StringSelectMenuOptionBuilder()
-        .setLabel("Overview & Telemetry")
+        .setLabel("Control Center & Telemetry")
         .setValue("sug_nav_overview")
-        .setDescription("View suggestion status, channel routing & system telemetry")
+        .setDescription("Overview of suggestion routing, feed channels & status")
         .setEmoji("💡")
         .setDefault(activeId === "overview"),
       new StringSelectMenuOptionBuilder()
         .setLabel("Channel Routing & Modes")
         .setValue("sug_nav_channels")
-        .setDescription("Configure designated suggestion channel and AnyChannel mode")
+        .setDescription("Configure designated suggestion feed channel & any-channel mode")
         .setEmoji("📍")
         .setDefault(activeId === "channels"),
       new StringSelectMenuOptionBuilder()
         .setLabel("Discussion Threads Engine")
         .setValue("sug_nav_threads")
-        .setDescription("Configure automatic discussion threads for new suggestions")
+        .setDescription("Configure automatic discussion threads for suggestions")
         .setEmoji("🧵")
         .setDefault(activeId === "threads"),
       new StringSelectMenuOptionBuilder()
@@ -66,34 +67,26 @@ function buildSuggestionNavMenu(activeId = "overview") {
 function buildSuggestionOverviewView(guild, config) {
   const container = new ContainerBuilder();
 
-  const chanStr = config.suggestChannelId ? `<#${config.suggestChannelId}>` : "*Not Configured*";
-  const threadChanStr = config.suggestThreadChannelId ? `<#${config.suggestThreadChannelId}>` : "*Not Configured*";
-  const anyChanStatus = config.suggestAllowAllChannels ? "🟢 `ENABLED (Any Channel)`" : "🔴 `DISABLED (Designated Only)`";
+  const chanStr = config.suggestChannelId ? `<#${config.suggestChannelId}>` : "*None (Not Configured)*";
+  const threadChanStr = config.suggestThreadChannelId ? `<#${config.suggestThreadChannelId}>` : "*None (Not Configured)*";
+  const anyChanStatus = config.suggestAllowAllChannels ? "🟢 `ENABLED (Any Channel)`" : "🔴 `STRICT (Designated Only)`";
   const threadStatus = config.suggestThreadEnabled ? "🟢 `ENABLED`" : "🔴 `DISABLED`";
-
   const isSystemReady = Boolean(config.suggestChannelId || config.suggestThreadChannelId);
 
   const headerText =
-    `### 💡 **Community Suggestions Control Suite**\n` +
-    `-# *Manage automated suggestion cards, real-time voting & discussion threads for **${guild.name}***`;
+    `### 💡 **Community Suggestions • Control Hub**\n` +
+    `-# Automated community feedback cards, real-time voting & discussion threads for **${guild.name}**`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  const statusHeadline = isSystemReady
-    ? `### 🟢 **Status: Suggestions Engine Active**\n> Live community feedback listening with interactive 1-click voting.`
-    : `### 🟡 **Status: Suggestion Channel Pending**\n> Select a destination channel from the menu below to activate suggestions.`;
-  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(statusHeadline));
-
   const telemetryText =
-    `**📊 System Configuration & Routing:**\n` +
-    `> • 📍 **Suggestion Feed Channel:** ${chanStr}\n` +
-    `> • 🌐 **Any-Channel Submission:** ${anyChanStatus}\n` +
-    `> • 🧵 **Auto-Thread Discussions:** ${threadStatus} (Feed: ${threadChanStr})\n` +
-    `> • 🗳️ **Voting Mechanism:** Dual Reactive Counters (Upvote / Downvote)\n\n` +
-    `💡 *Use the navigation menu or quick buttons below to configure routing.*`;
+    `> **System Status:** ${isSystemReady ? "🟢 `ARMED & ACTIVE`" : "🟡 `CHANNEL PENDING`"} • **Voting Engine:** 🟢 \`ONLINE\`\n` +
+    `> **Suggestion Feed:** ${chanStr} • **Any-Channel Mode:** ${anyChanStatus}\n` +
+    `> **Auto-Threads:** ${threadStatus} (Feed: ${threadChanStr})\n\n` +
+    `-# Select an action below to update suggestion channel routing or toggle modes.`;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(telemetryText));
 
@@ -101,26 +94,51 @@ function buildSuggestionOverviewView(guild, config) {
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
+  // 1. Action Select Dropdown
+  const actionMenu = new StringSelectMenuBuilder()
+    .setCustomId("sug_overview_select_action")
+    .setPlaceholder("⚡ Suggestion System Actions (Configure / Toggle)...")
+    .addOptions(
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Configure Channel Routing")
+        .setValue("nav_channels")
+        .setDescription("Set suggestion feed channel and any-channel toggle")
+        .setEmoji("📍"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Discussion Threads Settings")
+        .setValue("nav_threads")
+        .setDescription("Configure auto-thread spawning on suggestions")
+        .setEmoji("🧵"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Toggle Any-Channel Mode")
+        .setValue("action_toggle_anychannel")
+        .setDescription(config.suggestAllowAllChannels ? "Disable Any-Channel mode" : "Enable Any-Channel mode")
+        .setEmoji("🌐"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Toggle Auto-Threads")
+        .setValue("action_toggle_threads")
+        .setDescription(config.suggestThreadEnabled ? "Disable auto discussion threads" : "Enable auto discussion threads")
+        .setEmoji("🧵"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Reset / Clear All Configuration")
+        .setValue("action_reset_all")
+        .setDescription("Reset all suggestion channels and settings to default")
+        .setEmoji("🧹"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("Command Manual & Guide")
+        .setValue("nav_manual")
+        .setDescription("View full command syntax reference")
+        .setEmoji("📖")
+    );
+
+  const actionRow = new ActionRowBuilder().addComponents(actionMenu);
   const navRow = new ActionRowBuilder().addComponents(buildSuggestionNavMenu("overview"));
 
-  const toggleAnyBtn = new ButtonBuilder()
-    .setCustomId("sug_btn_toggle_anychannel")
-    .setLabel(config.suggestAllowAllChannels ? "AnyChannel: ON" : "AnyChannel: OFF")
-    .setEmoji(config.suggestAllowAllChannels ? "🌐" : "🔒")
-    .setStyle(config.suggestAllowAllChannels ? ButtonStyle.Success : ButtonStyle.Secondary);
-
-  const toggleThreadBtn = new ButtonBuilder()
-    .setCustomId("sug_btn_toggle_thread")
-    .setLabel(config.suggestThreadEnabled ? "Threads: ON" : "Threads: OFF")
-    .setEmoji("🧵")
-    .setStyle(config.suggestThreadEnabled ? ButtonStyle.Success : ButtonStyle.Secondary);
-
-  const clearBtn = new ButtonBuilder()
-    .setCustomId("sug_btn_clear_all")
-    .setLabel("Clear / Reset")
-    .setEmoji("🧹")
-    .setStyle(ButtonStyle.Danger)
-    .setDisabled(!isSystemReady);
+  const cpBtn = new ButtonBuilder()
+    .setCustomId("sug_nav_overview")
+    .setLabel("Control Center")
+    .setEmoji("💡")
+    .setStyle(ButtonStyle.Primary);
 
   const refreshBtn = new ButtonBuilder()
     .setCustomId("sug_btn_refresh")
@@ -128,10 +146,12 @@ function buildSuggestionOverviewView(guild, config) {
     .setEmoji("🔄")
     .setStyle(ButtonStyle.Secondary);
 
-  const btnRow = new ActionRowBuilder().addComponents(toggleAnyBtn, toggleThreadBtn, clearBtn, refreshBtn);
+  const btnRow = new ActionRowBuilder().addComponents(cpBtn, refreshBtn);
 
+  container.addActionRowComponents(actionRow);
   container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Community • Suggestions Engine`));
 
   return container;
 }
@@ -144,8 +164,8 @@ function buildSuggestionChannelsView(guild, config) {
   const chanStr = config.suggestChannelId ? `<#${config.suggestChannelId}>` : "*Not Configured*";
 
   const headerText =
-    `### 📍 **Suggestion Channel Routing & Submission Modes**\n` +
-    `-# Configure the dedicated channel where members' submitted suggestion cards will be posted.`;
+    `### 📍 **Suggestions • Channel Routing & Modes**\n` +
+    `-# Configure the dedicated channel where members' submitted suggestion cards will be posted`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
@@ -153,10 +173,9 @@ function buildSuggestionChannelsView(guild, config) {
   );
 
   const content =
-    `**⚙️ Current Channel Status:**\n` +
-    `> • 📍 **Active Suggestion Channel:** ${chanStr}\n` +
-    `> • 🌐 **AnyChannel Mode:** ${config.suggestAllowAllChannels ? "🟢 \`Active\` (Members can run \`.suggest\` anywhere)" : "🔴 \`Strict\` (Members must post inside the suggestion channel)"}\n\n` +
-    `💡 *Select a new channel from the menu below to update routing instantly.*`;
+    `> **Active Suggestion Feed:** ${chanStr}\n` +
+    `> **Any-Channel Mode:** ${config.suggestAllowAllChannels ? "🟢 `ENABLED` (Members can suggest from any channel)" : "🔴 `STRICT` (Members must post inside the suggestion channel)"}\n\n` +
+    `-# Select a channel below to set or change your server's suggestion feed.`;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
 
@@ -170,10 +189,11 @@ function buildSuggestionChannelsView(guild, config) {
     .setChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement);
 
   const menuRow = new ActionRowBuilder().addComponents(chanSelect);
+  const navRow = new ActionRowBuilder().addComponents(buildSuggestionNavMenu("channels"));
 
   const toggleAnyBtn = new ButtonBuilder()
     .setCustomId("sug_btn_toggle_anychannel")
-    .setLabel(config.suggestAllowAllChannels ? "Toggle AnyChannel (Currently ON)" : "Toggle AnyChannel (Currently OFF)")
+    .setLabel(config.suggestAllowAllChannels ? "AnyChannel: ON" : "AnyChannel: OFF")
     .setEmoji("🌐")
     .setStyle(config.suggestAllowAllChannels ? ButtonStyle.Success : ButtonStyle.Secondary);
 
@@ -185,9 +205,10 @@ function buildSuggestionChannelsView(guild, config) {
 
   const btnRow = new ActionRowBuilder().addComponents(toggleAnyBtn, cpBtn);
 
-  container.addActionRowComponents(new ActionRowBuilder().addComponents(buildSuggestionNavMenu("channels")));
   container.addActionRowComponents(menuRow);
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Community • Routing Settings`));
 
   return container;
 }
@@ -200,8 +221,8 @@ function buildSuggestionThreadsView(guild, config) {
   const threadChanStr = config.suggestThreadChannelId ? `<#${config.suggestThreadChannelId}>` : "*Not Configured*";
 
   const headerText =
-    `### 🧵 **Suggestion Discussion Threads Engine**\n` +
-    `-# Automatically spawn a dedicated Discord Public Thread for every new suggestion for in-depth community feedback.`;
+    `### 🧵 **Suggestions • Discussion Threads Engine**\n` +
+    `-# Automatically spawn a dedicated Discord Public Thread for every new suggestion`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
@@ -209,13 +230,9 @@ function buildSuggestionThreadsView(guild, config) {
   );
 
   const content =
-    `**⚙️ Thread System Status:**\n` +
-    `> • 🧵 **Auto-Thread Creation:** ${config.suggestThreadEnabled ? "🟢 `ENABLED`" : "🔴 `DISABLED`"}\n` +
-    `> • 📍 **Thread Feed Channel:** ${threadChanStr}\n\n` +
-    `**✨ Features:**\n` +
-    `> • Creates a focused discussion thread named after the suggestion topic.\n` +
-    `> • Prevents main suggestion channels from getting cluttered with chatter.\n` +
-    `> • Keeps upvotes and downvotes pinned directly on the root suggestion card.`;
+    `> **Auto-Thread Creation:** ${config.suggestThreadEnabled ? "🟢 `ENABLED`" : "🔴 `DISABLED`"}\n` +
+    `> **Thread Feed Channel:** ${threadChanStr}\n\n` +
+    `-# Keeps discussions inside clean public threads without cluttering main channels.`;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
 
@@ -229,12 +246,13 @@ function buildSuggestionThreadsView(guild, config) {
     .setChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement);
 
   const menuRow = new ActionRowBuilder().addComponents(chanSelect);
+  const navRow = new ActionRowBuilder().addComponents(buildSuggestionNavMenu("threads"));
 
   const toggleThreadBtn = new ButtonBuilder()
     .setCustomId("sug_btn_toggle_thread")
-    .setLabel(config.suggestThreadEnabled ? "Disable Auto-Threads" : "Enable Auto-Threads")
+    .setLabel(config.suggestThreadEnabled ? "Threads: ON" : "Threads: OFF")
     .setEmoji("🧵")
-    .setStyle(config.suggestThreadEnabled ? ButtonStyle.Danger : ButtonStyle.Success);
+    .setStyle(config.suggestThreadEnabled ? ButtonStyle.Success : ButtonStyle.Secondary);
 
   const cpBtn = new ButtonBuilder()
     .setCustomId("sug_nav_overview")
@@ -244,9 +262,10 @@ function buildSuggestionThreadsView(guild, config) {
 
   const btnRow = new ActionRowBuilder().addComponents(toggleThreadBtn, cpBtn);
 
-  container.addActionRowComponents(new ActionRowBuilder().addComponents(buildSuggestionNavMenu("threads")));
   container.addActionRowComponents(menuRow);
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Community • Thread Engine`));
 
   return container;
 }
@@ -258,8 +277,8 @@ function buildSuggestionManualView() {
   const container = new ContainerBuilder();
 
   const headerText =
-    `### 📖 **Community Suggestions Reference Manual**\n` +
-    `-# Complete syntax guide for submitting suggestions and administrator controls.`;
+    `### 📖 **Community Suggestions • Command Reference Manual**\n` +
+    `-# Complete syntax guide for submitting suggestions and administrator controls`;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
@@ -267,14 +286,14 @@ function buildSuggestionManualView() {
   );
 
   const content =
-    `💡 **Member Submission Syntax:**\n` +
-    `> • \`.suggest <idea / feedback>\` — Quick submit a suggestion\n` +
+    `**💡 Member Submission Syntax**\n` +
+    `> • \`.suggest <idea / feedback>\` — Submit quick proposal card\n` +
     `> • \`.suggest <Title> | <Description> | <Reason>\` — Full structured suggestion card\n` +
     `> • \`.suggestthread <Title> | <Content>\` — Submit suggestion with automatic public thread\n\n` +
-    `🛠️ **Staff & Admin Management:**\n` +
+    `**🛠️ Staff & Administrator Controls**\n` +
     `> • \`.suggest\` — Open interactive Control Center\n` +
     `> • \`.suggest channel <#channel>\` — Set suggestion destination channel\n` +
-    `> • \`.suggest anychannel <on|off>\` — Allow suggestions from all channels\n` +
+    `> • \`.suggest anychannel <on|off>\` — Allow submissions from all channels\n` +
     `> • \`.suggestthread channel <#channel>\` — Set thread spawn channel\n` +
     `> • \`.suggest disable\` — Disable suggestion engine`;
 
@@ -284,6 +303,8 @@ function buildSuggestionManualView() {
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
+  const navRow = new ActionRowBuilder().addComponents(buildSuggestionNavMenu("manual"));
+
   const cpBtn = new ButtonBuilder()
     .setCustomId("sug_nav_overview")
     .setLabel("Control Center")
@@ -292,8 +313,9 @@ function buildSuggestionManualView() {
 
   const btnRow = new ActionRowBuilder().addComponents(cpBtn);
 
-  container.addActionRowComponents(new ActionRowBuilder().addComponents(buildSuggestionNavMenu("manual")));
+  container.addActionRowComponents(navRow);
   container.addActionRowComponents(btnRow);
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Community • Documentation`));
 
   return container;
 }
@@ -323,27 +345,29 @@ function buildSuggestionSubmissionCard(author, title, description, reason = null
 
   const headerText =
     `### 💡 **Community Suggestion**\n` +
-    `-# *Submitted by <@${author.id}> (\`${author.tag || author.username}\`)*`;
+    `-# Submitted by <@${author.id}> (\`${author.tag || author.username}\`) • **Status:** 🟡 \`UNDER REVIEW\``;
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
 
   container.addSeparatorComponents(
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
 
-  let body = `**📌 Proposal:**\n> ${title}\n\n`;
+  let body = `> **📌 Proposal:**\n> ${title}\n\n`;
   if (description) {
-    body += `**📝 Details:**\n> ${description}\n\n`;
+    body += `> **📝 Details / Context:**\n> ${description}\n\n`;
   }
   if (reason) {
-    body += `**🎯 Expected Benefit & Value:**\n> ${reason}\n\n`;
+    body += `> **🎯 Expected Value:**\n> ${reason}\n\n`;
   }
-  body += `-# *Click the interactive buttons below to cast your vote.*`;
+  body += `-# Click the reaction buttons below to vote on this suggestion.`;
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(body));
 
   container.addSeparatorComponents(
     new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
   );
+
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ASTRIXCODE™ Community Suggestion Engine`));
 
   return container;
 }
@@ -384,6 +408,50 @@ async function handleSuggestionHubInteraction(client, interaction) {
     const updated = buildSuggestionContainer(guild, config, targetTab);
     await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
     return true;
+  }
+
+  // 1.2 Overview Action Select
+  if (isMenu && customId === "sug_overview_select_action") {
+    const selected = interaction.values[0];
+    if (selected.startsWith("nav_")) {
+      const targetTab = selected.replace("nav_", "");
+      const updated = buildSuggestionContainer(guild, config, targetTab);
+      await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+    if (selected === "action_toggle_anychannel") {
+      suggestionManager.updateGuildConfig(client, guildId, (cfg) => {
+        cfg.suggestAllowAllChannels = !cfg.suggestAllowAllChannels;
+        return cfg;
+      });
+      const freshConfig = suggestionManager.getGuildConfig(client, guildId);
+      const updated = buildSuggestionContainer(guild, freshConfig, "overview");
+      await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+    if (selected === "action_toggle_threads") {
+      suggestionManager.updateGuildConfig(client, guildId, (cfg) => {
+        cfg.suggestThreadEnabled = !cfg.suggestThreadEnabled;
+        return cfg;
+      });
+      const freshConfig = suggestionManager.getGuildConfig(client, guildId);
+      const updated = buildSuggestionContainer(guild, freshConfig, "overview");
+      await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
+    if (selected === "action_reset_all") {
+      suggestionManager.updateGuildConfig(client, guildId, (cfg) => {
+        cfg.suggestChannelId = null;
+        cfg.suggestAllowAllChannels = false;
+        cfg.suggestThreadChannelId = null;
+        cfg.suggestThreadEnabled = false;
+        return cfg;
+      });
+      const freshConfig = suggestionManager.getGuildConfig(client, guildId);
+      const updated = buildSuggestionContainer(guild, freshConfig, "overview");
+      await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      return true;
+    }
   }
 
   // 2. Direct Navigation Buttons
@@ -449,23 +517,7 @@ async function handleSuggestionHubInteraction(client, interaction) {
     return true;
   }
 
-  // 7. Clear All
-  if (customId === "sug_btn_clear_all") {
-    suggestionManager.updateGuildConfig(client, guildId, (cfg) => {
-      cfg.suggestChannelId = null;
-      cfg.suggestAllowAllChannels = false;
-      cfg.suggestThreadChannelId = null;
-      cfg.suggestThreadEnabled = false;
-      return cfg;
-    });
-
-    const freshConfig = suggestionManager.getGuildConfig(client, guildId);
-    const updated = buildSuggestionContainer(guild, freshConfig, "overview");
-    await interaction.update({ components: [updated], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
-    return true;
-  }
-
-  // 8. Refresh
+  // 7. Refresh
   if (customId === "sug_btn_refresh") {
     const freshConfig = suggestionManager.getGuildConfig(client, guildId);
     const updated = buildSuggestionContainer(guild, freshConfig, "overview");

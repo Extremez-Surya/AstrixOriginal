@@ -38,7 +38,7 @@
     }
   },
   "1526109131042459678": {
-    "enabled": true,
+    "enabled": false,
     "superAntinuke": false,
     "logChannel": "1542168253315547136",
     "superLogChannel": null,
@@ -62,16 +62,16 @@
     "windowMs": 60000,
     "autoRevert": true,
     "modules": {
-      "channel": true,
-      "role": true,
-      "ban": true,
-      "kick": true,
-      "webhook": true,
-      "botAdd": true,
-      "guildUpdate": true,
-      "emoji": true,
-      "permissions": true,
-      "prune": true
+      "channel": false,
+      "role": false,
+      "ban": false,
+      "kick": false,
+      "webhook": false,
+      "botAdd": false,
+      "guildUpdate": false,
+      "emoji": false,
+      "permissions": false,
+      "prune": false
     },
     "stats": {
       "nukesIntercepted": 0,

@@ -1,0 +1,54 @@
+{
+  "guilds": {
+    "1526109131042459678": {
+      "staffChannelId": "1526478736331903027",
+      "portalChannelId": "1542944533569085551",
+      "portalMessageId": null,
+      "totalSubmissions": 6
+    }
+  },
+  "submissions": {
+    "mtd7qpvkm9qb": {
+      "id": "mtd7qpvkm9qb",
+      "guildId": "1526109131042459678",
+      "userId": "1299394763933618239",
+      "category": "general",
+      "topic": "test",
+      "details": "test test test test",
+      "channelId": "1542944533569085551",
+      "status": "approved",
+      "staffId": "1299394763933618239",
+      "staffNote": "test complete",
+      "createdAt": 1787937362048,
+      "updatedAt": 1787937399373
+    },
+    "mtd7scphzxy5": {
+      "id": "mtd7scphzxy5",
+      "guildId": "1526109131042459678",
+      "userId": "1299394763933618239",
+      "category": "submit_bot",
+      "topic": "test",
+      "details": "test test test test",
+      "channelId": "1542944533569085551",
+      "status": "thanked",
+      "staffId": "1299394763933618239",
+      "staffNote": "thanks",
+      "createdAt": 1787937438293,
+      "updatedAt": 1787937452512
+    },
+    "mtd7wd4d1a6g": {
+      "id": "mtd7wd4d1a6g",
+      "guildId": "1526109131042459678",
+      "userId": "1299394763933618239",
+      "category": "submit_bot",
+      "topic": "test",
+      "details": "test test test test",
+      "channelId": "1542944533569085551",
+      "status": "approved",
+      "staffId": "1299394763933618239",
+      "staffNote": "✨ Thank you for the wonderful suggestion! Your proposal has been approved and accepted by the server staff team.",
+      "createdAt": 1787937625453,
+      "updatedAt": 1787937635864
+    }
+  }
+}
