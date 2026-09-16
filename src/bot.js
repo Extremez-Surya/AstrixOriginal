@@ -1,7 +1,7 @@
 try {
   process.loadEnvFile();
 } catch (_) {}
-
+// start the bot from here...
 const { CustomClient } = require("./lib/functions/customClient.js");
 const { AppEvents } = require("./lib/functions/application-ecs-loader.js");
 const { logger } = require("./lib/functions/common.js");
