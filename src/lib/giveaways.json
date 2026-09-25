@@ -114,5 +114,36 @@
     "ended": true,
     "paused": false,
     "winners": []
+  },
+  "1552204175654387723": {
+    "messageId": "1552204175654387723",
+    "channelId": "1551818963959160872",
+    "guildId": "1551488175891808336",
+    "prize": "nitro",
+    "winnersCount": 1,
+    "endTimestamp": 1790144761408,
+    "hostId": "984409270344908872",
+    "entries": [
+      "984409270344908872",
+      "731390792567881739"
+    ],
+    "ended": true,
+    "paused": false,
+    "winners": [
+      "731390792567881739"
+    ]
+  },
+  "1552205010862088244": {
+    "messageId": "1552205010862088244",
+    "channelId": "1551818963959160872",
+    "guildId": "1551488175891808336",
+    "prize": "discord nitro",
+    "winnersCount": 1,
+    "endTimestamp": 1790231300554,
+    "hostId": "731390792567881739",
+    "entries": [],
+    "ended": true,
+    "paused": false,
+    "winners": []
   }
 }

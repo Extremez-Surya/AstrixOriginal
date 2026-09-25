@@ -26,8 +26,5 @@
   "servers": [],
   "roles": [],
   "blacklistedUsers": [],
-  "blacklistedServers": [],
-  "stats": {
-    "totalNoPrefixExecutions": 196
-  }
+  "blacklistedServers": []
 }

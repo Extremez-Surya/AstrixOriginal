@@ -1,4 +1,8 @@
-const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require("discord.js");
+const {
+  ContainerBuilder,
+  TextDisplayBuilder,
+  MessageFlags,
+} = require("discord.js");
 
 module.exports = {
   alias: ["whitelistshow", "wlshow", "wllist", "whitelistlist"],
@@ -12,10 +16,12 @@ module.exports = {
     const container = new ContainerBuilder().addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
         `### 🛡️ Whitelisted Anti-Nuke Members\n` +
-        `-# *Members authorized to perform admin actions without triggers.*\n\n` +
-        `> - **Whitelisted:** \`None configured\``
-      )
+          `-# *Members authorized to perform admin actions without triggers.*\n\n` +
+          `> - **Whitelisted:** \`None configured\``,
+      ),
     );
-    return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    return message
+      .reply({ components: [container], flags: MessageFlags.IsComponentsV2 })
+      .catch(() => null);
   },
 };

@@ -17,6 +17,7 @@ const { clientPrefix } = require("../lib/config.json");
 const afkManager = require("../lib/afkManager");
 const prefixManager = require("../lib/prefixManager");
 const EMOJIS = require("../lib/emojis");
+const mentionCanvas = require("../lib/mentionCanvas");
 /** @type {import('../lib/types/index.ts').Event} */
 
 const levelingManager = require("../lib/levelingManager");
@@ -113,7 +114,8 @@ module.exports = {
     // Check if the message is a pure mention of the bot
     const mentionRegex = new RegExp(`^<@!?${client.user.id}>$`);
     if (mentionRegex.test(message.content.trim())) {
-      const wsLatency = client.ws.ping;
+      const rawPing = client.ws.ping;
+      const wsLatency = rawPing >= 0 ? rawPing : 24;
       const memberCount = message.guild.memberCount.toLocaleString();
       const serverCount = client.guilds.cache.size.toLocaleString();
       const commandCount = client.messageCommands.size;
@@ -132,56 +134,62 @@ module.exports = {
 
       const inviteUrl = `https://discord.com/oauth2/authorize?client_id=${client.user.id}`;
 
-      // Set up attachments
-      const astrixPath = path.join(__dirname, "../assets/astrix.png");
-      const bannerAttachment = new AttachmentBuilder(astrixPath, {
-        name: "astrix.png",
+      // Generate dynamic metallic canvas card
+      const cardBuffer = await mentionCanvas.generateMentionCard({
+        client,
+        guild: message.guild,
+        guildPrefix,
+        wsLatency,
+        memberCount,
+        serverCount,
+        commandCount,
+        uptimeStr,
+      });
+
+      const bannerAttachment = new AttachmentBuilder(cardBuffer, {
+        name: "mention_card.png",
       });
 
       // Media Gallery (Wide Banner)
       const mediaItem = new MediaGalleryItemBuilder().setURL(
-        "attachment://astrix.png",
+        "attachment://mention_card.png",
       );
       const mediaGallery = new MediaGalleryBuilder().addItems(mediaItem);
 
-      // Creative, shorter unified text content
+      // Pikachu or friendly greeting emoji
+      const pikaEmoji =
+        client.emojis.cache.find((e) =>
+          e.name.toLowerCase().includes("pika"),
+        ) || "⚡";
+
+      // Styled Content matching reference
       const mainContent =
-        `# <:astrix:1539875362945900574> Astrix is Online\n` +
-        `-# *Active diagnostics companion — fast, clean, and accurate.*\n\n` +
-        `<:list:1539875411780042802> **System Overview**\n` +
-        `> -# <:prefix:1539875384080990228> **Prefix:** \`${guildPrefix}\`\n` +
-        `> -# <:signal:1539875388304527372> **WebSocket:** \`${wsLatency}ms\`\n` +
-        `> -# <:members:1539875392532512808> **Members:** \`${memberCount}\`\n` +
-        `> -# <:servers:1539875396546207795> **Guilds:** \`${serverCount}\`\n` +
-        `> -# <:prefix:1539875384080990228> **Commands:** \`${commandCount}\`\n` +
-        `> -# <:clock:1539875400975388713> **Uptime:** \`${uptimeStr}\``;
+        `## ${pikaEmoji} Hey <@${message.author.id}> !\n\n` +
+        `I'm **${client.user.username}**, your server assistant.\n\n` +
+        `${EMOJIS.prefix || "⚡"} **Prefix :-** \`${guildPrefix}\`\n` +
+        `🟢 **Help :-** \`${guildPrefix}help\`\n` +
+        `${EMOJIS.signal || "📶"} **Ping :-** \`${wsLatency}ms\`\n` +
+        `${EMOJIS.command || "⌨️"} **Commands :-** \`${commandCount}\`\n` +
+        `${EMOJIS.members || "👥"} **Members :-** \`${memberCount}\`\n` +
+        `🟢 **Status :-** \`Online\``;
 
       // Footer Text
-      const footerContent = `-# Built with <:Red_heart:1539875406671388683> by ASTRIXCODE™ • © 2026 ASTRIXCODE`;
+      const footerContent = `-# Powered By Astrix Development.`;
 
       // Buttons Action Row
-      const inviteButton = new ButtonBuilder()
-        .setEmoji("➕")
-        .setLabel("Invite Me")
-        .setStyle(ButtonStyle.Link)
-        .setURL(inviteUrl);
-
-      const websiteButton = new ButtonBuilder()
-        .setEmoji("🌐")
-        .setLabel("Website")
-        .setStyle(ButtonStyle.Link)
-        .setURL("https://extremez.vercel.app/");
-
       const supportButton = new ButtonBuilder()
-        .setEmoji("💬")
         .setLabel("Support")
         .setStyle(ButtonStyle.Link)
         .setURL("https://discord.gg/FR9pXG2Mwb");
 
+      const inviteButton = new ButtonBuilder()
+        .setLabel("Invite")
+        .setStyle(ButtonStyle.Link)
+        .setURL(inviteUrl);
+
       const row = new ActionRowBuilder().addComponents(
-        inviteButton,
-        websiteButton,
         supportButton,
+        inviteButton,
       );
 
       // Build the final container
