@@ -1,5 +1,5 @@
 const welcomeManager = require("../../lib/welcomeManager");
-const { buildJoinDmHubPayload } = require("../../lib/welcome/welcomeBuilder");
+const { buildJoinDmHubPayload, buildJoinDmEditorPayload } = require("../../lib/welcome/welcomeBuilder");
 
 module.exports = {
   alias: ["joindm", "dmwelcome"],
@@ -18,6 +18,18 @@ module.exports = {
       if (testCmd) {
         return testCmd.execute(client, message, args);
       }
+    }
+
+    if (action === "embed") {
+      welcomeManager.updateGuildWelcome(message.guild.id, { joinDmType: "custom_embed" });
+      const payload = buildJoinDmEditorPayload(message.guild, message.member || message.author, "custom_embed");
+      return message.reply(payload).catch(() => null);
+    }
+
+    if (action === "container") {
+      welcomeManager.updateGuildWelcome(message.guild.id, { joinDmType: "custom_container" });
+      const payload = buildJoinDmEditorPayload(message.guild, message.member || message.author, "custom_container");
+      return message.reply(payload).catch(() => null);
     }
 
     if (action === "enable" || action === "on") {

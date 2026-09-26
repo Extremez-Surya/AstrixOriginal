@@ -166,59 +166,6 @@ function buildCustomEditorPayload(guild, member, format, notice = null) {
     header = `> **${notice}**\n\n` + header;
   }
 
-  const container = new ContainerBuilder()
-    .addTextDisplayComponents(new TextDisplayBuilder().setContent(header))
-    .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
-
-  // Banner image if configured
-  if (custom.image && custom.image.trim()) {
-    const imgUrl = welcomeManager.formatWelcomeText(custom.image, member, guild);
-    if (imgUrl && imgUrl.startsWith("http")) {
-      const mediaItem = new MediaGalleryItemBuilder().setURL(imgUrl);
-      container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(mediaItem));
-      container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
-    }
-  }
-
-  // Live draft preview representation
-  let previewText = "";
-  if (currentFormat === "custom_embed") {
-    previewText += `**📑 Embed Draft Preview:**\n`;
-    if (custom.authorName) {
-      previewText += `-# 👤 ${welcomeManager.formatWelcomeText(custom.authorName, member, guild)}\n`;
-    }
-    if (custom.title) {
-      previewText += `### ${welcomeManager.formatWelcomeText(custom.title, member, guild)}\n`;
-    }
-    if (custom.description) {
-      previewText += `${welcomeManager.formatWelcomeText(custom.description, member, guild)}\n`;
-    } else {
-      previewText += `-# *(Empty description — select option below to add)*\n`;
-    }
-    previewText += `-# Color: \`${custom.color || "#5865F2"}\``;
-    if (custom.thumbnail) previewText += ` • Thumbnail: \`Set\``;
-    if (custom.timestamp) previewText += ` • Timestamp: \`Active\``;
-    if (custom.footerText) {
-      previewText += `\n-# 📌 ${welcomeManager.formatWelcomeText(custom.footerText, member, guild)}`;
-    }
-  } else {
-    previewText += `**📦 Container Draft Preview:**\n`;
-    if (custom.title) {
-      previewText += `### ${welcomeManager.formatWelcomeText(custom.title, member, guild)}\n`;
-    }
-    if (custom.description) {
-      previewText += `${welcomeManager.formatWelcomeText(custom.description, member, guild)}\n`;
-    } else {
-      previewText += `-# *(Empty container body — select option below to add)*\n`;
-    }
-    if (custom.footerText) {
-      previewText += `-# 📌 ${welcomeManager.formatWelcomeText(custom.footerText, member, guild)}`;
-    }
-  }
-
-  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(previewText));
-  container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
-
   // Professional Select Menu for all editing options
   const selectMenu = new StringSelectMenuBuilder()
     .setCustomId("wlcm_custom_dropdown")
@@ -311,6 +258,102 @@ function buildCustomEditorPayload(guild, member, format, notice = null) {
     );
 
   const rowDropdown = new ActionRowBuilder().addComponents(selectMenu);
+
+  // 1. CLASSIC DISCORD EMBED MODE (Pure Embed UI — NO Container)
+  if (currentFormat === "custom_embed") {
+    const embed = new EmbedBuilder();
+    try {
+      embed.setColor(custom.color && custom.color.startsWith("#") ? custom.color : "#5865F2");
+    } catch (_) {
+      embed.setColor("#5865F2");
+    }
+
+    if (custom.authorName && custom.authorName.trim()) {
+      const authName = welcomeManager.formatWelcomeText(custom.authorName, member, guild).substring(0, 256);
+      const authIcon = custom.authorIcon ? welcomeManager.formatWelcomeText(custom.authorIcon, member, guild) : null;
+      embed.setAuthor({
+        name: authName,
+        iconURL: authIcon && authIcon.startsWith("http") ? authIcon : undefined,
+        url: custom.authorUrl && custom.authorUrl.startsWith("http") ? custom.authorUrl : undefined,
+      });
+    }
+
+    if (custom.title && custom.title.trim()) {
+      embed.setTitle(welcomeManager.formatWelcomeText(custom.title, member, guild).substring(0, 256));
+    } else {
+      embed.setTitle("📑 Custom Welcome Embed (Draft)");
+    }
+
+    if (custom.description && custom.description.trim()) {
+      embed.setDescription(welcomeManager.formatWelcomeText(custom.description, member, guild).substring(0, 4096));
+    } else {
+      embed.setDescription(`Welcome ${member} to **${guild.name}**!\n\n-# *(Select an option from the dropdown menu below to customize this embed)*`);
+    }
+
+    if (custom.thumbnail && custom.thumbnail.trim()) {
+      const thumbUrl = welcomeManager.formatWelcomeText(custom.thumbnail, member, guild);
+      if (thumbUrl && thumbUrl.startsWith("http")) embed.setThumbnail(thumbUrl);
+    }
+
+    if (custom.image && custom.image.trim()) {
+      const imgUrl = welcomeManager.formatWelcomeText(custom.image, member, guild);
+      if (imgUrl && imgUrl.startsWith("http")) embed.setImage(imgUrl);
+    }
+
+    if (custom.footerText && custom.footerText.trim()) {
+      const footText = welcomeManager.formatWelcomeText(custom.footerText, member, guild).substring(0, 2048);
+      const footIcon = custom.footerIcon ? welcomeManager.formatWelcomeText(custom.footerIcon, member, guild) : null;
+      embed.setFooter({
+        text: footText,
+        iconURL: footIcon && footIcon.startsWith("http") ? footIcon : undefined,
+      });
+    } else {
+      embed.setFooter({
+        text: `Welcome System • Channel: #${channelName} • Status: ${config.enabled ? "ACTIVE 🟢" : "DISABLED 🔴"}`,
+      });
+    }
+
+    if (custom.timestamp) {
+      embed.setTimestamp();
+    }
+
+    return {
+      content: notice ? `> **${notice}**` : undefined,
+      embeds: [embed],
+      components: [rowDropdown],
+    };
+  }
+
+  // 2. MODERN CONTAINER MODE (Components V2 Container)
+  const container = new ContainerBuilder()
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(header))
+    .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
+
+  // Banner image if configured
+  if (custom.image && custom.image.trim()) {
+    const imgUrl = welcomeManager.formatWelcomeText(custom.image, member, guild);
+    if (imgUrl && imgUrl.startsWith("http")) {
+      const mediaItem = new MediaGalleryItemBuilder().setURL(imgUrl);
+      container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(mediaItem));
+      container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
+    }
+  }
+
+  let previewText = `**📦 Container Draft Preview:**\n`;
+  if (custom.title) {
+    previewText += `### ${welcomeManager.formatWelcomeText(custom.title, member, guild)}\n`;
+  }
+  if (custom.description) {
+    previewText += `${welcomeManager.formatWelcomeText(custom.description, member, guild)}\n`;
+  } else {
+    previewText += `-# *(Empty container body — select option below to add)*\n`;
+  }
+  if (custom.footerText) {
+    previewText += `-# 📌 ${welcomeManager.formatWelcomeText(custom.footerText, member, guild)}`;
+  }
+
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(previewText));
+  container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
   container.addActionRowComponents(rowDropdown);
 
   return {
@@ -582,59 +625,6 @@ function buildJoinDmEditorPayload(guild, member, format, notice = null) {
     header = `> **${notice}**\n\n` + header;
   }
 
-  const container = new ContainerBuilder()
-    .addTextDisplayComponents(new TextDisplayBuilder().setContent(header))
-    .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
-
-  // Banner image if configured
-  if (custom.image && custom.image.trim()) {
-    const imgUrl = welcomeManager.formatWelcomeText(custom.image, member, guild);
-    if (imgUrl && imgUrl.startsWith("http")) {
-      const mediaItem = new MediaGalleryItemBuilder().setURL(imgUrl);
-      container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(mediaItem));
-      container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
-    }
-  }
-
-  // Live draft preview representation
-  let previewText = "";
-  if (currentFormat === "custom_embed") {
-    previewText += `**📑 Join DM Embed Draft Preview:**\n`;
-    if (custom.authorName) {
-      previewText += `-# 👤 ${welcomeManager.formatWelcomeText(custom.authorName, member, guild)}\n`;
-    }
-    if (custom.title) {
-      previewText += `### ${welcomeManager.formatWelcomeText(custom.title, member, guild)}\n`;
-    }
-    if (custom.description) {
-      previewText += `${welcomeManager.formatWelcomeText(custom.description, member, guild)}\n`;
-    } else {
-      previewText += `-# *(Empty DM text — select option below to add)*\n`;
-    }
-    previewText += `-# Color: \`${custom.color || "#5865F2"}\``;
-    if (custom.thumbnail) previewText += ` • Thumbnail: \`Set\``;
-    if (custom.timestamp) previewText += ` • Timestamp: \`Active\``;
-    if (custom.footerText) {
-      previewText += `\n-# 📌 ${welcomeManager.formatWelcomeText(custom.footerText, member, guild)}`;
-    }
-  } else {
-    previewText += `**📦 Join DM Container Draft Preview:**\n`;
-    if (custom.title) {
-      previewText += `### ${welcomeManager.formatWelcomeText(custom.title, member, guild)}\n`;
-    }
-    if (custom.description) {
-      previewText += `${welcomeManager.formatWelcomeText(custom.description, member, guild)}\n`;
-    } else {
-      previewText += `-# *(Empty container DM text — select option below to add)*\n`;
-    }
-    if (custom.footerText) {
-      previewText += `-# 📌 ${welcomeManager.formatWelcomeText(custom.footerText, member, guild)}`;
-    }
-  }
-
-  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(previewText));
-  container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
-
   // Professional Select Menu for all editing options
   const selectMenu = new StringSelectMenuBuilder()
     .setCustomId("jdm_custom_dropdown")
@@ -721,6 +711,105 @@ function buildJoinDmEditorPayload(guild, member, format, notice = null) {
     );
 
   const rowDropdown = new ActionRowBuilder().addComponents(selectMenu);
+
+  // 1. CLASSIC DISCORD EMBED MODE (Pure Embed UI — NO Container)
+  if (currentFormat === "custom_embed") {
+    const embed = new EmbedBuilder();
+    try {
+      embed.setColor(custom.color && custom.color.startsWith("#") ? custom.color : "#5865F2");
+    } catch (_) {
+      embed.setColor("#5865F2");
+    }
+
+    if (custom.authorName && custom.authorName.trim()) {
+      const authName = welcomeManager.formatWelcomeText(custom.authorName, member, guild).substring(0, 256);
+      const authIcon = custom.authorIcon ? welcomeManager.formatWelcomeText(custom.authorIcon, member, guild) : null;
+      embed.setAuthor({
+        name: authName,
+        iconURL: authIcon && authIcon.startsWith("http") ? authIcon : undefined,
+        url: custom.authorUrl && custom.authorUrl.startsWith("http") ? custom.authorUrl : undefined,
+      });
+    }
+
+    if (custom.title && custom.title.trim()) {
+      embed.setTitle(welcomeManager.formatWelcomeText(custom.title, member, guild).substring(0, 256));
+    } else {
+      embed.setTitle("✉️ Join DM Embed Greeting (Draft)");
+    }
+
+    if (custom.description && custom.description.trim()) {
+      embed.setDescription(welcomeManager.formatWelcomeText(custom.description, member, guild).substring(0, 4096));
+    } else {
+      embed.setDescription(
+        welcomeManager.formatWelcomeText(config.joinDmText || `Welcome {user} to **${guild.name}**!`, member, guild) +
+        `\n\n-# *(Select an option from the dropdown menu below to customize this DM embed)*`
+      );
+    }
+
+    if (custom.thumbnail && custom.thumbnail.trim()) {
+      const thumbUrl = welcomeManager.formatWelcomeText(custom.thumbnail, member, guild);
+      if (thumbUrl && thumbUrl.startsWith("http")) embed.setThumbnail(thumbUrl);
+    }
+
+    if (custom.image && custom.image.trim()) {
+      const imgUrl = welcomeManager.formatWelcomeText(custom.image, member, guild);
+      if (imgUrl && imgUrl.startsWith("http")) embed.setImage(imgUrl);
+    }
+
+    if (custom.footerText && custom.footerText.trim()) {
+      const footText = welcomeManager.formatWelcomeText(custom.footerText, member, guild).substring(0, 2048);
+      const footIcon = custom.footerIcon ? welcomeManager.formatWelcomeText(custom.footerIcon, member, guild) : null;
+      embed.setFooter({
+        text: footText,
+        iconURL: footIcon && footIcon.startsWith("http") ? footIcon : undefined,
+      });
+    } else {
+      embed.setFooter({
+        text: `Join DM System • Destination: Direct Message • Status: ${config.joinDmEnabled ? "ACTIVE 🟢" : "DISABLED 🔴"}`,
+      });
+    }
+
+    if (custom.timestamp) {
+      embed.setTimestamp();
+    }
+
+    return {
+      content: notice ? `> **${notice}**` : undefined,
+      embeds: [embed],
+      components: [rowDropdown],
+    };
+  }
+
+  // 2. MODERN CONTAINER MODE (Components V2 Container)
+  const container = new ContainerBuilder()
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(header))
+    .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
+
+  // Banner image if configured
+  if (custom.image && custom.image.trim()) {
+    const imgUrl = welcomeManager.formatWelcomeText(custom.image, member, guild);
+    if (imgUrl && imgUrl.startsWith("http")) {
+      const mediaItem = new MediaGalleryItemBuilder().setURL(imgUrl);
+      container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(mediaItem));
+      container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
+    }
+  }
+
+  let previewText = `**📦 Join DM Container Draft Preview:**\n`;
+  if (custom.title) {
+    previewText += `### ${welcomeManager.formatWelcomeText(custom.title, member, guild)}\n`;
+  }
+  if (custom.description) {
+    previewText += `${welcomeManager.formatWelcomeText(custom.description, member, guild)}\n`;
+  } else {
+    previewText += `-# *(Empty container DM text — select option below to add)*\n`;
+  }
+  if (custom.footerText) {
+    previewText += `-# 📌 ${welcomeManager.formatWelcomeText(custom.footerText, member, guild)}`;
+  }
+
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(previewText));
+  container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
   container.addActionRowComponents(rowDropdown);
 
   return {
@@ -1075,16 +1164,32 @@ async function renderJoinDmMessage(member, config) {
 }
 
 /**
- * Safe in-place update for all V2 containers
+ * Safe in-place update for all V2 containers & Classic Embeds
  */
 async function safeUpdate(interaction, payload) {
-  return interaction.update(payload).catch(async (err) => {
-    console.error("[WelcomeBuilder] Update error, fallback to editReply:", err);
+  const msgFlags = interaction.message?.flags?.bitfield ?? 0;
+  const messageHadV2 = Boolean(msgFlags & MessageFlags.IsComponentsV2);
+  const payloadIsV2 = Boolean(payload.flags && (payload.flags & MessageFlags.IsComponentsV2));
+
+  // If transitioning between V2 Container and standard Embed:
+  // Discord API restricts modifying message flags from/to IsComponentsV2 in-place.
+  if (messageHadV2 !== payloadIsV2) {
     try {
       if (!interaction.deferred && !interaction.replied) {
         await interaction.deferUpdate().catch(() => null);
       }
-      return interaction.message.edit(payload).catch(() => null);
+      await interaction.message.delete().catch(() => null);
+      return await interaction.channel.send(payload).catch(() => null);
+    } catch (_) {}
+  }
+
+  return interaction.update(payload).catch(async (err) => {
+    try {
+      if (!interaction.deferred && !interaction.replied) {
+        await interaction.deferUpdate().catch(() => null);
+      }
+      await interaction.message.delete().catch(() => null);
+      return await interaction.channel.send(payload).catch(() => null);
     } catch (_) {}
   });
 }
