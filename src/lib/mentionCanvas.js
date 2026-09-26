@@ -1,5 +1,14 @@
-const { createCanvas, loadImage } = require("@napi-rs/canvas");
+const { createCanvas, loadImage, GlobalFonts } = require("@napi-rs/canvas");
 const path = require("path");
+const fs = require("fs");
+
+// Register GoogleSans font for crisp, modern typography across all hosting environments
+const googleSansPath = path.join(__dirname, "../fonts/GoogleSans.ttf");
+if (fs.existsSync(googleSansPath)) {
+  try {
+    GlobalFonts.registerFromPath(googleSansPath, "GoogleSans");
+  } catch (_) {}
+}
 
 /**
  * Generates an ultra-sleek 4K Ultra-HD metallic Discord bot mention banner card with cyber VFX and cinematic artwork background.
@@ -7,19 +16,23 @@ const path = require("path");
  * @param {Object} options
  * @param {import('discord.js').Client} options.client
  * @param {import('discord.js').Guild} options.guild
+ * @param {import('discord.js').User} [options.user]
  * @param {string} options.guildPrefix
  * @param {number} options.wsLatency
  * @param {number|string} options.memberCount
  * @param {number|string} options.commandCount
+ * @param {string} [options.uptimeStr]
  * @returns {Promise<Buffer>}
  */
 async function generateMentionCard({
   client,
   guild,
+  user,
   guildPrefix = "-",
   wsLatency = 0,
   memberCount = "0",
   commandCount = "0",
+  uptimeStr = "",
 }) {
   // 3x High-DPI Ultra-HD scale (2640 x 810 px) for crisp 4K fidelity with zero blur
   const scale = 3;
@@ -186,7 +199,7 @@ async function generateMentionCard({
   });
   ctx.restore();
 
-  // 9. Corner Tech Markings & Top Right Label
+  // 9. Corner Tech Markings & Top Right Label / Status
   ctx.save();
   ctx.strokeStyle = "rgba(255, 255, 255, 0.22)";
   ctx.lineWidth = 1;
@@ -199,11 +212,32 @@ async function generateMentionCard({
   ctx.lineTo(29, 24);
   ctx.stroke();
 
-  // Top Right "MORE THAN A BOT"
-  ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
-  ctx.font = "bold 9px Bahnschrift, Arial, sans-serif";
-  ctx.textAlign = "right";
-  ctx.fillText("MORE THAN A BOT", baseW - 28, 26);
+  // Top Right Minimal Live Status Badge
+  const statusX = baseW - 32;
+  const statusY = 28;
+  ctx.save();
+  ctx.beginPath();
+  ctx.roundRect(statusX - 78, statusY - 14, 78, 22, 11);
+  ctx.fillStyle = "rgba(16, 22, 32, 0.65)";
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Glowing Green Online Dot
+  ctx.beginPath();
+  ctx.arc(statusX - 63, statusY - 3, 3.5, 0, Math.PI * 2);
+  ctx.fillStyle = "#22c55e";
+  ctx.shadowColor = "#22c55e";
+  ctx.shadowBlur = 8;
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  ctx.fillStyle = "#4ade80";
+  ctx.font = "bold 10px GoogleSans, Arial, sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText("ONLINE", statusX - 52, statusY);
+  ctx.restore();
   ctx.restore();
 
   // 10. Outer Metallic Bevel Frame (Multi-layer border)
@@ -324,36 +358,48 @@ async function generateMentionCard({
   const leftX = 250;
   const botName = client?.user?.username || "Astrix";
 
-  // Header top mini-label: "ASTRIX | DISCORD BOT ────────"
-  ctx.fillStyle = "rgba(255, 255, 255, 0.45)";
-  ctx.font = "bold 10px Bahnschrift, Arial, sans-serif";
-  ctx.textAlign = "left";
-  ctx.fillText(`${botName.toUpperCase()}  |  DISCORD BOT`, leftX, 42);
-
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.18)";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(leftX + 135, 39);
-  ctx.lineTo(leftX + 230, 39);
-  ctx.stroke();
+  // Format clean username without unsupported emojis to prevent square box glyphs in canvas
+  const rawUserName =
+    user?.displayName ||
+    user?.globalName ||
+    user?.username ||
+    "User";
+  const strippedName = rawUserName
+    .replace(
+      /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F018}-\u{1F270}\u{FE00}-\u{FE0F}]/gu,
+      "",
+    )
+    .trim();
+  const safeName = strippedName.length > 0 ? strippedName : user?.username || "User";
+  const cleanUserName =
+    safeName.length > 18 ? `${safeName.substring(0, 16)}...` : safeName;
 
   // Bot Title (Large bold gradient)
-  const titleGrad = ctx.createLinearGradient(leftX, 52, leftX, 86);
+  const titleGrad = ctx.createLinearGradient(leftX, 46, leftX, 86);
   titleGrad.addColorStop(0, "#ffffff");
   titleGrad.addColorStop(1, "#d1d9e6");
   ctx.fillStyle = titleGrad;
-  ctx.font = "bold 40px Bahnschrift, Arial, sans-serif";
-  ctx.fillText(botName, leftX, 82);
+  ctx.font = "bold 44px GoogleSans, Arial, sans-serif";
+  ctx.fillText(botName, leftX, 76);
 
-  // Tagline uppercase
-  ctx.fillStyle = "#cbd5e1";
-  ctx.font = "bold 12px Bahnschrift, Arial, sans-serif";
-  ctx.fillText("YOUR SERVER COMPANION", leftX, 104);
+  // Personalized Greeting & Role Tagline
+  ctx.font = "bold 14px GoogleSans, Arial, sans-serif";
+  ctx.fillStyle = "#e2e8f0";
+  ctx.fillText(`Hey, ${cleanUserName} !`, leftX, 103);
 
-  // Description
+  const greetingWidth = ctx.measureText(`Hey, ${cleanUserName} !`).width;
+  ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+  ctx.font = "13px GoogleSans, Arial, sans-serif";
+  ctx.fillText("•  Your Server Companion", leftX + greetingWidth + 8, 103);
+
+  // Guidance description
   ctx.fillStyle = "#94a3b8";
-  ctx.font = "13px Segoe UI, Arial, sans-serif";
-  ctx.fillText("Mention me anytime for quick server information.", leftX, 126);
+  ctx.font = "13px GoogleSans, Arial, sans-serif";
+  ctx.fillText(
+    `Type "${guildPrefix}help" to explore all ${commandCount} commands & features.`,
+    leftX,
+    126,
+  );
 
   // 12. Dynamic Latency Color & Safe Latency
   const safeLatency = wsLatency >= 0 ? wsLatency : 24;
@@ -364,7 +410,7 @@ async function generateMentionCard({
     pingAccent = "#eab308"; // Yellow
   else if (safeLatency > 80) pingAccent = "#38bdf8"; // Cyan
 
-  // 13. Stats Cards (Frosted Glass Tech Pill Boxes)
+  // 13. Stats Cards (4 Frosted Glass Tech Pill Boxes)
   const statItems = [
     { label: "PREFIX", val: String(guildPrefix), accent: "#38bdf8" },
     { label: "COMMANDS", val: String(commandCount), accent: "#f8fafc" },
@@ -372,22 +418,22 @@ async function generateMentionCard({
       label: "PING",
       val: `${safeLatency}ms`,
       accent: pingAccent,
-      hasPingDot: true,
+      hasDot: true,
       dotColor: pingAccent,
     },
     {
-      label: "STATUS",
-      val: "Online",
-      accent: "#22c55e",
+      label: "MEMBERS",
+      val: String(memberCount),
+      accent: "#a78bfa",
       hasDot: true,
-      dotColor: "#22c55e",
+      dotColor: "#a78bfa",
     },
   ];
 
   const pillY = 146;
-  const pillW = 136;
-  const pillH = 48;
-  const pillSpacing = 14;
+  const pillW = 132;
+  const pillH = 50;
+  const pillSpacing = 18;
 
   statItems.forEach((item, idx) => {
     const px = leftX + idx * (pillW + pillSpacing);
@@ -419,26 +465,27 @@ async function generateMentionCard({
 
     // Stat Label
     ctx.fillStyle = "#94a3b8";
-    ctx.font = "bold 10px Bahnschrift, Arial, sans-serif";
+    ctx.font = "bold 10px GoogleSans, Arial, sans-serif";
     ctx.fillText(item.label, px + 12, pillY + 18);
 
     // Stat Value
-    if (item.hasDot || item.hasPingDot) {
-      // Live glowing pulse dot
+    if (item.hasDot) {
+      // Live glowing indicator dot
       ctx.beginPath();
-      ctx.arc(px + 16, pillY + 33, 4, 0, Math.PI * 2);
-      ctx.fillStyle = item.dotColor || "#22c55e";
-      ctx.shadowColor = item.dotColor || "#22c55e";
-      ctx.shadowBlur = 8;
+      ctx.arc(px + 16, pillY + 34, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = item.dotColor || item.accent;
+      ctx.shadowColor = item.dotColor || item.accent;
+      ctx.shadowBlur = 6;
       ctx.fill();
+      ctx.shadowBlur = 0;
 
       ctx.fillStyle = item.accent;
-      ctx.font = "bold 15px Bahnschrift, Arial, sans-serif";
-      ctx.fillText(item.val, px + 27, pillY + 37);
+      ctx.font = "bold 16px GoogleSans, Arial, sans-serif";
+      ctx.fillText(item.val, px + 28, pillY + 38);
     } else {
       ctx.fillStyle = item.accent;
-      ctx.font = "bold 15px Bahnschrift, Arial, sans-serif";
-      ctx.fillText(item.val, px + 12, pillY + 37);
+      ctx.font = "bold 16px GoogleSans, Arial, sans-serif";
+      ctx.fillText(item.val, px + 12, pillY + 38);
     }
     ctx.restore();
   });
@@ -456,15 +503,22 @@ async function generateMentionCard({
   ctx.lineTo(baseW - 40, divY);
   ctx.stroke();
 
-  // 15. Sub-Footer
-  ctx.fillStyle = "#94a3b8";
-  ctx.font = "12px Segoe UI, Arial, sans-serif";
-  ctx.fillText("ASTRIX • DEVELOPMENT", leftX, 243);
+  // 15. Sub-Footer (Clean & uncluttered)
+  const guildName = guild?.name ? String(guild.name).trim() : "Discord Community";
+  const cleanGuildName =
+    guildName.length > 32 ? `${guildName.substring(0, 30)}...` : guildName;
 
-  ctx.fillStyle = "#64748b";
-  ctx.font = "12px Segoe UI, Arial, sans-serif";
-  ctx.textAlign = "right";
-  // ctx.fillText("Fast responses • Clean UI • Components V2", baseW - 40, 243);
+  ctx.fillStyle = "#cbd5e1";
+  ctx.font = "12px GoogleSans, Arial, sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText(`Serving ${cleanGuildName}`, leftX, 243);
+
+  if (uptimeStr) {
+    ctx.fillStyle = "#64748b";
+    ctx.font = "12px GoogleSans, Arial, sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText(`Uptime: ${uptimeStr}`, baseW - 40, 243);
+  }
 
   return canvas.toBuffer("image/png");
 }

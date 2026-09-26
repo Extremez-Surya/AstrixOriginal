@@ -138,6 +138,8 @@ module.exports = {
       const cardBuffer = await mentionCanvas.generateMentionCard({
         client,
         guild: message.guild,
+        user: message.author,
+        member: message.member,
         guildPrefix,
         wsLatency,
         memberCount,
@@ -155,23 +157,6 @@ module.exports = {
         "attachment://mention_card.png",
       );
       const mediaGallery = new MediaGalleryBuilder().addItems(mediaItem);
-
-      // Pikachu or friendly greeting emoji
-      const pikaEmoji =
-        client.emojis.cache.find((e) =>
-          e.name.toLowerCase().includes("pika"),
-        ) || "⚡";
-
-      // Styled Content matching reference
-      const mainContent =
-        `## ${pikaEmoji} Hey <@${message.author.id}> !\n\n` +
-        `I'm **${client.user.username}**, your server assistant.\n\n` +
-        `${EMOJIS.prefix || "⚡"} **Prefix :-** \`${guildPrefix}\`\n` +
-        `🟢 **Help :-** \`${guildPrefix}help\`\n` +
-        `${EMOJIS.signal || "📶"} **Ping :-** \`${wsLatency}ms\`\n` +
-        `${EMOJIS.command || "⌨️"} **Commands :-** \`${commandCount}\`\n` +
-        `${EMOJIS.members || "👥"} **Members :-** \`${memberCount}\`\n` +
-        `🟢 **Status :-** \`Online\``;
 
       // Footer Text
       const footerContent = `-# Powered By Astrix Development.`;
@@ -192,17 +177,9 @@ module.exports = {
         inviteButton,
       );
 
-      // Build the final container
+      // Build the final container (Clean Canvas Image UI + Separator + Footer + Buttons)
       const container = new ContainerBuilder()
         .addMediaGalleryComponents(mediaGallery)
-        .addSeparatorComponents(
-          new SeparatorBuilder()
-            .setSpacing(SeparatorSpacingSize.Small)
-            .setDivider(true),
-        )
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(mainContent),
-        )
         .addSeparatorComponents(
           new SeparatorBuilder()
             .setSpacing(SeparatorSpacingSize.Small)
