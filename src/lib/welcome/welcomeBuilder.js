@@ -55,22 +55,28 @@ function buildWelcomeHubPayload(guild, member) {
   const btnPremade = new ButtonBuilder()
     .setCustomId("wlcm_hub_premade")
     .setEmoji("🎨")
-    .setLabel("Astrix Premade Welcome")
+    .setLabel("Premade Channel")
     .setStyle(ButtonStyle.Success);
 
   const btnCustom = new ButtonBuilder()
     .setCustomId("wlcm_hub_custom")
     .setEmoji("🛠️")
-    .setLabel("Custom Welcome (Build Your Own)")
+    .setLabel("Custom Channel")
     .setStyle(ButtonStyle.Primary);
+
+  const btnJoinDm = new ButtonBuilder()
+    .setCustomId("wlcm_hub_joindm")
+    .setEmoji("✉️")
+    .setLabel("Join DM Setup")
+    .setStyle(ButtonStyle.Secondary);
 
   const btnStatus = new ButtonBuilder()
     .setCustomId("wlcm_hub_status")
     .setEmoji("⚙️")
-    .setLabel("Current Config")
+    .setLabel("Status & Config")
     .setStyle(ButtonStyle.Secondary);
 
-  const row = new ActionRowBuilder().addComponents(btnPremade, btnCustom, btnStatus);
+  const row = new ActionRowBuilder().addComponents(btnPremade, btnCustom, btnJoinDm, btnStatus);
 
   return {
     embeds: [embed],
@@ -721,6 +727,573 @@ async function renderWelcomeMessage(member, config) {
 }
 
 /**
+ * Builds the Join DM Setup Hub
+ */
+function buildJoinDmHubPayload(guild, member, notice = null) {
+  const config = welcomeManager.getGuildWelcome(guild.id);
+  const dmTypeLabel =
+    config.joinDmType === "custom_embed"
+      ? "Custom (Classic Embed)"
+      : config.joinDmType === "custom_container"
+        ? "Custom (Components V2 Container)"
+        : "Astrix Premade (Canvas Card)";
+
+  const embed = new EmbedBuilder()
+    .setColor("#5865F2")
+    .setTitle("✉️ Join DM Greetings Setup")
+    .setDescription(
+      `*Configure private direct messages sent to new members when they join ${guild.name}.*\n\n` +
+      `### ⚙️ Current Join DM Status\n` +
+      `> - **Module State:** \`${config.joinDmEnabled ? "ENABLED 🟢" : "DISABLED 🔴"}\`\n` +
+      `> - **Active Format:** \`${dmTypeLabel}\`\n\n` +
+      `### 🚀 Choose Setup Method\n` +
+      `> 🎨 **Astrix Premade Join DM**\n` +
+      `> Send Astrix's signature Cyber-Metallic Canvas Card, live member overview stats, buttons, and custom text in DMs.\n\n` +
+      `> 🛠️ **Custom Join DM (Build Your Own)**\n` +
+      `> Build your own custom private greeting! Choose between **Classic Embed** or **Modern Container**, with full dropdown-based editing and variables!`
+    )
+    .setFooter({ text: "Astrix Join DM Manager • Select an option below" });
+
+  if (notice) {
+    embed.setDescription(`> **${notice}**\n\n` + embed.data.description);
+  }
+
+  const btnPremade = new ButtonBuilder()
+    .setCustomId("jdm_hub_premade")
+    .setEmoji("🎨")
+    .setLabel("Premade DM Card")
+    .setStyle(ButtonStyle.Success);
+
+  const btnCustom = new ButtonBuilder()
+    .setCustomId("jdm_hub_custom")
+    .setEmoji("🛠️")
+    .setLabel("Custom Join DM")
+    .setStyle(ButtonStyle.Primary);
+
+  const btnToggle = new ButtonBuilder()
+    .setCustomId("jdm_hub_toggle")
+    .setEmoji(config.joinDmEnabled ? "🔴" : "🟢")
+    .setLabel(config.joinDmEnabled ? "Disable Join DM" : "Enable Join DM")
+    .setStyle(config.joinDmEnabled ? ButtonStyle.Danger : ButtonStyle.Success);
+
+  const btnTest = new ButtonBuilder()
+    .setCustomId("jdm_hub_test")
+    .setEmoji("🧪")
+    .setLabel("Test My DM")
+    .setStyle(ButtonStyle.Secondary);
+
+  const btnBack = new ButtonBuilder()
+    .setCustomId("wlcm_hub_back")
+    .setEmoji("⬅️")
+    .setLabel("Main Menu")
+    .setStyle(ButtonStyle.Secondary);
+
+  const row1 = new ActionRowBuilder().addComponents(btnPremade, btnCustom, btnToggle);
+  const row2 = new ActionRowBuilder().addComponents(btnTest, btnBack);
+
+  return {
+    embeds: [embed],
+    components: [row1, row2],
+  };
+}
+
+/**
+ * Builds format choice for Join DM (Embed vs Container)
+ */
+function buildJoinDmFormatChoicePayload(guild, member) {
+  const embed = new EmbedBuilder()
+    .setColor("#5865F2")
+    .setTitle("🛠️ Select Custom Join DM Format")
+    .setDescription(
+      `*Choose the message format style for your custom private Join DM greetings.*\n\n` +
+      `Please select which format version you would like to build:\n\n` +
+      `> 📑 **Classic Embed**\n` +
+      `> Beautiful Discord rich embed with colored border, title, description, author, thumbnail, banner image, and footer sent to member DMs.\n\n` +
+      `> 📦 **Modern Container (Components V2)**\n` +
+      `> Discord's next-gen full-width container format with sleek divider lines, media gallery banners, and styled text displays.\n\n` +
+      `*Both formats support full dropdown editing, interactive modals, and real-time live preview.*`
+    )
+    .setFooter({ text: "Astrix Join DM Manager • Click an option below" });
+
+  const btnEmbed = new ButtonBuilder()
+    .setCustomId("jdm_choose_embed")
+    .setEmoji("📑")
+    .setLabel("Classic Embed")
+    .setStyle(ButtonStyle.Primary);
+
+  const btnContainer = new ButtonBuilder()
+    .setCustomId("jdm_choose_container")
+    .setEmoji("📦")
+    .setLabel("Modern Container (V2)")
+    .setStyle(ButtonStyle.Success);
+
+  const btnBack = new ButtonBuilder()
+    .setCustomId("wlcm_hub_joindm")
+    .setEmoji("⬅️")
+    .setLabel("Back")
+    .setStyle(ButtonStyle.Secondary);
+
+  const row = new ActionRowBuilder().addComponents(btnEmbed, btnContainer, btnBack);
+
+  return {
+    embeds: [embed],
+    components: [row],
+  };
+}
+
+/**
+ * Builds the interactive live editor for Join DM (Embed or Container)
+ */
+function buildJoinDmEditorPayload(guild, member, format, notice = null) {
+  const config = welcomeManager.getGuildWelcome(guild.id);
+  const custom = config.joinDmCustomData || {};
+  const currentFormat = format || config.joinDmType || "custom_embed";
+
+  // 1. Classic Embed Mode
+  if (currentFormat === "custom_embed") {
+    const embed = new EmbedBuilder();
+
+    try {
+      embed.setColor(custom.color && custom.color.startsWith("#") ? custom.color : "#5865F2");
+    } catch (_) {
+      embed.setColor("#5865F2");
+    }
+
+    if (custom.title && custom.title.trim()) {
+      embed.setTitle(welcomeManager.formatWelcomeText(custom.title, member, guild).substring(0, 256));
+    }
+
+    if (custom.description && custom.description.trim()) {
+      embed.setDescription(welcomeManager.formatWelcomeText(custom.description, member, guild).substring(0, 4096));
+    } else {
+      embed.setDescription("*✨ Empty Join DM embed description. Use the dropdown menu below to add text, title, or images.*");
+    }
+
+    if (custom.authorName && custom.authorName.trim()) {
+      const authName = welcomeManager.formatWelcomeText(custom.authorName, member, guild).substring(0, 256);
+      const authIcon = custom.authorIcon ? welcomeManager.formatWelcomeText(custom.authorIcon, member, guild) : null;
+      embed.setAuthor({
+        name: authName,
+        iconURL: authIcon && authIcon.startsWith("http") ? authIcon : undefined,
+        url: custom.authorUrl && custom.authorUrl.startsWith("http") ? custom.authorUrl : undefined,
+      });
+    }
+
+    if (custom.thumbnail && custom.thumbnail.trim()) {
+      const thumbUrl = welcomeManager.formatWelcomeText(custom.thumbnail, member, guild);
+      if (thumbUrl && thumbUrl.startsWith("http")) embed.setThumbnail(thumbUrl);
+    }
+
+    if (custom.image && custom.image.trim()) {
+      const imgUrl = welcomeManager.formatWelcomeText(custom.image, member, guild);
+      if (imgUrl && imgUrl.startsWith("http")) embed.setImage(imgUrl);
+    }
+
+    if (custom.footerText && custom.footerText.trim()) {
+      const footText = welcomeManager.formatWelcomeText(custom.footerText, member, guild).substring(0, 2048);
+      const footIcon = custom.footerIcon ? welcomeManager.formatWelcomeText(custom.footerIcon, member, guild) : null;
+      embed.setFooter({
+        text: footText,
+        iconURL: footIcon && footIcon.startsWith("http") ? footIcon : undefined,
+      });
+    }
+
+    if (custom.timestamp) {
+      embed.setTimestamp();
+    }
+
+    const selectMenu = new StringSelectMenuBuilder()
+      .setCustomId("jdm_custom_dropdown")
+      .setPlaceholder("⚙️ Choose an element of Join DM to edit...")
+      .addOptions(
+        {
+          label: "Edit DM Description / Body",
+          value: "edit_desc",
+          description: "Main DM message text (supports {user}, {server}, etc.)",
+          emoji: "📝",
+        },
+        {
+          label: "Edit DM Title",
+          value: "edit_title",
+          description: "Greeting headline title in DM",
+          emoji: "🏷️",
+        },
+        {
+          label: "Edit Accent Color",
+          value: "edit_color",
+          description: `Current: ${custom.color || "#5865F2"} (HEX format)`,
+          emoji: "🎨",
+        },
+        {
+          label: "Edit Author Info",
+          value: "edit_author",
+          description: "Author header text, icon URL & link",
+          emoji: "👤",
+        },
+        {
+          label: "Edit Banner Image",
+          value: "edit_image",
+          description: "Large banner image URL (or {guild.banner})",
+          emoji: "🖼️",
+        },
+        {
+          label: "Edit Thumbnail Image",
+          value: "edit_thumb",
+          description: "Small thumbnail icon URL (or {user.avatar})",
+          emoji: "🔍",
+        },
+        {
+          label: "Edit Footer Note",
+          value: "edit_footer",
+          description: "Footer text note",
+          emoji: "📌",
+        },
+        {
+          label: `Toggle Timestamp (${custom.timestamp ? "ENABLED" : "DISABLED"})`,
+          value: "toggle_time",
+          description: "Display current timestamp at bottom",
+          emoji: "⏱️",
+        },
+        {
+          label: "Reset to Empty Draft",
+          value: "reset_draft",
+          description: "Clear all Join DM fields back to blank",
+          emoji: "🗑️",
+        }
+      );
+
+    const rowDropdown = new ActionRowBuilder().addComponents(selectMenu);
+
+    const btnSave = new ButtonBuilder()
+      .setCustomId("jdm_custom_save")
+      .setEmoji("💾")
+      .setLabel("Save & Enable DM")
+      .setStyle(ButtonStyle.Success);
+
+    const btnTest = new ButtonBuilder()
+      .setCustomId("jdm_custom_test")
+      .setEmoji("🧪")
+      .setLabel("Test My DM")
+      .setStyle(ButtonStyle.Primary);
+
+    const btnSwitch = new ButtonBuilder()
+      .setCustomId("jdm_custom_switch_fmt")
+      .setEmoji("🔄")
+      .setLabel("Switch to Container")
+      .setStyle(ButtonStyle.Secondary);
+
+    const btnBack = new ButtonBuilder()
+      .setCustomId("wlcm_hub_joindm")
+      .setEmoji("⬅️")
+      .setLabel("Join DM Menu")
+      .setStyle(ButtonStyle.Secondary);
+
+    const rowButtons = new ActionRowBuilder().addComponents(btnSave, btnTest, btnSwitch, btnBack);
+
+    let contentNotice = `### ✉️ Join DM Embed Studio (Live Preview)\n` +
+      `-# *Format: **Classic Embed** • Join DM: \`${config.joinDmEnabled ? "ACTIVE" : "INACTIVE"}\`*`;
+    if (notice) {
+      contentNotice = `${notice}\n\n${contentNotice}`;
+    }
+
+    return {
+      content: contentNotice,
+      embeds: [embed],
+      components: [rowDropdown, rowButtons],
+    };
+  }
+
+  // 2. Modern Container (Components V2) Mode
+  const container = new ContainerBuilder();
+
+  let headerText = `### ✉️ Join DM Container Studio (Live Preview)\n` +
+    `-# *Format: **Modern Container (Components V2)** • Join DM: \`${config.joinDmEnabled ? "ACTIVE" : "INACTIVE"}\`*`;
+  if (notice) {
+    headerText = `${notice}\n\n${headerText}`;
+  }
+
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
+  container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
+
+  if (custom.image && custom.image.trim()) {
+    const imgUrl = welcomeManager.formatWelcomeText(custom.image, member, guild);
+    if (imgUrl && imgUrl.startsWith("http")) {
+      const mediaItem = new MediaGalleryItemBuilder().setURL(imgUrl);
+      container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(mediaItem));
+      container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
+    }
+  }
+
+  let bodyText = "";
+  if (custom.title && custom.title.trim()) {
+    bodyText += `# ${welcomeManager.formatWelcomeText(custom.title, member, guild)}\n\n`;
+  }
+  if (custom.description && custom.description.trim()) {
+    bodyText += welcomeManager.formatWelcomeText(custom.description, member, guild);
+  } else {
+    bodyText += "*✨ Empty Join DM container text. Use the dropdown menu below to add text, title, or images.*";
+  }
+
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(bodyText));
+
+  if (custom.footerText && custom.footerText.trim()) {
+    container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
+    const footText = `-# ${welcomeManager.formatWelcomeText(custom.footerText, member, guild)}`;
+    container.addTextDisplayComponents(new TextDisplayBuilder().setContent(footText));
+  }
+
+  container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
+
+  const selectMenu = new StringSelectMenuBuilder()
+    .setCustomId("jdm_custom_dropdown")
+    .setPlaceholder("⚙️ Choose an element of Join DM to edit...")
+    .addOptions(
+      {
+        label: "Edit DM Description / Body",
+        value: "edit_desc",
+        description: "Main DM message text (supports {user}, {server}, etc.)",
+        emoji: "📝",
+      },
+      {
+        label: "Edit DM Title",
+        value: "edit_title",
+        description: "Greeting headline title in DM",
+        emoji: "🏷️",
+      },
+      {
+        label: "Edit Banner Image",
+        value: "edit_image",
+        description: "Banner image URL (or {guild.banner})",
+        emoji: "🖼️",
+      },
+      {
+        label: "Edit Footer Note",
+        value: "edit_footer",
+        description: "Footer text note",
+        emoji: "📌",
+      },
+      {
+        label: "Reset to Empty Draft",
+        value: "reset_draft",
+        description: "Clear all Join DM fields back to blank",
+        emoji: "🗑️",
+      }
+    );
+
+  const rowDropdown = new ActionRowBuilder().addComponents(selectMenu);
+
+  const btnSave = new ButtonBuilder()
+    .setCustomId("jdm_custom_save")
+    .setEmoji("💾")
+    .setLabel("Save & Enable DM")
+    .setStyle(ButtonStyle.Success);
+
+  const btnTest = new ButtonBuilder()
+    .setCustomId("jdm_custom_test")
+    .setEmoji("🧪")
+    .setLabel("Test My DM")
+    .setStyle(ButtonStyle.Primary);
+
+  const btnSwitch = new ButtonBuilder()
+    .setCustomId("jdm_custom_switch_fmt")
+    .setEmoji("🔄")
+    .setLabel("Switch to Embed")
+    .setStyle(ButtonStyle.Secondary);
+
+  const btnBack = new ButtonBuilder()
+    .setCustomId("wlcm_hub_joindm")
+    .setEmoji("⬅️")
+    .setLabel("Join DM Menu")
+    .setStyle(ButtonStyle.Secondary);
+
+  const rowButtons = new ActionRowBuilder().addComponents(btnSave, btnTest, btnSwitch, btnBack);
+
+  container.addActionRowComponents(rowDropdown);
+  container.addActionRowComponents(rowButtons);
+
+  return {
+    components: [container],
+    flags: MessageFlags.IsComponentsV2,
+  };
+}
+
+/**
+ * Unified message renderer for Join DMs (Premade Canvas Card / Custom Embed / Custom Container)
+ */
+async function renderJoinDmMessage(member, config) {
+  const guild = member.guild;
+  const type = config.joinDmType || "premade";
+
+  // 1. Custom Embed Mode
+  if (type === "custom_embed") {
+    const custom = config.joinDmCustomData || {};
+    const embed = new EmbedBuilder();
+
+    try {
+      embed.setColor(custom.color && custom.color.startsWith("#") ? custom.color : "#5865F2");
+    } catch (_) {
+      embed.setColor("#5865F2");
+    }
+
+    if (custom.title && custom.title.trim()) {
+      embed.setTitle(welcomeManager.formatWelcomeText(custom.title, member, guild).substring(0, 256));
+    }
+
+    if (custom.description && custom.description.trim()) {
+      embed.setDescription(welcomeManager.formatWelcomeText(custom.description, member, guild).substring(0, 4096));
+    } else {
+      embed.setDescription(welcomeManager.formatWelcomeText(config.joinDmText || `Welcome to **{server}**!`, member, guild));
+    }
+
+    if (custom.authorName && custom.authorName.trim()) {
+      const authName = welcomeManager.formatWelcomeText(custom.authorName, member, guild).substring(0, 256);
+      const authIcon = custom.authorIcon ? welcomeManager.formatWelcomeText(custom.authorIcon, member, guild) : null;
+      embed.setAuthor({
+        name: authName,
+        iconURL: authIcon && authIcon.startsWith("http") ? authIcon : undefined,
+        url: custom.authorUrl && custom.authorUrl.startsWith("http") ? custom.authorUrl : undefined,
+      });
+    }
+
+    if (custom.thumbnail && custom.thumbnail.trim()) {
+      const thumbUrl = welcomeManager.formatWelcomeText(custom.thumbnail, member, guild);
+      if (thumbUrl && thumbUrl.startsWith("http")) embed.setThumbnail(thumbUrl);
+    }
+
+    if (custom.image && custom.image.trim()) {
+      const imgUrl = welcomeManager.formatWelcomeText(custom.image, member, guild);
+      if (imgUrl && imgUrl.startsWith("http")) embed.setImage(imgUrl);
+    }
+
+    if (custom.footerText && custom.footerText.trim()) {
+      const footText = welcomeManager.formatWelcomeText(custom.footerText, member, guild).substring(0, 2048);
+      const footIcon = custom.footerIcon ? welcomeManager.formatWelcomeText(custom.footerIcon, member, guild) : null;
+      embed.setFooter({
+        text: footText,
+        iconURL: footIcon && footIcon.startsWith("http") ? footIcon : undefined,
+      });
+    }
+
+    if (custom.timestamp) {
+      embed.setTimestamp();
+    }
+
+    return { embeds: [embed] };
+  }
+
+  // 2. Custom Components V2 Container Mode
+  if (type === "custom_container") {
+    const custom = config.joinDmCustomData || {};
+    const container = new ContainerBuilder();
+
+    if (custom.image && custom.image.trim()) {
+      const imgUrl = welcomeManager.formatWelcomeText(custom.image, member, guild);
+      if (imgUrl && imgUrl.startsWith("http")) {
+        const mediaItem = new MediaGalleryItemBuilder().setURL(imgUrl);
+        container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(mediaItem));
+        container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
+      }
+    }
+
+    let bodyText = "";
+    if (custom.title && custom.title.trim()) {
+      bodyText += `# ${welcomeManager.formatWelcomeText(custom.title, member, guild)}\n\n`;
+    }
+    if (custom.description && custom.description.trim()) {
+      bodyText += welcomeManager.formatWelcomeText(custom.description, member, guild);
+    } else {
+      bodyText += welcomeManager.formatWelcomeText(config.joinDmText || `Welcome to **${guild.name}**!`, member, guild);
+    }
+
+    container.addTextDisplayComponents(new TextDisplayBuilder().setContent(bodyText));
+
+    if (custom.footerText && custom.footerText.trim()) {
+      container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
+      container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(`-# ${welcomeManager.formatWelcomeText(custom.footerText, member, guild)}`)
+      );
+    }
+
+    return {
+      components: [container],
+      flags: MessageFlags.IsComponentsV2,
+    };
+  }
+
+  // 3. Astrix Premade Canvas Card DM Mode
+  const dmContent = welcomeManager.formatWelcomeText(
+    config.joinDmText,
+    member,
+    guild
+  );
+
+  const sendFiles = [];
+  let mediaGallery = null;
+
+  if (config.canvasEnabled) {
+    try {
+      const cardBuffer = await welcomeCanvas.generateWelcomeCard(member, config);
+      const canvasAttachment = new AttachmentBuilder(cardBuffer, {
+        name: "welcome-card.png",
+      });
+      sendFiles.push(canvasAttachment);
+
+      const mediaItem = new MediaGalleryItemBuilder().setURL("attachment://welcome-card.png");
+      mediaGallery = new MediaGalleryBuilder().addItems(mediaItem);
+    } catch (_) {
+      const astrixPath = path.join(__dirname, "../../assets/astrix.png");
+      const bannerAttachment = new AttachmentBuilder(astrixPath, {
+        name: "astrix.png",
+      });
+      sendFiles.push(bannerAttachment);
+
+      const mediaItem = new MediaGalleryItemBuilder().setURL("attachment://astrix.png");
+      mediaGallery = new MediaGalleryBuilder().addItems(mediaItem);
+    }
+  }
+
+  const websiteButton = new ButtonBuilder()
+    .setEmoji("🌐")
+    .setLabel("Website")
+    .setStyle(ButtonStyle.Link)
+    .setURL("https://extremez.vercel.app/");
+
+  const supportButton = new ButtonBuilder()
+    .setEmoji("💬")
+    .setLabel("Support")
+    .setStyle(ButtonStyle.Link)
+    .setURL("https://discord.gg/FR9pXG2Mwb");
+
+  const row = new ActionRowBuilder().addComponents(websiteButton, supportButton);
+
+  const mainContent =
+    `<:members:1539875392532512808> **Member Overview**\n` +
+    `> -# <:prefix:1539875384080990228> **Member:** <@${member.id}>\n` +
+    `> -# <:servers:1539875396546207795> **Username:** \`${member.user.username}\`\n` +
+    `> -# <:list:1539875411780042802> **Member Count:** \`#${guild.memberCount.toLocaleString()}\`\n\n` +
+    `> ${dmContent}`;
+
+  const footerText = `-# Built with <:Red_heart:1539875406671388683> by ASTRIXCODE™ • User ID: \`${member.id}\``;
+
+  const container = new ContainerBuilder();
+  if (mediaGallery) {
+    container.addMediaGalleryComponents(mediaGallery);
+  }
+  container
+    .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(mainContent))
+    .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(footerText))
+    .addActionRowComponents(row);
+
+  return {
+    components: [container],
+    files: sendFiles,
+    flags: MessageFlags.IsComponentsV2,
+  };
+}
+
+/**
  * Safely updates an interaction without failing on Discord V2 flag conflicts
  */
 async function safeUpdate(interaction, payload) {
@@ -823,6 +1396,300 @@ async function handleWelcomeBuilderInteraction(client, interaction) {
 
     await safeUpdate(interaction, { embeds: [statusEmbed], components: [row] });
     return true;
+  }
+
+  // --- JOIN DM HUB HANDLERS ---
+  if (customId === "wlcm_hub_joindm") {
+    const payload = buildJoinDmHubPayload(guild, member);
+    await safeUpdate(interaction, payload);
+    return true;
+  }
+
+  if (customId === "jdm_hub_premade") {
+    welcomeManager.updateGuildWelcome(guild.id, { joinDmType: "premade" });
+    const payload = buildJoinDmHubPayload(guild, member, "✅ Join DM set to **Astrix Premade Canvas Card**.");
+    await safeUpdate(interaction, payload);
+    return true;
+  }
+
+  if (customId === "jdm_hub_custom") {
+    const payload = buildJoinDmFormatChoicePayload(guild, member);
+    await safeUpdate(interaction, payload);
+    return true;
+  }
+
+  if (customId === "jdm_hub_toggle") {
+    const config = welcomeManager.getGuildWelcome(guild.id);
+    const newState = !config.joinDmEnabled;
+    welcomeManager.updateGuildWelcome(guild.id, { joinDmEnabled: newState });
+    const payload = buildJoinDmHubPayload(
+      guild,
+      member,
+      newState ? "✅ Join DM greetings are now **ENABLED**!" : "⚠️ Join DM greetings are now **DISABLED**."
+    );
+    await safeUpdate(interaction, payload);
+    return true;
+  }
+
+  if (customId === "jdm_hub_test" || customId === "jdm_custom_test") {
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => null);
+    const config = welcomeManager.getGuildWelcome(guild.id);
+    try {
+      const dmMsg = await renderJoinDmMessage(member, config);
+      await member.send(dmMsg);
+      await interaction.editReply("✅ Test Join DM sent directly to your DMs! Check your direct messages.").catch(() => null);
+    } catch (err) {
+      console.error("[JoinDm] Test error:", err);
+      await interaction.editReply("❌ Failed to send DM. Please ensure your Direct Messages from server members are open!").catch(() => null);
+    }
+    return true;
+  }
+
+  // --- JOIN DM FORMAT SELECTION ---
+  if (customId === "jdm_choose_embed") {
+    welcomeManager.updateGuildWelcome(guild.id, { joinDmType: "custom_embed" });
+    const payload = buildJoinDmEditorPayload(guild, member, "custom_embed", "✨ Join DM mode set to **Classic Embed**.");
+    await safeUpdate(interaction, payload);
+    return true;
+  }
+
+  if (customId === "jdm_choose_container") {
+    welcomeManager.updateGuildWelcome(guild.id, { joinDmType: "custom_container" });
+    const payload = buildJoinDmEditorPayload(guild, member, "custom_container", "✨ Join DM mode set to **Modern Container (Components V2)**.");
+    await safeUpdate(interaction, payload);
+    return true;
+  }
+
+  // --- JOIN DM SWITCH FORMAT ---
+  if (customId === "jdm_custom_switch_fmt") {
+    const config = welcomeManager.getGuildWelcome(guild.id);
+    const newFmt = config.joinDmType === "custom_container" ? "custom_embed" : "custom_container";
+    welcomeManager.updateGuildWelcome(guild.id, { joinDmType: newFmt });
+    const payload = buildJoinDmEditorPayload(guild, member, newFmt, `🔄 Format switched to **${newFmt === "custom_embed" ? "Classic Embed" : "Modern Container (V2)"}**.`);
+    await safeUpdate(interaction, payload);
+    return true;
+  }
+
+  // --- JOIN DM SAVE & ENABLE ---
+  if (customId === "jdm_custom_save") {
+    welcomeManager.updateGuildWelcome(guild.id, { joinDmEnabled: true });
+    const config = welcomeManager.getGuildWelcome(guild.id);
+    const payload = buildJoinDmEditorPayload(
+      guild,
+      member,
+      config.joinDmType,
+      "🎉 **Saved & Enabled!** Custom Join DM greetings are now active for new members."
+    );
+    await safeUpdate(interaction, payload);
+    return true;
+  }
+
+  // --- JOIN DM DROPDOWN ACTIONS ---
+  if (customId === "jdm_custom_dropdown" && interaction.isStringSelectMenu()) {
+    const selected = interaction.values[0];
+    const config = welcomeManager.getGuildWelcome(guild.id);
+    const custom = config.joinDmCustomData || {};
+
+    if (selected === "edit_desc") {
+      const modal = new ModalBuilder()
+        .setCustomId("jdm_modal_desc")
+        .setTitle("Edit Join DM Description");
+
+      const input = new TextInputBuilder()
+        .setCustomId("input_desc")
+        .setLabel("DM Text (Supports Variables)")
+        .setStyle(TextInputStyle.Paragraph)
+        .setPlaceholder("Welcome {user} to **{server}**! Enjoy your stay!")
+        .setValue(custom.description || "")
+        .setMaxLength(3000)
+        .setRequired(false);
+
+      modal.addComponents(new ActionRowBuilder().addComponents(input));
+      await interaction.showModal(modal).catch(() => null);
+      return true;
+    }
+
+    if (selected === "edit_title") {
+      const modal = new ModalBuilder()
+        .setCustomId("jdm_modal_title")
+        .setTitle("Edit Join DM Title");
+
+      const input = new TextInputBuilder()
+        .setCustomId("input_title")
+        .setLabel("Title Headline")
+        .setStyle(TextInputStyle.Short)
+        .setPlaceholder("👋 Welcome to {server}!")
+        .setValue(custom.title || "")
+        .setMaxLength(250)
+        .setRequired(false);
+
+      modal.addComponents(new ActionRowBuilder().addComponents(input));
+      await interaction.showModal(modal).catch(() => null);
+      return true;
+    }
+
+    if (selected === "edit_color") {
+      const modal = new ModalBuilder()
+        .setCustomId("jdm_modal_color")
+        .setTitle("Edit Accent HEX Color");
+
+      const input = new TextInputBuilder()
+        .setCustomId("input_color")
+        .setLabel("HEX Color Code")
+        .setStyle(TextInputStyle.Short)
+        .setPlaceholder("#5865F2, #22C55E, #FF3131, etc.")
+        .setValue(custom.color || "#5865F2")
+        .setMaxLength(7)
+        .setRequired(true);
+
+      modal.addComponents(new ActionRowBuilder().addComponents(input));
+      await interaction.showModal(modal).catch(() => null);
+      return true;
+    }
+
+    if (selected === "edit_author") {
+      const modal = new ModalBuilder()
+        .setCustomId("jdm_modal_author")
+        .setTitle("Edit DM Author Header");
+
+      const inputName = new TextInputBuilder()
+        .setCustomId("input_author_name")
+        .setLabel("Author Name")
+        .setStyle(TextInputStyle.Short)
+        .setPlaceholder("👋 Welcome to the Server!")
+        .setValue(custom.authorName || "")
+        .setRequired(false);
+
+      const inputIcon = new TextInputBuilder()
+        .setCustomId("input_author_icon")
+        .setLabel("Author Icon URL")
+        .setStyle(TextInputStyle.Short)
+        .setPlaceholder("{guild.icon} or image URL")
+        .setValue(custom.authorIcon || "")
+        .setRequired(false);
+
+      const inputUrl = new TextInputBuilder()
+        .setCustomId("input_author_url")
+        .setLabel("Author Link (Optional)")
+        .setStyle(TextInputStyle.Short)
+        .setPlaceholder("https://discord.gg/...")
+        .setValue(custom.authorUrl || "")
+        .setRequired(false);
+
+      modal.addComponents(
+        new ActionRowBuilder().addComponents(inputName),
+        new ActionRowBuilder().addComponents(inputIcon),
+        new ActionRowBuilder().addComponents(inputUrl)
+      );
+      await interaction.showModal(modal).catch(() => null);
+      return true;
+    }
+
+    if (selected === "edit_image") {
+      const modal = new ModalBuilder()
+        .setCustomId("jdm_modal_image")
+        .setTitle("Edit Banner Image");
+
+      const input = new TextInputBuilder()
+        .setCustomId("input_image")
+        .setLabel("Image URL (or {guild.banner})")
+        .setStyle(TextInputStyle.Short)
+        .setPlaceholder("https://... or {guild.banner}")
+        .setValue(custom.image || "")
+        .setRequired(false);
+
+      modal.addComponents(new ActionRowBuilder().addComponents(input));
+      await interaction.showModal(modal).catch(() => null);
+      return true;
+    }
+
+    if (selected === "edit_thumb") {
+      const modal = new ModalBuilder()
+        .setCustomId("jdm_modal_thumb")
+        .setTitle("Edit Thumbnail Image");
+
+      const input = new TextInputBuilder()
+        .setCustomId("input_thumb")
+        .setLabel("Thumbnail URL (or {user.avatar})")
+        .setStyle(TextInputStyle.Short)
+        .setPlaceholder("{user.avatar} or https://...")
+        .setValue(custom.thumbnail || "")
+        .setRequired(false);
+
+      modal.addComponents(new ActionRowBuilder().addComponents(input));
+      await interaction.showModal(modal).catch(() => null);
+      return true;
+    }
+
+    if (selected === "edit_footer") {
+      const modal = new ModalBuilder()
+        .setCustomId("jdm_modal_footer")
+        .setTitle("Edit Footer Note");
+
+      const inputText = new TextInputBuilder()
+        .setCustomId("input_footer_text")
+        .setLabel("Footer Note Text")
+        .setStyle(TextInputStyle.Short)
+        .setPlaceholder("Enjoy your stay in {server}!")
+        .setValue(custom.footerText || "")
+        .setRequired(false);
+
+      const inputIcon = new TextInputBuilder()
+        .setCustomId("input_footer_icon")
+        .setLabel("Footer Icon URL (Optional)")
+        .setStyle(TextInputStyle.Short)
+        .setPlaceholder("{guild.icon} or https://...")
+        .setValue(custom.footerIcon || "")
+        .setRequired(false);
+
+      modal.addComponents(
+        new ActionRowBuilder().addComponents(inputText),
+        new ActionRowBuilder().addComponents(inputIcon)
+      );
+      await interaction.showModal(modal).catch(() => null);
+      return true;
+    }
+
+    if (selected === "toggle_time") {
+      const newTime = !custom.timestamp;
+      welcomeManager.updateGuildWelcome(guild.id, {
+        joinDmCustomData: { timestamp: newTime },
+      });
+      const payload = buildJoinDmEditorPayload(
+        guild,
+        member,
+        config.joinDmType,
+        `🕒 Timestamp display is now **${newTime ? "ENABLED ✅" : "DISABLED ❌"}**.`
+      );
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (selected === "reset_draft") {
+      welcomeManager.updateGuildWelcome(guild.id, {
+        joinDmCustomData: {
+          title: "",
+          description: "",
+          color: "#5865F2",
+          authorName: "",
+          authorIcon: "",
+          authorUrl: "",
+          footerText: "",
+          footerIcon: "",
+          thumbnail: "",
+          image: "",
+          timestamp: false,
+        },
+      });
+      const payload = buildJoinDmEditorPayload(
+        guild,
+        member,
+        config.joinDmType,
+        "🗑️ Join DM draft reset to empty."
+      );
+      await safeUpdate(interaction, payload);
+      return true;
+    }
   }
 
   // 2. Format Selection: Embed vs Container
@@ -1214,6 +2081,69 @@ async function handleWelcomeBuilderInteraction(client, interaction) {
       await safeUpdate(interaction, payload);
       return true;
     }
+    if (customId === "jdm_modal_desc") {
+      const val = interaction.fields.getTextInputValue("input_desc") || "";
+      welcomeManager.updateGuildWelcome(guild.id, { joinDmCustomData: { description: val } });
+      const payload = buildJoinDmEditorPayload(guild, member, config.joinDmType, "✅ Updated DM message description.");
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (customId === "jdm_modal_title") {
+      const val = interaction.fields.getTextInputValue("input_title") || "";
+      welcomeManager.updateGuildWelcome(guild.id, { joinDmCustomData: { title: val } });
+      const payload = buildJoinDmEditorPayload(guild, member, config.joinDmType, "✅ Updated DM title.");
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (customId === "jdm_modal_color") {
+      let val = interaction.fields.getTextInputValue("input_color") || "#5865F2";
+      if (!val.startsWith("#")) val = `#${val}`;
+      welcomeManager.updateGuildWelcome(guild.id, { joinDmCustomData: { color: val } });
+      const payload = buildJoinDmEditorPayload(guild, member, config.joinDmType, `✅ Updated color to \`${val}\`.`);
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (customId === "jdm_modal_author") {
+      const authName = interaction.fields.getTextInputValue("input_author_name") || "";
+      const authIcon = interaction.fields.getTextInputValue("input_author_icon") || "";
+      const authUrl = interaction.fields.getTextInputValue("input_author_url") || "";
+      welcomeManager.updateGuildWelcome(guild.id, {
+        joinDmCustomData: { authorName: authName, authorIcon: authIcon, authorUrl: authUrl },
+      });
+      const payload = buildJoinDmEditorPayload(guild, member, config.joinDmType, "✅ Updated DM author info.");
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (customId === "jdm_modal_image") {
+      const val = interaction.fields.getTextInputValue("input_image") || "";
+      welcomeManager.updateGuildWelcome(guild.id, { joinDmCustomData: { image: val } });
+      const payload = buildJoinDmEditorPayload(guild, member, config.joinDmType, "✅ Updated DM banner image URL.");
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (customId === "jdm_modal_thumb") {
+      const val = interaction.fields.getTextInputValue("input_thumb") || "";
+      welcomeManager.updateGuildWelcome(guild.id, { joinDmCustomData: { thumbnail: val } });
+      const payload = buildJoinDmEditorPayload(guild, member, config.joinDmType, "✅ Updated DM thumbnail URL.");
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (customId === "jdm_modal_footer") {
+      const footText = interaction.fields.getTextInputValue("input_footer_text") || "";
+      const footIcon = interaction.fields.getTextInputValue("input_footer_icon") || "";
+      welcomeManager.updateGuildWelcome(guild.id, {
+        joinDmCustomData: { footerText: footText, footerIcon: footIcon },
+      });
+      const payload = buildJoinDmEditorPayload(guild, member, config.joinDmType, "✅ Updated DM footer note.");
+      await safeUpdate(interaction, payload);
+      return true;
+    }
   }
 
   // 10. Open Studio Button from Premade Dashboard
@@ -1232,6 +2162,10 @@ module.exports = {
   buildFormatChoicePayload,
   buildCustomEditorPayload,
   buildPremadeDashboardPayload,
+  buildJoinDmHubPayload,
+  buildJoinDmFormatChoicePayload,
+  buildJoinDmEditorPayload,
   renderWelcomeMessage,
+  renderJoinDmMessage,
   handleWelcomeBuilderInteraction,
 };

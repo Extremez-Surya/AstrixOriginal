@@ -15,7 +15,7 @@ const {
 const path = require("path");
 const welcomeManager = require("../lib/welcomeManager");
 const welcomeCanvas = require("../lib/welcomeCanvas");
-const { renderWelcomeMessage } = require("../lib/welcome/welcomeBuilder");
+const { renderWelcomeMessage, renderJoinDmMessage } = require("../lib/welcome/welcomeBuilder");
 const loggingManager = require("../lib/loggingManager");
 
 module.exports = {
@@ -61,101 +61,14 @@ module.exports = {
       }
     }
 
-    // 3. Send Join DM if Enabled (Formatted like Channel Welcome Message)
-    if (config.joinDmEnabled && config.joinDmText) {
-      const dmContent = welcomeManager.formatWelcomeText(
-        config.joinDmText,
-        member,
-        member.guild
-      );
-
-      const sendFiles = [];
-      let mediaGallery = null;
-
-      if (config.canvasEnabled) {
-        try {
-          const cardBuffer = await welcomeCanvas.generateWelcomeCard(member, config);
-          const canvasAttachment = new AttachmentBuilder(cardBuffer, {
-            name: "welcome-card.png",
-          });
-          sendFiles.push(canvasAttachment);
-
-          const mediaItem = new MediaGalleryItemBuilder().setURL(
-            "attachment://welcome-card.png"
-          );
-          mediaGallery = new MediaGalleryBuilder().addItems(mediaItem);
-        } catch (_) {
-          const astrixPath = path.join(__dirname, "../assets/astrix.png");
-          const bannerAttachment = new AttachmentBuilder(astrixPath, {
-            name: "astrix.png",
-          });
-          sendFiles.push(bannerAttachment);
-
-          const mediaItem = new MediaGalleryItemBuilder().setURL(
-            "attachment://astrix.png"
-          );
-          mediaGallery = new MediaGalleryBuilder().addItems(mediaItem);
-        }
-      } else {
-        const astrixPath = path.join(__dirname, "../assets/astrix.png");
-        const bannerAttachment = new AttachmentBuilder(astrixPath, {
-          name: "astrix.png",
-        });
-        sendFiles.push(bannerAttachment);
-
-        const mediaItem = new MediaGalleryItemBuilder().setURL(
-          "attachment://astrix.png"
-        );
-        mediaGallery = new MediaGalleryBuilder().addItems(mediaItem);
+    // 3. Send Join DM if Enabled (Premade Canvas / Custom Embed / Custom Container)
+    if (config.joinDmEnabled) {
+      try {
+        const dmPayload = await renderJoinDmMessage(member, config);
+        await member.send(dmPayload).catch(() => null);
+      } catch (err) {
+        console.error("[onGuildMemberAdd] Failed to send Join DM:", err);
       }
-
-      const websiteButton = new ButtonBuilder()
-        .setEmoji("🌐")
-        .setLabel("Website")
-        .setStyle(ButtonStyle.Link)
-        .setURL("https://extremez.vercel.app/");
-
-      const supportButton = new ButtonBuilder()
-        .setEmoji("💬")
-        .setLabel("Support")
-        .setStyle(ButtonStyle.Link)
-        .setURL("https://discord.gg/FR9pXG2Mwb");
-
-      const row = new ActionRowBuilder().addComponents(websiteButton, supportButton);
-
-      const mainContent =
-        `<:members:1539875392532512808> **Member Overview**\n` +
-        `> -# <:prefix:1539875384080990228> **Member:** <@${member.id}>\n` +
-        `> -# <:servers:1539875396546207795> **Username:** \`${member.user.username}\`\n` +
-        `> -# <:list:1539875411780042802> **Member Count:** \`#${member.guild.memberCount.toLocaleString()}\`\n\n` +
-        `> ${dmContent}`;
-
-      const footerText = `-# Built with <:Red_heart:1539875406671388683> by ASTRIXCODE™ • User ID: \`${member.id}\``;
-
-      const container = new ContainerBuilder();
-      if (mediaGallery) {
-        container.addMediaGalleryComponents(mediaGallery);
-      }
-      container
-        .addSeparatorComponents(
-          new SeparatorBuilder()
-            .setSpacing(SeparatorSpacingSize.Small)
-            .setDivider(true)
-        )
-        .addTextDisplayComponents(new TextDisplayBuilder().setContent(mainContent))
-        .addSeparatorComponents(
-          new SeparatorBuilder()
-            .setSpacing(SeparatorSpacingSize.Small)
-            .setDivider(true)
-        )
-        .addTextDisplayComponents(new TextDisplayBuilder().setContent(footerText))
-        .addActionRowComponents(row);
-
-      await member.send({
-        components: [container],
-        files: sendFiles,
-        flags: MessageFlags.IsComponentsV2,
-      }).catch(() => null);
     }
 
     // 4. Send Welcome Message (Premade Canvas / Custom Embed / Custom Container) in Channel if Enabled

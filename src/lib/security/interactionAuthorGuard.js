@@ -19,6 +19,7 @@ const PUBLIC_INTERACTION_PREFIXES = [
   "reaction_role",
   "wlcm_",
   "wcc_",
+  "jdm_",
 ];
 
 /**

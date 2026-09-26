@@ -41,6 +41,20 @@ function getGuildWelcome(guildId) {
     joinDmText:
       guildData.joinDmText ??
       "Welcome to **{server}**! We are super excited to have you join our community! Make sure to read the rules and enjoy your time here.",
+    joinDmType: guildData.joinDmType ?? "premade", // "premade" | "custom_embed" | "custom_container"
+    joinDmCustomData: guildData.joinDmCustomData ?? {
+      title: "",
+      description: "",
+      color: "#5865F2",
+      authorName: "",
+      authorIcon: "",
+      authorUrl: "",
+      footerText: "",
+      footerIcon: "",
+      thumbnail: "",
+      image: "",
+      timestamp: false,
+    },
     canvasEnabled: guildData.canvasEnabled ?? true,
     canvasBgUrl: guildData.canvasBgUrl ?? null,
     canvasTemplate: guildData.canvasTemplate ?? "emerald",
@@ -72,11 +86,15 @@ function updateGuildWelcome(guildId, newSettings) {
   const updatedCustomData = newSettings.customData
     ? { ...(current.customData || {}), ...newSettings.customData }
     : (current.customData || {});
+  const updatedJoinDmCustomData = newSettings.joinDmCustomData
+    ? { ...(current.joinDmCustomData || {}), ...newSettings.joinDmCustomData }
+    : (current.joinDmCustomData || {});
 
   config[guildId] = {
     ...current,
     ...newSettings,
     customData: updatedCustomData,
+    joinDmCustomData: updatedJoinDmCustomData,
   };
   saveConfig(config);
   return config[guildId];

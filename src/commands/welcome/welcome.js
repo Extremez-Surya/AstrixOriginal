@@ -19,6 +19,7 @@ const {
   buildFormatChoicePayload,
   buildCustomEditorPayload,
   buildPremadeDashboardPayload,
+  buildJoinDmHubPayload,
   renderWelcomeMessage,
 } = require("../../lib/welcome/welcomeBuilder");
 
@@ -356,7 +357,7 @@ module.exports = {
     // -------------------------------------------------------------
     // SUBCOMMAND: JOINDM
     // -------------------------------------------------------------
-    if (sub === "joindm") {
+    if (sub === "joindm" || sub === "dm") {
       const arg1 = args[1]?.toLowerCase();
       if (arg1 === "test") {
         const testCmd = client.messageCommands?.get("joindmtest") || require("./joindmtest");
@@ -366,19 +367,20 @@ module.exports = {
       }
       if (arg1 === "on" || arg1 === "enable") {
         welcomeManager.updateGuildWelcome(message.guild.id, { joinDmEnabled: true });
-        return message.reply("✅ Direct Message greetings on join have been **ENABLED**.").catch(() => null);
+        const payload = buildJoinDmHubPayload(message.guild, message.member || message.author, "✅ Join DM greetings have been **ENABLED**.");
+        return message.reply(payload).catch(() => null);
       }
       if (arg1 === "off" || arg1 === "disable") {
         welcomeManager.updateGuildWelcome(message.guild.id, { joinDmEnabled: false });
-        return message.reply("✅ Direct Message greetings on join have been **DISABLED**.").catch(() => null);
+        const payload = buildJoinDmHubPayload(message.guild, message.member || message.author, "⚠️ Join DM greetings have been **DISABLED**.");
+        return message.reply(payload).catch(() => null);
       }
       const text = args.slice(1).join(" ");
       if (text) {
         welcomeManager.updateGuildWelcome(message.guild.id, { joinDmEnabled: true, joinDmText: text });
-        return message.reply(`✅ Join DM enabled and message set to: \`${text}\``).catch(() => null);
       }
-      const config = welcomeManager.getGuildWelcome(message.guild.id);
-      return message.reply(`ℹ️ Join DM state: **${config.joinDmEnabled ? "ENABLED" : "DISABLED"}**. DM text: \`${config.joinDmText}\``).catch(() => null);
+      const payload = buildJoinDmHubPayload(message.guild, message.member || message.author);
+      return message.reply(payload).catch(() => null);
     }
 
     // -------------------------------------------------------------
