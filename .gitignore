@@ -137,3 +137,7 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Astrix Master Vault & Snapshots (Protected on host from git overwrites)
+backups/master_vault.json
+backups/snapshots/

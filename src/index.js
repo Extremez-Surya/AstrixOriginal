@@ -8,6 +8,10 @@ const { printBanner, logger, colors } = require("./lib/functions/common.js");
 
 printBanner();
 
+// 🛡️ Master Data Vault & Anti-Wipe Engine
+const backupManager = require("./lib/backupManager.js");
+backupManager.init();
+
 let token = process.env.DISCORD_TOKEN;
 if (!token) {
   logger.Error("ShardManager", "CRITICAL ERROR: DISCORD_TOKEN environment variable is not defined.");

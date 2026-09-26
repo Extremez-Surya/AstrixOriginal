@@ -26,6 +26,9 @@ const client = new CustomClient({
 
 (async () => {
   try {
+    const backupManager = require("./lib/backupManager.js");
+    backupManager.init();
+
     await AppEvents(client);
     client.start();
   } catch (err) {
