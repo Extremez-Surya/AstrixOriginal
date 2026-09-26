@@ -44,6 +44,20 @@ function getGuildWelcome(guildId) {
     canvasEnabled: guildData.canvasEnabled ?? true,
     canvasBgUrl: guildData.canvasBgUrl ?? null,
     canvasTemplate: guildData.canvasTemplate ?? "emerald",
+    welcomeType: guildData.welcomeType ?? "premade", // "premade" | "custom_embed" | "custom_container"
+    customData: guildData.customData ?? {
+      title: "",
+      description: "",
+      color: "#5865F2",
+      authorName: "",
+      authorIcon: "",
+      authorUrl: "",
+      footerText: "",
+      footerIcon: "",
+      thumbnail: "",
+      image: "",
+      timestamp: false,
+    },
     textColor: guildData.textColor ?? null,
     accentColor: guildData.accentColor ?? null,
     avatarShape: guildData.avatarShape ?? "circle",
@@ -55,7 +69,15 @@ function updateGuildWelcome(guildId, newSettings) {
   if (!guildId) return false;
   const config = loadConfig();
   const current = getGuildWelcome(guildId);
-  config[guildId] = { ...current, ...newSettings };
+  const updatedCustomData = newSettings.customData
+    ? { ...(current.customData || {}), ...newSettings.customData }
+    : (current.customData || {});
+
+  config[guildId] = {
+    ...current,
+    ...newSettings,
+    customData: updatedCustomData,
+  };
   saveConfig(config);
   return config[guildId];
 }
@@ -148,6 +170,7 @@ function resetGuildWelcome(guildId) {
   const existingGoodbye = config[guildId]?.goodbye;
   const defaults = {
     enabled: false,
+    welcomeType: "premade",
     channelId: null,
     messageEnabled: true,
     messageText:
@@ -164,6 +187,19 @@ function resetGuildWelcome(guildId) {
     accentColor: null,
     avatarShape: "circle",
     customWatermark: null,
+    customData: {
+      title: "",
+      description: "",
+      color: "#5865F2",
+      authorName: "",
+      authorIcon: "",
+      authorUrl: "",
+      footerText: "",
+      footerIcon: "",
+      thumbnail: "",
+      image: "",
+      timestamp: false,
+    },
   };
   if (existingGoodbye) {
     defaults.goodbye = existingGoodbye;

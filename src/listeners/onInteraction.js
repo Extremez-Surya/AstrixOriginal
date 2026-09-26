@@ -183,6 +183,16 @@ module.exports = {
     );
     if (handledGoodbyeCanvas) return;
 
+    // Handle Welcome System Setup Hub & Custom Builder Interactions
+    const {
+      handleWelcomeBuilderInteraction,
+    } = require("../lib/welcome/welcomeBuilder");
+    const handledWelcomeBuilder = await handleWelcomeBuilderInteraction(
+      client,
+      interaction,
+    );
+    if (handledWelcomeBuilder) return;
+
     // Handle Welcome Canvas Studio Interactions (Templates, Colors, Shapes, Modals)
     const {
       handleWelcomeCanvasInteraction,

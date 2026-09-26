@@ -17,6 +17,8 @@ const PUBLIC_INTERACTION_PREFIXES = [
   "verify_",
   "rules_agree",
   "reaction_role",
+  "wlcm_",
+  "wcc_",
 ];
 
 /**

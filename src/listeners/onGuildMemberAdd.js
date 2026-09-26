@@ -15,6 +15,7 @@ const {
 const path = require("path");
 const welcomeManager = require("../lib/welcomeManager");
 const welcomeCanvas = require("../lib/welcomeCanvas");
+const { renderWelcomeMessage } = require("../lib/welcome/welcomeBuilder");
 const loggingManager = require("../lib/loggingManager");
 
 module.exports = {
@@ -157,95 +158,18 @@ module.exports = {
       }).catch(() => null);
     }
 
-    // 4. Send Welcome Card & Canvas Banner in Channel if Enabled
+    // 4. Send Welcome Message (Premade Canvas / Custom Embed / Custom Container) in Channel if Enabled
     if (config.enabled && config.channelId) {
       const channel = member.guild.channels.cache.get(config.channelId);
       if (channel && channel.isTextBased()) {
-        const welcomeText = welcomeManager.formatWelcomeText(
-          config.messageText,
-          member,
-          member.guild
-        );
-
-        const sendFiles = [];
-        let mediaGallery = null;
-
-        if (config.canvasEnabled) {
-          try {
-            const cardBuffer = await welcomeCanvas.generateWelcomeCard(member, config);
-            const canvasAttachment = new AttachmentBuilder(cardBuffer, {
-              name: "welcome-card.png",
-            });
-            sendFiles.push(canvasAttachment);
-
-            const mediaItem = new MediaGalleryItemBuilder().setURL(
-              "attachment://welcome-card.png"
-            );
-            mediaGallery = new MediaGalleryBuilder().addItems(mediaItem);
-          } catch (_) {
-            const astrixPath = path.join(__dirname, "../assets/astrix.png");
-            const bannerAttachment = new AttachmentBuilder(astrixPath, {
-              name: "astrix.png",
-            });
-            sendFiles.push(bannerAttachment);
-
-            const mediaItem = new MediaGalleryItemBuilder().setURL(
-              "attachment://astrix.png"
-            );
-            mediaGallery = new MediaGalleryBuilder().addItems(mediaItem);
-          }
+        try {
+          const welcomePayload = await renderWelcomeMessage(member, config);
+          await channel.send(welcomePayload).catch((err) =>
+            console.error("[onGuildMemberAdd] Failed to send welcome:", err)
+          );
+        } catch (err) {
+          console.error("[onGuildMemberAdd] Error rendering welcome message:", err);
         }
-
-        const websiteButton = new ButtonBuilder()
-          .setEmoji("🌐")
-          .setLabel("Website")
-          .setStyle(ButtonStyle.Link)
-          .setURL("https://extremez.vercel.app/");
-
-        const supportButton = new ButtonBuilder()
-          .setEmoji("💬")
-          .setLabel("Support")
-          .setStyle(ButtonStyle.Link)
-          .setURL("https://discord.gg/FR9pXG2Mwb");
-
-        const row = new ActionRowBuilder().addComponents(websiteButton, supportButton);
-
-        let mainContent =
-          `<:members:1539875392532512808> **Member Overview**\n` +
-          `> -# <:prefix:1539875384080990228> **Member:** <@${member.id}>\n` +
-          `> -# <:servers:1539875396546207795> **Username:** \`${member.user.username}\`\n` +
-          `> -# <:list:1539875411780042802> **Member Count:** \`#${member.guild.memberCount.toLocaleString()}\``;
-
-        const footerText = `-# Built with <:Red_heart:1539875406671388683> by ASTRIXCODE™ • User ID: \`${member.id}\``;
-
-        const container = new ContainerBuilder();
-        if (mediaGallery) {
-          container.addMediaGalleryComponents(mediaGallery);
-        }
-        container
-          .addSeparatorComponents(
-            new SeparatorBuilder()
-              .setSpacing(SeparatorSpacingSize.Small)
-              .setDivider(true)
-          )
-          .addTextDisplayComponents(
-            new TextDisplayBuilder().setContent(mainContent)
-          )
-          .addSeparatorComponents(
-            new SeparatorBuilder()
-              .setSpacing(SeparatorSpacingSize.Small)
-              .setDivider(true)
-          )
-          .addTextDisplayComponents(
-            new TextDisplayBuilder().setContent(footerText)
-          )
-          .addActionRowComponents(row);
-
-        await channel.send({
-          components: [container],
-          files: sendFiles,
-          flags: MessageFlags.IsComponentsV2,
-        }).catch((err) => console.error("[onGuildMemberAdd] Failed to send welcome:", err));
       }
     }
   },

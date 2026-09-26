@@ -1,23 +1,10 @@
-const {
-  ContainerBuilder,
-  TextDisplayBuilder,
-  SeparatorBuilder,
-  SeparatorSpacingSize,
-  MessageFlags,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  AttachmentBuilder,
-  MediaGalleryBuilder,
-  MediaGalleryItemBuilder,
-} = require("discord.js");
 const welcomeManager = require("../../lib/welcomeManager");
-const welcomeCanvas = require("../../lib/welcomeCanvas");
+const { renderWelcomeMessage } = require("../../lib/welcome/welcomeBuilder");
 
 module.exports = {
   alias: ["welcometest", "testwelcome"],
   category: "Welcome",
-  desc: "Send a live preview test of the modern welcome card in the current channel.",
+  desc: "Send a live preview test of the active welcome configuration in the current channel.",
   botPermissions: ["SendMessages", "AttachFiles"],
   userPermissions: ["Administrator"],
   devOnly: false,
@@ -29,85 +16,14 @@ module.exports = {
     }
 
     const config = welcomeManager.getGuildWelcome(message.guild.id);
-    const welcomeText = welcomeManager.formatWelcomeText(
-      config.messageText,
-      message.member || message.author,
-      message.guild
-    );
-
-    const sendFiles = [];
-    let mediaGallery = null;
-
     try {
-      // Pass full config so customized template, colors, shape & bgUrl are rendered!
-      const cardBuffer = await welcomeCanvas.generateWelcomeCard(
-        message.member || message.author,
-        config
-      );
-      const canvasAttachment = new AttachmentBuilder(cardBuffer, {
-        name: "welcome-card.png",
+      const payload = await renderWelcomeMessage(message.member || message.author, config);
+      return message.reply(payload).catch((err) => {
+        console.error("[WelcomeTest] Error sending reply:", err);
       });
-      sendFiles.push(canvasAttachment);
-
-      const mediaItem = new MediaGalleryItemBuilder().setURL(
-        "attachment://welcome-card.png",
-      );
-      mediaGallery = new MediaGalleryBuilder().addItems(mediaItem);
     } catch (err) {
-      console.error("[WelcomeTest] Error generating welcome card:", err);
+      console.error("[WelcomeTest] Error generating test welcome:", err);
+      return message.reply("❌ Failed to render test welcome message: " + err.message).catch(() => null);
     }
-
-    const websiteButton = new ButtonBuilder()
-      .setEmoji("🌐")
-      .setLabel("Website")
-      .setStyle(ButtonStyle.Link)
-      .setURL("https://extremez.vercel.app/");
-
-    const supportButton = new ButtonBuilder()
-      .setEmoji("💬")
-      .setLabel("Support")
-      .setStyle(ButtonStyle.Link)
-      .setURL("https://discord.gg/FR9pXG2Mwb");
-
-    const row = new ActionRowBuilder().addComponents(websiteButton, supportButton);
-
-    const mainContent =
-      `<:members:1539875392532512808> **Member Overview**\n` +
-      `> -# <:prefix:1539875384080990228> **Member:** <@${message.author.id}>\n` +
-      `> -# <:servers:1539875396546207795> **Username:** \`${message.author.username}\`\n` +
-      `> -# <:list:1539875411780042802> **Member Count:** \`#${message.guild.memberCount.toLocaleString()}\``;
-
-    const footerText = `-# Built with <:Red_heart:1539875406671388683> by ASTRIXCODE™ • Test Triggered By ${message.author.tag}`;
-
-    const container = new ContainerBuilder();
-    if (mediaGallery) {
-      container.addMediaGalleryComponents(mediaGallery);
-    }
-    container
-      .addSeparatorComponents(
-        new SeparatorBuilder()
-          .setSpacing(SeparatorSpacingSize.Small)
-          .setDivider(true),
-      )
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(mainContent),
-      )
-      .addSeparatorComponents(
-        new SeparatorBuilder()
-          .setSpacing(SeparatorSpacingSize.Small)
-          .setDivider(true),
-      )
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(footerText),
-      )
-      .addActionRowComponents(row);
-
-    return message.reply({
-      components: [container],
-      files: sendFiles,
-      flags: MessageFlags.IsComponentsV2,
-    }).catch((err) => {
-      console.error("[WelcomeTest] Error sending reply:", err);
-    });
   },
 };

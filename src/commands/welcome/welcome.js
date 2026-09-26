@@ -14,17 +14,55 @@ const {
 const path = require("path");
 const welcomeManager = require("../../lib/welcomeManager");
 const welcomeCanvas = require("../../lib/welcomeCanvas");
+const {
+  buildWelcomeHubPayload,
+  buildFormatChoicePayload,
+  buildCustomEditorPayload,
+  buildPremadeDashboardPayload,
+  renderWelcomeMessage,
+} = require("../../lib/welcome/welcomeBuilder");
 
 module.exports = {
   alias: ["welcome", "greet", "welcomer", "welcomesetup"],
   category: "Welcome",
-  desc: "Comprehensive Welcome System Manager — enable, disable, config, reset, edit, test & personalize greetings.",
+  desc: "Comprehensive Welcome System Manager — setup, premade canvas, custom embed/container builder, and greetings.",
   botPermissions: ["SendMessages"],
   userPermissions: ["Administrator"],
   devOnly: false,
 
   async execute(client, message, args) {
     const sub = args[0]?.toLowerCase();
+
+    // -------------------------------------------------------------
+    // SUBCOMMANDS: SETUP / PREMADE / CUSTOM / EMBED / CONTAINER
+    // -------------------------------------------------------------
+    if (sub === "setup") {
+      const payload = buildWelcomeHubPayload(message.guild, message.member || message.author);
+      return message.reply(payload).catch(() => null);
+    }
+
+    if (sub === "premade") {
+      welcomeManager.updateGuildWelcome(message.guild.id, { welcomeType: "premade" });
+      const payload = buildPremadeDashboardPayload(message.guild, message.member || message.author);
+      return message.reply(payload).catch(() => null);
+    }
+
+    if (sub === "custom") {
+      const payload = buildFormatChoicePayload(message.guild, message.member || message.author);
+      return message.reply(payload).catch(() => null);
+    }
+
+    if (sub === "embed") {
+      welcomeManager.updateGuildWelcome(message.guild.id, { welcomeType: "custom_embed" });
+      const payload = buildCustomEditorPayload(message.guild, message.member || message.author, "custom_embed");
+      return message.reply(payload).catch(() => null);
+    }
+
+    if (sub === "container") {
+      welcomeManager.updateGuildWelcome(message.guild.id, { welcomeType: "custom_container" });
+      const payload = buildCustomEditorPayload(message.guild, message.member || message.author, "custom_container");
+      return message.reply(payload).catch(() => null);
+    }
 
     // -------------------------------------------------------------
     // SUBCOMMAND: ENABLE / ON
@@ -363,85 +401,9 @@ module.exports = {
     }
 
     // -------------------------------------------------------------
-    // DEFAULT MAIN DASHBOARD
+    // DEFAULT: WELCOME SETUP HUB (PREMADE VS CUSTOM)
     // -------------------------------------------------------------
-    const config = welcomeManager.getGuildWelcome(message.guild.id);
-    const channelMention = config.channelId ? `<#${config.channelId}>` : "`None`";
-    const roleMention = config.autoRoleId ? `<@&${config.autoRoleId}>` : "`None`";
-
-    const astrixPath = path.join(__dirname, "../../assets/astrix.png");
-    const bannerAttachment = new AttachmentBuilder(astrixPath, {
-      name: "astrix.png",
-    });
-
-    const mediaItem = new MediaGalleryItemBuilder().setURL(
-      "attachment://astrix.png",
-    );
-    const mediaGallery = new MediaGalleryBuilder().addItems(mediaItem);
-
-    const websiteButton = new ButtonBuilder()
-      .setEmoji("🌐")
-      .setLabel("Website")
-      .setStyle(ButtonStyle.Link)
-      .setURL("https://extremez.vercel.app/");
-
-    const supportButton = new ButtonBuilder()
-      .setEmoji("💬")
-      .setLabel("Support")
-      .setStyle(ButtonStyle.Link)
-      .setURL("https://discord.gg/FR9pXG2Mwb");
-
-    const row = new ActionRowBuilder().addComponents(websiteButton, supportButton);
-
-    const mainContent =
-      `# <:astrix:1539875362945900574> Welcome & Join Engine Dashboard\n` +
-      `-# *Configure automatic member greetings, roles, canvas cards, and join DMs.*\n\n` +
-      `<:list:1539875411780042802> **Configuration Overview**\n` +
-      `> -# <:prefix:1539875384080990228> **Status:** \`${config.enabled ? "ENABLED" : "DISABLED"}\`\n` +
-      `> -# <:servers:1539875396546207795> **Welcome Channel:** ${channelMention}\n` +
-      `> -# <:members:1539875392532512808> **Auto-Role:** ${roleMention}\n` +
-      `> -# <:clock:1539875400975388713> **Canvas Card:** \`${config.canvasEnabled ? "ENABLED" : "DISABLED"}\`\n` +
-      `> -# <:clock:1539875400975388713> **Join DM:** \`${config.joinDmEnabled ? "ENABLED" : "DISABLED"}\`\n\n` +
-      `> **Available Commands & Subcommands:**\n` +
-      `> - \`.welcome enable\` — Activate greeting module\n` +
-      `> - \`.welcome disable\` — Deactivate greeting module\n` +
-      `> - \`.welcome config\` — Display full parameter config & preview\n` +
-      `> - \`.welcome reset\` — Reset all settings to factory default\n` +
-      `> - \`.welcome edit\` — Multi-option editor guide and batch command\n` +
-      `> - \`.welcome channel #channel\` — Set greeting channel\n` +
-      `> - \`.welcome message <text>\` — Set welcome message template\n` +
-      `> - \`.welcome card <on|off>\` — Toggle canvas image card\n` +
-      `> - \`.welcome bg <url|reset>\` — Set custom card background\n` +
-      `> - \`.welcome autorole <@Role|off>\` — Assign auto-role on join\n` +
-      `> - \`.welcome joindm <on|off|text>\` — Configure private join DM\n` +
-      `> - \`.welcome test\` — Send live preview test card`;
-
-    const footerText = `-# Built with <:Red_heart:1539875406671388683> by ASTRIXCODE™ • © 2026 ASTRIXCODE`;
-
-    const container = new ContainerBuilder()
-      .addMediaGalleryComponents(mediaGallery)
-      .addSeparatorComponents(
-        new SeparatorBuilder()
-          .setSpacing(SeparatorSpacingSize.Small)
-          .setDivider(true),
-      )
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(mainContent),
-      )
-      .addSeparatorComponents(
-        new SeparatorBuilder()
-          .setSpacing(SeparatorSpacingSize.Small)
-          .setDivider(true),
-      )
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(footerText),
-      )
-      .addActionRowComponents(row);
-
-    return message.reply({
-      components: [container],
-      files: [bannerAttachment],
-      flags: MessageFlags.IsComponentsV2,
-    }).catch(() => null);
+    const hubPayload = buildWelcomeHubPayload(message.guild, message.member || message.author);
+    return message.reply(hubPayload).catch(() => null);
   },
 };

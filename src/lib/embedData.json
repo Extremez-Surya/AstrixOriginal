@@ -1,38 +1,7 @@
 {
   "guilds": {
     "1526109131042459678": {
-      "embeds": {
-        "wlxm": {
-          "name": "wlxm",
-          "title": "Embed: wlxm",
-          "description": "Click the buttons below to customize this embed!",
-          "color": "#5865F2",
-          "authorName": null,
-          "authorIcon": null,
-          "authorUrl": null,
-          "footerText": null,
-          "footerIcon": null,
-          "thumbnail": null,
-          "image": null,
-          "timestamp": false,
-          "updatedAt": 1787932754831
-        },
-        "wlcm": {
-          "name": "wlcm",
-          "title": "Embed: wlcm",
-          "description": "Click the buttons below to customize this embed!",
-          "color": "#5865F2",
-          "authorName": null,
-          "authorIcon": null,
-          "authorUrl": null,
-          "footerText": null,
-          "footerIcon": null,
-          "thumbnail": null,
-          "image": null,
-          "timestamp": false,
-          "updatedAt": 1787933691777
-        }
-      },
+      "embeds": {},
       "customColor": "#5865F2"
     }
   }
