@@ -44,7 +44,7 @@ module.exports = {
 
     if (sub === "premade") {
       welcomeManager.updateGuildWelcome(message.guild.id, { welcomeType: "premade" });
-      const payload = buildPremadeDashboardPayload(message.guild, message.member || message.author);
+      const payload = await buildPremadeDashboardPayload(message.guild, message.member || message.author);
       return message.reply(payload).catch(() => null);
     }
 

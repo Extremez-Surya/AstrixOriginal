@@ -1,3 +1,4 @@
+const { ContainerBuilder, TextDisplayBuilder, MessageFlags } = require("discord.js");
 const welcomeManager = require("../../lib/welcomeManager");
 const { renderWelcomeMessage } = require("../../lib/welcome/welcomeBuilder");
 
@@ -16,6 +17,18 @@ module.exports = {
     }
 
     const config = welcomeManager.getGuildWelcome(message.guild.id);
+
+    if (!config.enabled || !config.channelId) {
+      const container = new ContainerBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `### ⚠️ Welcome Greetings Not Active\n` +
+          `-# Cannot preview welcome greeting: Module is currently **DISABLED** or channel is not configured.\n\n` +
+          `> Use \`.welcome\` to select your channel and enable the module.`
+        )
+      );
+      return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    }
+
     try {
       const payload = await renderWelcomeMessage(message.member || message.author, config);
       return message.reply(payload).catch((err) => {
@@ -27,3 +40,4 @@ module.exports = {
     }
   },
 };
+

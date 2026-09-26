@@ -22,310 +22,155 @@ const path = require("path");
 const welcomeManager = require("../welcomeManager");
 const welcomeCanvas = require("../welcomeCanvas");
 
+// Helper to format short badges
+function badge(text, active) {
+  return `\`${text}\` ${active ? "🟢" : "🔴"}`;
+}
+
 /**
- * Builds the initial setup hub where user chooses Premade vs Custom
+ * 1. MAIN WELCOME HUB (Clean Small V2 Container with Professional Dropdown)
  */
-function buildWelcomeHubPayload(guild, member) {
+function buildWelcomeHubPayload(guild, member, notice = null) {
   const config = welcomeManager.getGuildWelcome(guild.id);
-  const channelMention = config.channelId ? `<#${config.channelId}>` : "`Not Configured`";
+  const channelMention = config.channelId ? `<#${config.channelId}>` : "`None`";
   const typeLabel =
     config.welcomeType === "custom_embed"
-      ? "Custom (Classic Embed)"
+      ? "Custom Embed"
       : config.welcomeType === "custom_container"
-        ? "Custom (Components V2 Container)"
-        : "Astrix Premade (Canvas UI)";
+        ? "Custom Container"
+        : "Astrix Premade";
 
-  const embed = new EmbedBuilder()
-    .setColor("#5865F2")
-    .setTitle("👋 Welcome System Setup & Manager")
-    .setDescription(
-      `*Configure how new members are greeted when joining ${guild.name}.*\n\n` +
-      `### ⚙️ Current Configuration\n` +
-      `> - **Module State:** \`${config.enabled ? "ENABLED 🟢" : "DISABLED 🔴"}\`\n` +
-      `> - **Active Mode:** \`${typeLabel}\`\n` +
-      `> - **Welcome Channel:** ${channelMention}\n\n` +
-      `### 🚀 Choose Setup Method\n` +
-      `> 🎨 **Astrix Premade Welcome**\n` +
-      `> Instant setup using Astrix's signature Cyber-Metallic Canvas Card, live member overview stats, buttons, and custom studio themes.\n\n` +
-      `> 🛠️ **Custom Welcome (Build Your Own)**\n` +
-      `> Build your own custom greeting from scratch! Choose between **Classic Embed** or **Modern Container (Components V2)**, with full dropdown-based editing and variables!`
-    )
-    .setFooter({ text: "Astrix Welcome Engine • Select an option below to proceed" });
+  let header =
+    `### <:astrix:1539875362945900574> Welcome Management Hub\n` +
+    `-# Status: ${badge(config.enabled ? "Active" : "Disabled", config.enabled)} • Channel: ${channelMention} • Mode: \`${typeLabel}\``;
 
-  const btnPremade = new ButtonBuilder()
-    .setCustomId("wlcm_hub_premade")
-    .setEmoji("🎨")
-    .setLabel("Premade Channel")
-    .setStyle(ButtonStyle.Success);
+  if (notice) {
+    header = `> **${notice}**\n\n` + header;
+  }
 
-  const btnCustom = new ButtonBuilder()
-    .setCustomId("wlcm_hub_custom")
-    .setEmoji("🛠️")
-    .setLabel("Custom Channel")
-    .setStyle(ButtonStyle.Primary);
+  const selectMenu = new StringSelectMenuBuilder()
+    .setCustomId("wlcm_hub_dropdown")
+    .setPlaceholder("⚙️ Choose action or configuration...")
+    .addOptions(
+      {
+        label: "Astrix Premade Welcome",
+        value: "wlcm_act_premade",
+        description: "Signature canvas card greeting & studio themes",
+        emoji: "🎨",
+      },
+      {
+        label: "Custom Channel Welcome",
+        value: "wlcm_act_custom",
+        description: "Build your own Embed or Container greeting",
+        emoji: "🛠️",
+      },
+      {
+        label: "Join DM Greetings Setup",
+        value: "wlcm_act_joindm",
+        description: "Configure direct message greetings for new joins",
+        emoji: "✉️",
+      },
+      {
+        label: `Set Channel (${config.channelId ? `#${guild.channels.cache.get(config.channelId)?.name || "set"}` : "None"})`,
+        value: "wlcm_act_channel",
+        description: "Pick destination text channel for greetings",
+        emoji: "📢",
+      },
+      {
+        label: config.enabled ? "Disable Welcome Module" : "Enable Welcome Module",
+        value: "wlcm_act_toggle",
+        description: config.enabled ? "Turn off all channel welcome greetings" : "Activate channel welcome greetings",
+        emoji: config.enabled ? "🔴" : "🟢",
+      },
+      {
+        label: "Send Live Preview Test",
+        value: "wlcm_act_test",
+        description: "Dispatch test greeting to this channel",
+        emoji: "🧪",
+      }
+    );
 
-  const btnJoinDm = new ButtonBuilder()
-    .setCustomId("wlcm_hub_joindm")
-    .setEmoji("✉️")
-    .setLabel("Join DM Setup")
-    .setStyle(ButtonStyle.Secondary);
+  const row = new ActionRowBuilder().addComponents(selectMenu);
 
-  const btnStatus = new ButtonBuilder()
-    .setCustomId("wlcm_hub_status")
-    .setEmoji("⚙️")
-    .setLabel("Status & Config")
-    .setStyle(ButtonStyle.Secondary);
-
-  const row = new ActionRowBuilder().addComponents(btnPremade, btnCustom, btnJoinDm, btnStatus);
+  const container = new ContainerBuilder()
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(header))
+    .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
+    .addActionRowComponents(row);
 
   return {
-    embeds: [embed],
-    components: [row],
+    components: [container],
+    flags: MessageFlags.IsComponentsV2,
   };
 }
 
 /**
- * Builds the format selection screen: EMBED vs CONTAINER
+ * 2. CUSTOM FORMAT CHOICE (Embed vs Container)
  */
 function buildFormatChoicePayload(guild, member) {
-  const embed = new EmbedBuilder()
-    .setColor("#5865F2")
-    .setTitle("🛠️ Select Custom Welcome Format")
-    .setDescription(
-      `*Choose the message format style for your custom welcome greetings.*\n\n` +
-      `Please select which format version you would like to build:\n\n` +
-      `> 📑 **Classic Embed**\n` +
-      `> Beautiful Discord rich embed with colored border, title, description, author, thumbnail, banner image, and footer.\n\n` +
-      `> 📦 **Modern Container (Components V2)**\n` +
-      `> Discord's next-gen full-width container format with sleek divider lines, media gallery banners, and styled text displays.\n\n` +
-      `*Both formats support full dropdown editing, interactive modals, and real-time live preview.*`
-    )
-    .setFooter({ text: "Astrix Welcome Engine • Click an option below" });
+  const header =
+    `### 🛠️ Select Custom Welcome Format\n` +
+    `-# Choose your desired message format style for channel greetings:`;
 
-  const btnEmbed = new ButtonBuilder()
-    .setCustomId("wlcm_choose_embed")
-    .setEmoji("📑")
-    .setLabel("Classic Embed")
-    .setStyle(ButtonStyle.Primary);
+  const selectMenu = new StringSelectMenuBuilder()
+    .setCustomId("wlcm_format_dropdown")
+    .setPlaceholder("Select message format...")
+    .addOptions(
+      {
+        label: "Classic Discord Embed",
+        value: "fmt_embed",
+        description: "Rich embed with colored border, title, fields & images",
+        emoji: "📑",
+      },
+      {
+        label: "Modern Container (Components V2)",
+        value: "fmt_container",
+        description: "Full-width Discord container with text & media dividers",
+        emoji: "📦",
+      },
+      {
+        label: "Back to Main Hub",
+        value: "fmt_back",
+        description: "Return to the welcome management hub",
+        emoji: "⬅️",
+      }
+    );
 
-  const btnContainer = new ButtonBuilder()
-    .setCustomId("wlcm_choose_container")
-    .setEmoji("📦")
-    .setLabel("Modern Container (V2)")
-    .setStyle(ButtonStyle.Success);
+  const row = new ActionRowBuilder().addComponents(selectMenu);
 
-  const btnBack = new ButtonBuilder()
-    .setCustomId("wlcm_hub_back")
-    .setEmoji("⬅️")
-    .setLabel("Back")
-    .setStyle(ButtonStyle.Secondary);
-
-  const row = new ActionRowBuilder().addComponents(btnEmbed, btnContainer, btnBack);
+  const container = new ContainerBuilder()
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(header))
+    .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
+    .addActionRowComponents(row);
 
   return {
-    embeds: [embed],
-    components: [row],
+    components: [container],
+    flags: MessageFlags.IsComponentsV2,
   };
 }
 
 /**
- * Builds the Interactive Live Editor for Custom Welcome (Embed or Container)
+ * 3. CUSTOM CHANNEL WELCOME EDITOR (Live Draft Preview inside sleek Container with Dropdown)
  */
 function buildCustomEditorPayload(guild, member, format, notice = null) {
   const config = welcomeManager.getGuildWelcome(guild.id);
   const custom = config.customData || {};
   const currentFormat = format || config.welcomeType || "custom_embed";
-
   const channelObj = config.channelId ? guild.channels.cache.get(config.channelId) : null;
-  const channelName = channelObj ? channelObj.name : "Not Set";
+  const channelName = channelObj ? channelObj.name : "None";
 
-  // 1. Build the Live Preview
-  if (currentFormat === "custom_embed") {
-    const embed = new EmbedBuilder();
+  let header =
+    `### 🛠️ Custom Welcome Studio (${currentFormat === "custom_embed" ? "Classic Embed" : "Modern Container"})\n` +
+    `-# Status: ${badge(config.enabled ? "Active" : "Disabled", config.enabled)} • Channel: ${config.channelId ? `<#${config.channelId}>` : "`None`"}`;
 
-    // Color
-    try {
-      embed.setColor(custom.color && custom.color.startsWith("#") ? custom.color : "#5865F2");
-    } catch (_) {
-      embed.setColor("#5865F2");
-    }
-
-    // Title
-    if (custom.title && custom.title.trim()) {
-      embed.setTitle(welcomeManager.formatWelcomeText(custom.title, member, guild).substring(0, 256));
-    }
-
-    // Description (empty draft if blank)
-    if (custom.description && custom.description.trim()) {
-      embed.setDescription(welcomeManager.formatWelcomeText(custom.description, member, guild).substring(0, 4096));
-    } else {
-      embed.setDescription("*✨ Empty welcome embed description. Use the dropdown menu below to add text, title, or images.*");
-    }
-
-    // Author
-    if (custom.authorName && custom.authorName.trim()) {
-      const authName = welcomeManager.formatWelcomeText(custom.authorName, member, guild).substring(0, 256);
-      const authIcon = custom.authorIcon ? welcomeManager.formatWelcomeText(custom.authorIcon, member, guild) : null;
-      const authUrl = custom.authorUrl || null;
-      embed.setAuthor({
-        name: authName,
-        iconURL: authIcon && authIcon.startsWith("http") ? authIcon : undefined,
-        url: authUrl && authUrl.startsWith("http") ? authUrl : undefined,
-      });
-    }
-
-    // Thumbnail
-    if (custom.thumbnail && custom.thumbnail.trim()) {
-      const thumbUrl = welcomeManager.formatWelcomeText(custom.thumbnail, member, guild);
-      if (thumbUrl && thumbUrl.startsWith("http")) {
-        embed.setThumbnail(thumbUrl);
-      }
-    }
-
-    // Banner Image
-    if (custom.image && custom.image.trim()) {
-      const imgUrl = welcomeManager.formatWelcomeText(custom.image, member, guild);
-      if (imgUrl && imgUrl.startsWith("http")) {
-        embed.setImage(imgUrl);
-      }
-    }
-
-    // Footer
-    if (custom.footerText && custom.footerText.trim()) {
-      const footText = welcomeManager.formatWelcomeText(custom.footerText, member, guild).substring(0, 2048);
-      const footIcon = custom.footerIcon ? welcomeManager.formatWelcomeText(custom.footerIcon, member, guild) : null;
-      embed.setFooter({
-        text: footText,
-        iconURL: footIcon && footIcon.startsWith("http") ? footIcon : undefined,
-      });
-    }
-
-    // Timestamp
-    if (custom.timestamp) {
-      embed.setTimestamp();
-    }
-
-    // Controls Action Rows
-    const selectMenu = new StringSelectMenuBuilder()
-      .setCustomId("wlcm_custom_dropdown")
-      .setPlaceholder("⚙️ Choose an element to edit or configure...")
-      .addOptions(
-        {
-          label: "Edit Description / Message Body",
-          value: "edit_desc",
-          description: "Main message text (supports {user}, {server}, {memberCount}, etc.)",
-          emoji: "📝",
-        },
-        {
-          label: "Edit Title",
-          value: "edit_title",
-          description: "Greeting headline title",
-          emoji: "🏷️",
-        },
-        {
-          label: "Edit Accent Color",
-          value: "edit_color",
-          description: `Current: ${custom.color || "#5865F2"} (HEX format)`,
-          emoji: "🎨",
-        },
-        {
-          label: "Edit Author Info",
-          value: "edit_author",
-          description: "Author header text, icon URL & link",
-          emoji: "👤",
-        },
-        {
-          label: "Edit Main Banner Image",
-          value: "edit_image",
-          description: "Large banner image URL (or {guild.banner})",
-          emoji: "🖼️",
-        },
-        {
-          label: "Edit Thumbnail Image",
-          value: "edit_thumb",
-          description: "Small thumbnail icon URL (or {user.avatar})",
-          emoji: "🔍",
-        },
-        {
-          label: "Edit Footer Note",
-          value: "edit_footer",
-          description: "Footer text note and small footer icon",
-          emoji: "📌",
-        },
-        {
-          label: `Toggle Timestamp (${custom.timestamp ? "ENABLED ✅" : "DISABLED ❌"})`,
-          value: "toggle_time",
-          description: "Toggle join date & time timestamp on/off",
-          emoji: "🕒",
-        },
-        {
-          label: `Set Welcome Channel (${config.channelId ? `#${channelName}` : "Not Set"})`,
-          value: "set_channel",
-          description: "Choose where welcome messages will be sent",
-          emoji: "📢",
-        },
-        {
-          label: "Reset to Empty Draft",
-          value: "reset_draft",
-          description: "Clear all fields back to blank",
-          emoji: "🗑️",
-        }
-      );
-
-    const rowDropdown = new ActionRowBuilder().addComponents(selectMenu);
-
-    const btnSave = new ButtonBuilder()
-      .setCustomId("wlcm_custom_save")
-      .setEmoji("💾")
-      .setLabel("Save & Enable")
-      .setStyle(ButtonStyle.Success);
-
-    const btnTest = new ButtonBuilder()
-      .setCustomId("wlcm_custom_test")
-      .setEmoji("🧪")
-      .setLabel("Send Live Test")
-      .setStyle(ButtonStyle.Primary);
-
-    const btnSwitch = new ButtonBuilder()
-      .setCustomId("wlcm_custom_switch_fmt")
-      .setEmoji("🔄")
-      .setLabel("Switch to Container")
-      .setStyle(ButtonStyle.Secondary);
-
-    const btnBack = new ButtonBuilder()
-      .setCustomId("wlcm_hub_back")
-      .setEmoji("⬅️")
-      .setLabel("Main Menu")
-      .setStyle(ButtonStyle.Secondary);
-
-    const rowButtons = new ActionRowBuilder().addComponents(btnSave, btnTest, btnSwitch, btnBack);
-
-    let contentNotice = `### 🛠️ Welcome Embed Studio (Live Preview)\n` +
-      `-# *Format: **Classic Embed** • Channel: ${config.channelId ? `<#${config.channelId}>` : "`Not Set`"} • Status: \`${config.enabled ? "ACTIVE" : "INACTIVE"}\`*`;
-    if (notice) {
-      contentNotice = `${notice}\n\n${contentNotice}`;
-    }
-
-    return {
-      content: contentNotice,
-      embeds: [embed],
-      components: [rowDropdown, rowButtons],
-    };
-  }
-
-  // Modern Container (Components V2) Mode
-  const container = new ContainerBuilder();
-
-  let headerText = `### 🛠️ Welcome Container Studio (Live Preview)\n` +
-    `-# *Format: **Modern Container (Components V2)** • Channel: ${config.channelId ? `<#${config.channelId}>` : "`Not Set`"} • Status: \`${config.enabled ? "ACTIVE" : "INACTIVE"}\`*`;
   if (notice) {
-    headerText = `${notice}\n\n${headerText}`;
+    header = `> **${notice}**\n\n` + header;
   }
 
-  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
-  container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
+  const container = new ContainerBuilder()
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(header))
+    .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
 
-  // Media Gallery Banner if set
+  // Banner image if configured
   if (custom.image && custom.image.trim()) {
     const imgUrl = welcomeManager.formatWelcomeText(custom.image, member, guild);
     if (imgUrl && imgUrl.startsWith("http")) {
@@ -335,101 +180,138 @@ function buildCustomEditorPayload(guild, member, format, notice = null) {
     }
   }
 
-  // Title & Body
-  let bodyText = "";
-  if (custom.title && custom.title.trim()) {
-    bodyText += `# ${welcomeManager.formatWelcomeText(custom.title, member, guild)}\n\n`;
-  }
-  if (custom.description && custom.description.trim()) {
-    bodyText += welcomeManager.formatWelcomeText(custom.description, member, guild);
+  // Live draft preview representation
+  let previewText = "";
+  if (currentFormat === "custom_embed") {
+    previewText += `**📑 Embed Draft Preview:**\n`;
+    if (custom.authorName) {
+      previewText += `-# 👤 ${welcomeManager.formatWelcomeText(custom.authorName, member, guild)}\n`;
+    }
+    if (custom.title) {
+      previewText += `### ${welcomeManager.formatWelcomeText(custom.title, member, guild)}\n`;
+    }
+    if (custom.description) {
+      previewText += `${welcomeManager.formatWelcomeText(custom.description, member, guild)}\n`;
+    } else {
+      previewText += `-# *(Empty description — select option below to add)*\n`;
+    }
+    previewText += `-# Color: \`${custom.color || "#5865F2"}\``;
+    if (custom.thumbnail) previewText += ` • Thumbnail: \`Set\``;
+    if (custom.timestamp) previewText += ` • Timestamp: \`Active\``;
+    if (custom.footerText) {
+      previewText += `\n-# 📌 ${welcomeManager.formatWelcomeText(custom.footerText, member, guild)}`;
+    }
   } else {
-    bodyText += "*✨ Empty welcome container text. Use the dropdown menu below to add text, title, or images.*";
+    previewText += `**📦 Container Draft Preview:**\n`;
+    if (custom.title) {
+      previewText += `### ${welcomeManager.formatWelcomeText(custom.title, member, guild)}\n`;
+    }
+    if (custom.description) {
+      previewText += `${welcomeManager.formatWelcomeText(custom.description, member, guild)}\n`;
+    } else {
+      previewText += `-# *(Empty container body — select option below to add)*\n`;
+    }
+    if (custom.footerText) {
+      previewText += `-# 📌 ${welcomeManager.formatWelcomeText(custom.footerText, member, guild)}`;
+    }
   }
 
-  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(bodyText));
-
-  // Footer Note if set
-  if (custom.footerText && custom.footerText.trim()) {
-    container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
-    const footText = `-# ${welcomeManager.formatWelcomeText(custom.footerText, member, guild)}`;
-    container.addTextDisplayComponents(new TextDisplayBuilder().setContent(footText));
-  }
-
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(previewText));
   container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
 
-  // Controls Dropdown
+  // Professional Select Menu for all editing options
   const selectMenu = new StringSelectMenuBuilder()
     .setCustomId("wlcm_custom_dropdown")
-    .setPlaceholder("⚙️ Choose an element to edit or configure...")
+    .setPlaceholder("⚙️ Select field or action...")
     .addOptions(
       {
-        label: "Edit Description / Message Body",
+        label: "Edit Message Body / Description",
         value: "edit_desc",
-        description: "Main message text (supports {user}, {server}, {memberCount}, etc.)",
+        description: "Main text (supports {user}, {server}, {memberCount})",
         emoji: "📝",
       },
       {
-        label: "Edit Title",
+        label: "Edit Title Headline",
         value: "edit_title",
-        description: "Greeting headline title",
+        description: "Greeting title headline",
         emoji: "🏷️",
+      },
+      {
+        label: "Edit Accent Color",
+        value: "edit_color",
+        description: `Current: ${custom.color || "#5865F2"} (HEX)`,
+        emoji: "🎨",
+      },
+      {
+        label: "Edit Author Info",
+        value: "edit_author",
+        description: "Author header text, icon URL & link",
+        emoji: "👤",
       },
       {
         label: "Edit Banner Image",
         value: "edit_image",
-        description: "Banner image URL (or {guild.banner})",
+        description: "Large banner image URL (or {guild.banner})",
         emoji: "🖼️",
+      },
+      {
+        label: "Edit Thumbnail Image",
+        value: "edit_thumb",
+        description: "Small thumbnail icon URL (or {user.avatar})",
+        emoji: "🔍",
       },
       {
         label: "Edit Footer Note",
         value: "edit_footer",
-        description: "Footer text note",
+        description: "Footer text note & icon",
         emoji: "📌",
       },
       {
-        label: `Set Welcome Channel (${config.channelId ? `#${channelName}` : "Not Set"})`,
+        label: `Toggle Timestamp (${custom.timestamp ? "ON" : "OFF"})`,
+        value: "toggle_time",
+        description: "Display current timestamp in footer",
+        emoji: "⏱️",
+      },
+      {
+        label: `Set Welcome Channel (#${channelName})`,
         value: "set_channel",
-        description: "Choose where welcome messages will be sent",
+        description: "Choose destination text channel",
         emoji: "📢",
+      },
+      {
+        label: `Switch to ${currentFormat === "custom_embed" ? "Modern Container" : "Classic Embed"}`,
+        value: "switch_fmt",
+        description: "Change message format style",
+        emoji: "🔄",
+      },
+      {
+        label: "Save & Enable Greeting",
+        value: "save_enable",
+        description: "Save custom draft and activate greetings",
+        emoji: "💾",
+      },
+      {
+        label: "Send Live Preview Test",
+        value: "send_test",
+        description: "Dispatch test greeting to channel",
+        emoji: "🧪",
       },
       {
         label: "Reset to Empty Draft",
         value: "reset_draft",
-        description: "Clear all fields back to blank",
+        description: "Clear all draft fields back to blank",
         emoji: "🗑️",
+      },
+      {
+        label: "Back to Main Hub",
+        value: "back_hub",
+        description: "Return to welcome management hub",
+        emoji: "⬅️",
       }
     );
 
   const rowDropdown = new ActionRowBuilder().addComponents(selectMenu);
-
-  const btnSave = new ButtonBuilder()
-    .setCustomId("wlcm_custom_save")
-    .setEmoji("💾")
-    .setLabel("Save & Enable")
-    .setStyle(ButtonStyle.Success);
-
-  const btnTest = new ButtonBuilder()
-    .setCustomId("wlcm_custom_test")
-    .setEmoji("🧪")
-    .setLabel("Send Live Test")
-    .setStyle(ButtonStyle.Primary);
-
-  const btnSwitch = new ButtonBuilder()
-    .setCustomId("wlcm_custom_switch_fmt")
-    .setEmoji("🔄")
-    .setLabel("Switch to Embed")
-    .setStyle(ButtonStyle.Secondary);
-
-  const btnBack = new ButtonBuilder()
-    .setCustomId("wlcm_hub_back")
-    .setEmoji("⬅️")
-    .setLabel("Main Menu")
-    .setStyle(ButtonStyle.Secondary);
-
-  const rowButtons = new ActionRowBuilder().addComponents(btnSave, btnTest, btnSwitch, btnBack);
-
   container.addActionRowComponents(rowDropdown);
-  container.addActionRowComponents(rowButtons);
 
   return {
     components: [container],
@@ -438,99 +320,105 @@ function buildCustomEditorPayload(guild, member, format, notice = null) {
 }
 
 /**
- * Builds the Premade Welcome Dashboard Payload
+ * 4. PREMADE CANVAS DASHBOARD
+ * NOTE: If disabled or not setup, preview canvas card is NOT rendered as requested!
  */
-function buildPremadeDashboardPayload(guild, member, notice = null) {
+async function buildPremadeDashboardPayload(guild, member, notice = null) {
   const config = welcomeManager.getGuildWelcome(guild.id);
-  const channelMention = config.channelId ? `<#${config.channelId}>` : "`Not Configured`";
+  const channelMention = config.channelId ? `<#${config.channelId}>` : "`None`";
   const roleMention = config.autoRoleId ? `<@&${config.autoRoleId}>` : "`None`";
+  const isReady = config.enabled && config.channelId;
 
-  const astrixPath = path.join(__dirname, "../../assets/astrix.png");
-  const bannerAttachment = new AttachmentBuilder(astrixPath, {
-    name: "astrix.png",
-  });
-
-  const mediaItem = new MediaGalleryItemBuilder().setURL("attachment://astrix.png");
-  const mediaGallery = new MediaGalleryBuilder().addItems(mediaItem);
-
-  let mainContent =
-    `# 🎨 Astrix Premade Welcome Engine\n` +
-    `-# *Active Cyber-Metallic Canvas Card & Live Member Stats for ${guild.name}.*\n\n` +
-    `### 📌 Status & Channels\n` +
-    `> - **Module State:** \`${config.enabled ? "ENABLED 🟢" : "DISABLED 🔴"}\`\n` +
-    `> - **Target Channel:** ${channelMention}\n` +
-    `> - **Canvas Card:** \`${config.canvasEnabled ? "ENABLED" : "DISABLED"}\`\n` +
-    `> - **Active Theme:** \`${config.canvasTemplate || "emerald"}\`\n` +
-    `> - **Auto-Assign Role:** ${roleMention}\n\n` +
-    `### 💬 Channel Message Template\n` +
-    `\`\`\`\n${config.messageText}\n\`\`\``;
+  let header =
+    `### 🎨 Astrix Premade Welcome\n` +
+    `-# Status: ${badge(config.enabled ? "Active" : "Disabled", config.enabled)} • Channel: ${channelMention} • Role: ${roleMention}`;
 
   if (notice) {
-    mainContent = `${notice}\n\n${mainContent}`;
+    header = `> **${notice}**\n\n` + header;
   }
 
-  const btnStudio = new ButtonBuilder()
-    .setCustomId("wcc_btn_open_studio")
-    .setEmoji("🎨")
-    .setLabel("Canvas Studio")
-    .setStyle(ButtonStyle.Primary);
-
-  const btnChannel = new ButtonBuilder()
-    .setCustomId("wlcm_premade_channel")
-    .setEmoji("📢")
-    .setLabel("Set Channel")
-    .setStyle(ButtonStyle.Secondary);
-
-  const btnToggle = new ButtonBuilder()
-    .setCustomId("wlcm_premade_toggle")
-    .setEmoji(config.enabled ? "⏸️" : "▶️")
-    .setLabel(config.enabled ? "Disable" : "Enable")
-    .setStyle(config.enabled ? ButtonStyle.Danger : ButtonStyle.Success);
-
-  const btnTest = new ButtonBuilder()
-    .setCustomId("wlcm_btn_test_premade")
-    .setEmoji("🧪")
-    .setLabel("Send Test")
-    .setStyle(ButtonStyle.Secondary);
-
-  const btnBack = new ButtonBuilder()
-    .setCustomId("wlcm_hub_back")
-    .setEmoji("⬅️")
-    .setLabel("Main Menu")
-    .setStyle(ButtonStyle.Secondary);
-
-  const row = new ActionRowBuilder().addComponents(btnStudio, btnChannel, btnToggle, btnTest, btnBack);
-
   const container = new ContainerBuilder()
-    .addMediaGalleryComponents(mediaGallery)
-    .addSeparatorComponents(
-      new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-    )
-    .addTextDisplayComponents(new TextDisplayBuilder().setContent(mainContent))
-    .addSeparatorComponents(
-      new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-    )
-    .addActionRowComponents(row);
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(header))
+    .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
+
+  const sendFiles = [];
+
+  // ONLY render preview image if module is enabled and channel is set!
+  if (isReady && config.canvasEnabled) {
+    try {
+      const cardBuffer = await welcomeCanvas.generateWelcomeCard(member, config);
+      const canvasAttachment = new AttachmentBuilder(cardBuffer, { name: "welcome-preview.png" });
+      sendFiles.push(canvasAttachment);
+      const mediaItem = new MediaGalleryItemBuilder().setURL("attachment://welcome-preview.png");
+      container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(mediaItem));
+      container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
+    } catch (_) {}
+  } else {
+    // Clean compact notice when disabled or not setup
+    const disabledNote =
+      `> ℹ️ **Module is currently DISABLED / Not Configured.**\n` +
+      `> *Select an action below to set a channel, customize canvas themes, or enable greetings.*`;
+    container.addTextDisplayComponents(new TextDisplayBuilder().setContent(disabledNote));
+    container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
+  }
+
+  const selectMenu = new StringSelectMenuBuilder()
+    .setCustomId("wlcm_premade_dropdown")
+    .setPlaceholder("⚙️ Manage Premade Welcome...")
+    .addOptions(
+      {
+        label: `Set Welcome Channel (${config.channelId ? "Configured" : "None"})`,
+        value: "premade_channel",
+        description: "Choose where welcome greetings will be sent",
+        emoji: "📢",
+      },
+      {
+        label: "Open Canvas Studio (Card Customizer)",
+        value: "premade_studio",
+        description: "Customize templates, shapes, colors & background",
+        emoji: "🎨",
+      },
+      {
+        label: config.enabled ? "Disable Welcome Module" : "Enable Welcome Module",
+        value: "premade_toggle",
+        description: config.enabled ? "Turn off welcome module" : "Activate welcome module",
+        emoji: config.enabled ? "🔴" : "🟢",
+      },
+      {
+        label: "Send Live Preview Test",
+        value: "premade_test",
+        description: "Send live welcome card in current channel",
+        emoji: "🧪",
+      },
+      {
+        label: "Back to Main Hub",
+        value: "premade_back",
+        description: "Return to the main setup hub",
+        emoji: "⬅️",
+      }
+    );
+
+  const row = new ActionRowBuilder().addComponents(selectMenu);
+  container.addActionRowComponents(row);
 
   return {
     components: [container],
-    files: [bannerAttachment],
+    files: sendFiles,
     flags: MessageFlags.IsComponentsV2,
   };
 }
 
 /**
- * Builds the Channel Selector Screen
+ * 5. CHANNEL SELECTOR SCREEN
  */
 function buildChannelSelectPayload(guild, origin = "custom") {
-  const mainContent =
-    `# 📢 Set Welcome Channel\n` +
-    `-# *Select the text channel where new member welcome messages will be dispatched.*\n\n` +
-    `Choose a channel from the selector below:`;
+  const header =
+    `### 📢 Select Welcome Channel\n` +
+    `-# Pick the text channel where member greetings will be dispatched:`;
 
   const channelSelect = new ChannelSelectMenuBuilder()
     .setCustomId(`wlcm_channel_picked_${origin}`)
-    .setPlaceholder("📍 Select a text channel...")
+    .setPlaceholder("📍 Select text channel...")
     .setChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement);
 
   const rowSelect = new ActionRowBuilder().addComponents(channelSelect);
@@ -544,10 +432,8 @@ function buildChannelSelectPayload(guild, origin = "custom") {
   const rowButtons = new ActionRowBuilder().addComponents(btnBack);
 
   const container = new ContainerBuilder()
-    .addTextDisplayComponents(new TextDisplayBuilder().setContent(mainContent))
-    .addSeparatorComponents(
-      new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
-    )
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(header))
+    .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
     .addActionRowComponents(rowSelect)
     .addActionRowComponents(rowButtons);
 
@@ -558,7 +444,293 @@ function buildChannelSelectPayload(guild, origin = "custom") {
 }
 
 /**
- * Unified message renderer for live member join and live tests
+ * 6. JOIN DM HUB (Clean Small V2 Container with Professional Dropdown)
+ */
+function buildJoinDmHubPayload(guild, member, notice = null) {
+  const config = welcomeManager.getGuildWelcome(guild.id);
+  const dmTypeLabel =
+    config.joinDmType === "custom_embed"
+      ? "Custom Embed"
+      : config.joinDmType === "custom_container"
+        ? "Custom Container"
+        : "Astrix Premade";
+
+  let header =
+    `### ✉️ Join DM Management Hub\n` +
+    `-# Status: ${badge(config.joinDmEnabled ? "Active" : "Disabled", config.joinDmEnabled)} • Format: \`${dmTypeLabel}\``;
+
+  if (notice) {
+    header = `> **${notice}**\n\n` + header;
+  }
+
+  const selectMenu = new StringSelectMenuBuilder()
+    .setCustomId("jdm_hub_dropdown")
+    .setPlaceholder("⚙️ Choose action or configuration...")
+    .addOptions(
+      {
+        label: "Astrix Premade DM Card",
+        value: "jdm_act_premade",
+        description: "Send signature canvas card in new member's DM",
+        emoji: "🎨",
+      },
+      {
+        label: "Custom Join DM (Embed / Container)",
+        value: "jdm_act_custom",
+        description: "Build your own custom direct message greeting",
+        emoji: "🛠️",
+      },
+      {
+        label: config.joinDmEnabled ? "Disable Join DM" : "Enable Join DM",
+        value: "jdm_act_toggle",
+        description: config.joinDmEnabled ? "Turn off direct message greetings" : "Activate direct message greetings",
+        emoji: config.joinDmEnabled ? "🔴" : "🟢",
+      },
+      {
+        label: "Test My Direct Messages",
+        value: "jdm_act_test",
+        description: "Send a live preview greeting directly to your DMs",
+        emoji: "🧪",
+      },
+      {
+        label: "Back to Main Hub",
+        value: "jdm_act_back",
+        description: "Return to the main welcome hub",
+        emoji: "⬅️",
+      }
+    );
+
+  const row = new ActionRowBuilder().addComponents(selectMenu);
+
+  const container = new ContainerBuilder()
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(header))
+    .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
+
+  if (!config.joinDmEnabled) {
+    const disabledNote =
+      `> ℹ️ **Join DM is currently DISABLED.**\n` +
+      `> *Preview and greetings are inactive until enabled below.*`;
+    container.addTextDisplayComponents(new TextDisplayBuilder().setContent(disabledNote));
+    container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
+  }
+
+  container.addActionRowComponents(row);
+
+  return {
+    components: [container],
+    flags: MessageFlags.IsComponentsV2,
+  };
+}
+
+/**
+ * 7. JOIN DM FORMAT CHOICE
+ */
+function buildJoinDmFormatChoicePayload(guild, member) {
+  const header =
+    `### 🛠️ Select Custom Join DM Format\n` +
+    `-# Choose your desired style for private direct message greetings:`;
+
+  const selectMenu = new StringSelectMenuBuilder()
+    .setCustomId("jdm_format_dropdown")
+    .setPlaceholder("Select DM format style...")
+    .addOptions(
+      {
+        label: "Classic Discord Embed",
+        value: "jdm_fmt_embed",
+        description: "Rich embed greeting sent to member's DM",
+        emoji: "📑",
+      },
+      {
+        label: "Modern Container (Components V2)",
+        value: "jdm_fmt_container",
+        description: "Components V2 container greeting in DM",
+        emoji: "📦",
+      },
+      {
+        label: "Back to Join DM Hub",
+        value: "jdm_fmt_back",
+        description: "Return to the Join DM hub",
+        emoji: "⬅️",
+      }
+    );
+
+  const row = new ActionRowBuilder().addComponents(selectMenu);
+
+  const container = new ContainerBuilder()
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(header))
+    .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
+    .addActionRowComponents(row);
+
+  return {
+    components: [container],
+    flags: MessageFlags.IsComponentsV2,
+  };
+}
+
+/**
+ * 8. JOIN DM STUDIO EDITOR (Small Clean V2 Container with Dropdown)
+ */
+function buildJoinDmEditorPayload(guild, member, format, notice = null) {
+  const config = welcomeManager.getGuildWelcome(guild.id);
+  const custom = config.joinDmCustomData || {};
+  const currentFormat = format || config.joinDmType || "custom_embed";
+
+  let header =
+    `### ✉️ Join DM Studio (${currentFormat === "custom_embed" ? "Classic Embed" : "Modern Container"})\n` +
+    `-# Status: ${badge(config.joinDmEnabled ? "Active" : "Disabled", config.joinDmEnabled)} • Target: \`Direct Messages (DM)\``;
+
+  if (notice) {
+    header = `> **${notice}**\n\n` + header;
+  }
+
+  const container = new ContainerBuilder()
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(header))
+    .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
+
+  // Banner image if configured
+  if (custom.image && custom.image.trim()) {
+    const imgUrl = welcomeManager.formatWelcomeText(custom.image, member, guild);
+    if (imgUrl && imgUrl.startsWith("http")) {
+      const mediaItem = new MediaGalleryItemBuilder().setURL(imgUrl);
+      container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(mediaItem));
+      container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
+    }
+  }
+
+  // Live draft preview representation
+  let previewText = "";
+  if (currentFormat === "custom_embed") {
+    previewText += `**📑 Join DM Embed Draft Preview:**\n`;
+    if (custom.authorName) {
+      previewText += `-# 👤 ${welcomeManager.formatWelcomeText(custom.authorName, member, guild)}\n`;
+    }
+    if (custom.title) {
+      previewText += `### ${welcomeManager.formatWelcomeText(custom.title, member, guild)}\n`;
+    }
+    if (custom.description) {
+      previewText += `${welcomeManager.formatWelcomeText(custom.description, member, guild)}\n`;
+    } else {
+      previewText += `-# *(Empty DM text — select option below to add)*\n`;
+    }
+    previewText += `-# Color: \`${custom.color || "#5865F2"}\``;
+    if (custom.thumbnail) previewText += ` • Thumbnail: \`Set\``;
+    if (custom.timestamp) previewText += ` • Timestamp: \`Active\``;
+    if (custom.footerText) {
+      previewText += `\n-# 📌 ${welcomeManager.formatWelcomeText(custom.footerText, member, guild)}`;
+    }
+  } else {
+    previewText += `**📦 Join DM Container Draft Preview:**\n`;
+    if (custom.title) {
+      previewText += `### ${welcomeManager.formatWelcomeText(custom.title, member, guild)}\n`;
+    }
+    if (custom.description) {
+      previewText += `${welcomeManager.formatWelcomeText(custom.description, member, guild)}\n`;
+    } else {
+      previewText += `-# *(Empty container DM text — select option below to add)*\n`;
+    }
+    if (custom.footerText) {
+      previewText += `-# 📌 ${welcomeManager.formatWelcomeText(custom.footerText, member, guild)}`;
+    }
+  }
+
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(previewText));
+  container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
+
+  // Professional Select Menu for all editing options
+  const selectMenu = new StringSelectMenuBuilder()
+    .setCustomId("jdm_custom_dropdown")
+    .setPlaceholder("⚙️ Select DM field or action...")
+    .addOptions(
+      {
+        label: "Edit DM Message Body",
+        value: "edit_desc",
+        description: "Main text (supports {user}, {server}, {memberCount})",
+        emoji: "📝",
+      },
+      {
+        label: "Edit DM Title Headline",
+        value: "edit_title",
+        description: "Greeting title headline in DM",
+        emoji: "🏷️",
+      },
+      {
+        label: "Edit Accent Color",
+        value: "edit_color",
+        description: `Current: ${custom.color || "#5865F2"} (HEX)`,
+        emoji: "🎨",
+      },
+      {
+        label: "Edit Author Info",
+        value: "edit_author",
+        description: "Author header text, icon URL & link",
+        emoji: "👤",
+      },
+      {
+        label: "Edit Banner Image",
+        value: "edit_image",
+        description: "Large banner image URL (or {guild.banner})",
+        emoji: "🖼️",
+      },
+      {
+        label: "Edit Thumbnail Image",
+        value: "edit_thumb",
+        description: "Small thumbnail icon URL (or {user.avatar})",
+        emoji: "🔍",
+      },
+      {
+        label: "Edit Footer Note",
+        value: "edit_footer",
+        description: "Footer text note & icon in DM",
+        emoji: "📌",
+      },
+      {
+        label: `Toggle Timestamp (${custom.timestamp ? "ON" : "OFF"})`,
+        value: "toggle_time",
+        description: "Display timestamp at bottom of DM",
+        emoji: "⏱️",
+      },
+      {
+        label: `Switch to ${currentFormat === "custom_embed" ? "Modern Container" : "Classic Embed"}`,
+        value: "switch_fmt",
+        description: "Change DM message format style",
+        emoji: "🔄",
+      },
+      {
+        label: "Save & Enable Join DM",
+        value: "save_enable",
+        description: "Save custom draft and activate Join DM",
+        emoji: "💾",
+      },
+      {
+        label: "Test My Direct Messages",
+        value: "send_test",
+        description: "Dispatch test greeting to your DM",
+        emoji: "🧪",
+      },
+      {
+        label: "Reset to Empty Draft",
+        value: "reset_draft",
+        description: "Clear all Join DM draft fields back to blank",
+        emoji: "🗑️",
+      },
+      {
+        label: "Back to Join DM Hub",
+        value: "back_hub",
+        description: "Return to Join DM management hub",
+        emoji: "⬅️",
+      }
+    );
+
+  const rowDropdown = new ActionRowBuilder().addComponents(selectMenu);
+  container.addActionRowComponents(rowDropdown);
+
+  return {
+    components: [container],
+    flags: MessageFlags.IsComponentsV2,
+  };
+}
+
+/**
+ * 9. DISPATCH RENDERER FOR CHANNEL WELCOME
  */
 async function renderWelcomeMessage(member, config) {
   const guild = member.guild;
@@ -704,7 +876,7 @@ async function renderWelcomeMessage(member, config) {
     `<:members:1539875392532512808> **Member Overview**\n` +
     `> -# <:prefix:1539875384080990228> **Member:** <@${member.id}>\n` +
     `> -# <:servers:1539875396546207795> **Username:** \`${member.user.username}\`\n` +
-    `> -# <:list:1539875411780042802> **Member Count:** \`#${member.guild.memberCount.toLocaleString()}\``;
+    `> -# <:list:1539875411780042802> **Member Count:** \`#${guild.memberCount.toLocaleString()}\``;
 
   const footerText = `-# Built with <:Red_heart:1539875406671388683> by ASTRIXCODE™ • User ID: \`${member.id}\``;
 
@@ -727,398 +899,7 @@ async function renderWelcomeMessage(member, config) {
 }
 
 /**
- * Builds the Join DM Setup Hub
- */
-function buildJoinDmHubPayload(guild, member, notice = null) {
-  const config = welcomeManager.getGuildWelcome(guild.id);
-  const dmTypeLabel =
-    config.joinDmType === "custom_embed"
-      ? "Custom (Classic Embed)"
-      : config.joinDmType === "custom_container"
-        ? "Custom (Components V2 Container)"
-        : "Astrix Premade (Canvas Card)";
-
-  const embed = new EmbedBuilder()
-    .setColor("#5865F2")
-    .setTitle("✉️ Join DM Greetings Setup")
-    .setDescription(
-      `*Configure private direct messages sent to new members when they join ${guild.name}.*\n\n` +
-      `### ⚙️ Current Join DM Status\n` +
-      `> - **Module State:** \`${config.joinDmEnabled ? "ENABLED 🟢" : "DISABLED 🔴"}\`\n` +
-      `> - **Active Format:** \`${dmTypeLabel}\`\n\n` +
-      `### 🚀 Choose Setup Method\n` +
-      `> 🎨 **Astrix Premade Join DM**\n` +
-      `> Send Astrix's signature Cyber-Metallic Canvas Card, live member overview stats, buttons, and custom text in DMs.\n\n` +
-      `> 🛠️ **Custom Join DM (Build Your Own)**\n` +
-      `> Build your own custom private greeting! Choose between **Classic Embed** or **Modern Container**, with full dropdown-based editing and variables!`
-    )
-    .setFooter({ text: "Astrix Join DM Manager • Select an option below" });
-
-  if (notice) {
-    embed.setDescription(`> **${notice}**\n\n` + embed.data.description);
-  }
-
-  const btnPremade = new ButtonBuilder()
-    .setCustomId("jdm_hub_premade")
-    .setEmoji("🎨")
-    .setLabel("Premade DM Card")
-    .setStyle(ButtonStyle.Success);
-
-  const btnCustom = new ButtonBuilder()
-    .setCustomId("jdm_hub_custom")
-    .setEmoji("🛠️")
-    .setLabel("Custom Join DM")
-    .setStyle(ButtonStyle.Primary);
-
-  const btnToggle = new ButtonBuilder()
-    .setCustomId("jdm_hub_toggle")
-    .setEmoji(config.joinDmEnabled ? "🔴" : "🟢")
-    .setLabel(config.joinDmEnabled ? "Disable Join DM" : "Enable Join DM")
-    .setStyle(config.joinDmEnabled ? ButtonStyle.Danger : ButtonStyle.Success);
-
-  const btnTest = new ButtonBuilder()
-    .setCustomId("jdm_hub_test")
-    .setEmoji("🧪")
-    .setLabel("Test My DM")
-    .setStyle(ButtonStyle.Secondary);
-
-  const btnBack = new ButtonBuilder()
-    .setCustomId("wlcm_hub_back")
-    .setEmoji("⬅️")
-    .setLabel("Main Menu")
-    .setStyle(ButtonStyle.Secondary);
-
-  const row1 = new ActionRowBuilder().addComponents(btnPremade, btnCustom, btnToggle);
-  const row2 = new ActionRowBuilder().addComponents(btnTest, btnBack);
-
-  return {
-    embeds: [embed],
-    components: [row1, row2],
-  };
-}
-
-/**
- * Builds format choice for Join DM (Embed vs Container)
- */
-function buildJoinDmFormatChoicePayload(guild, member) {
-  const embed = new EmbedBuilder()
-    .setColor("#5865F2")
-    .setTitle("🛠️ Select Custom Join DM Format")
-    .setDescription(
-      `*Choose the message format style for your custom private Join DM greetings.*\n\n` +
-      `Please select which format version you would like to build:\n\n` +
-      `> 📑 **Classic Embed**\n` +
-      `> Beautiful Discord rich embed with colored border, title, description, author, thumbnail, banner image, and footer sent to member DMs.\n\n` +
-      `> 📦 **Modern Container (Components V2)**\n` +
-      `> Discord's next-gen full-width container format with sleek divider lines, media gallery banners, and styled text displays.\n\n` +
-      `*Both formats support full dropdown editing, interactive modals, and real-time live preview.*`
-    )
-    .setFooter({ text: "Astrix Join DM Manager • Click an option below" });
-
-  const btnEmbed = new ButtonBuilder()
-    .setCustomId("jdm_choose_embed")
-    .setEmoji("📑")
-    .setLabel("Classic Embed")
-    .setStyle(ButtonStyle.Primary);
-
-  const btnContainer = new ButtonBuilder()
-    .setCustomId("jdm_choose_container")
-    .setEmoji("📦")
-    .setLabel("Modern Container (V2)")
-    .setStyle(ButtonStyle.Success);
-
-  const btnBack = new ButtonBuilder()
-    .setCustomId("wlcm_hub_joindm")
-    .setEmoji("⬅️")
-    .setLabel("Back")
-    .setStyle(ButtonStyle.Secondary);
-
-  const row = new ActionRowBuilder().addComponents(btnEmbed, btnContainer, btnBack);
-
-  return {
-    embeds: [embed],
-    components: [row],
-  };
-}
-
-/**
- * Builds the interactive live editor for Join DM (Embed or Container)
- */
-function buildJoinDmEditorPayload(guild, member, format, notice = null) {
-  const config = welcomeManager.getGuildWelcome(guild.id);
-  const custom = config.joinDmCustomData || {};
-  const currentFormat = format || config.joinDmType || "custom_embed";
-
-  // 1. Classic Embed Mode
-  if (currentFormat === "custom_embed") {
-    const embed = new EmbedBuilder();
-
-    try {
-      embed.setColor(custom.color && custom.color.startsWith("#") ? custom.color : "#5865F2");
-    } catch (_) {
-      embed.setColor("#5865F2");
-    }
-
-    if (custom.title && custom.title.trim()) {
-      embed.setTitle(welcomeManager.formatWelcomeText(custom.title, member, guild).substring(0, 256));
-    }
-
-    if (custom.description && custom.description.trim()) {
-      embed.setDescription(welcomeManager.formatWelcomeText(custom.description, member, guild).substring(0, 4096));
-    } else {
-      embed.setDescription("*✨ Empty Join DM embed description. Use the dropdown menu below to add text, title, or images.*");
-    }
-
-    if (custom.authorName && custom.authorName.trim()) {
-      const authName = welcomeManager.formatWelcomeText(custom.authorName, member, guild).substring(0, 256);
-      const authIcon = custom.authorIcon ? welcomeManager.formatWelcomeText(custom.authorIcon, member, guild) : null;
-      embed.setAuthor({
-        name: authName,
-        iconURL: authIcon && authIcon.startsWith("http") ? authIcon : undefined,
-        url: custom.authorUrl && custom.authorUrl.startsWith("http") ? custom.authorUrl : undefined,
-      });
-    }
-
-    if (custom.thumbnail && custom.thumbnail.trim()) {
-      const thumbUrl = welcomeManager.formatWelcomeText(custom.thumbnail, member, guild);
-      if (thumbUrl && thumbUrl.startsWith("http")) embed.setThumbnail(thumbUrl);
-    }
-
-    if (custom.image && custom.image.trim()) {
-      const imgUrl = welcomeManager.formatWelcomeText(custom.image, member, guild);
-      if (imgUrl && imgUrl.startsWith("http")) embed.setImage(imgUrl);
-    }
-
-    if (custom.footerText && custom.footerText.trim()) {
-      const footText = welcomeManager.formatWelcomeText(custom.footerText, member, guild).substring(0, 2048);
-      const footIcon = custom.footerIcon ? welcomeManager.formatWelcomeText(custom.footerIcon, member, guild) : null;
-      embed.setFooter({
-        text: footText,
-        iconURL: footIcon && footIcon.startsWith("http") ? footIcon : undefined,
-      });
-    }
-
-    if (custom.timestamp) {
-      embed.setTimestamp();
-    }
-
-    const selectMenu = new StringSelectMenuBuilder()
-      .setCustomId("jdm_custom_dropdown")
-      .setPlaceholder("⚙️ Choose an element of Join DM to edit...")
-      .addOptions(
-        {
-          label: "Edit DM Description / Body",
-          value: "edit_desc",
-          description: "Main DM message text (supports {user}, {server}, etc.)",
-          emoji: "📝",
-        },
-        {
-          label: "Edit DM Title",
-          value: "edit_title",
-          description: "Greeting headline title in DM",
-          emoji: "🏷️",
-        },
-        {
-          label: "Edit Accent Color",
-          value: "edit_color",
-          description: `Current: ${custom.color || "#5865F2"} (HEX format)`,
-          emoji: "🎨",
-        },
-        {
-          label: "Edit Author Info",
-          value: "edit_author",
-          description: "Author header text, icon URL & link",
-          emoji: "👤",
-        },
-        {
-          label: "Edit Banner Image",
-          value: "edit_image",
-          description: "Large banner image URL (or {guild.banner})",
-          emoji: "🖼️",
-        },
-        {
-          label: "Edit Thumbnail Image",
-          value: "edit_thumb",
-          description: "Small thumbnail icon URL (or {user.avatar})",
-          emoji: "🔍",
-        },
-        {
-          label: "Edit Footer Note",
-          value: "edit_footer",
-          description: "Footer text note",
-          emoji: "📌",
-        },
-        {
-          label: `Toggle Timestamp (${custom.timestamp ? "ENABLED" : "DISABLED"})`,
-          value: "toggle_time",
-          description: "Display current timestamp at bottom",
-          emoji: "⏱️",
-        },
-        {
-          label: "Reset to Empty Draft",
-          value: "reset_draft",
-          description: "Clear all Join DM fields back to blank",
-          emoji: "🗑️",
-        }
-      );
-
-    const rowDropdown = new ActionRowBuilder().addComponents(selectMenu);
-
-    const btnSave = new ButtonBuilder()
-      .setCustomId("jdm_custom_save")
-      .setEmoji("💾")
-      .setLabel("Save & Enable DM")
-      .setStyle(ButtonStyle.Success);
-
-    const btnTest = new ButtonBuilder()
-      .setCustomId("jdm_custom_test")
-      .setEmoji("🧪")
-      .setLabel("Test My DM")
-      .setStyle(ButtonStyle.Primary);
-
-    const btnSwitch = new ButtonBuilder()
-      .setCustomId("jdm_custom_switch_fmt")
-      .setEmoji("🔄")
-      .setLabel("Switch to Container")
-      .setStyle(ButtonStyle.Secondary);
-
-    const btnBack = new ButtonBuilder()
-      .setCustomId("wlcm_hub_joindm")
-      .setEmoji("⬅️")
-      .setLabel("Join DM Menu")
-      .setStyle(ButtonStyle.Secondary);
-
-    const rowButtons = new ActionRowBuilder().addComponents(btnSave, btnTest, btnSwitch, btnBack);
-
-    let contentNotice = `### ✉️ Join DM Embed Studio (Live Preview)\n` +
-      `-# *Format: **Classic Embed** • Join DM: \`${config.joinDmEnabled ? "ACTIVE" : "INACTIVE"}\`*`;
-    if (notice) {
-      contentNotice = `${notice}\n\n${contentNotice}`;
-    }
-
-    return {
-      content: contentNotice,
-      embeds: [embed],
-      components: [rowDropdown, rowButtons],
-    };
-  }
-
-  // 2. Modern Container (Components V2) Mode
-  const container = new ContainerBuilder();
-
-  let headerText = `### ✉️ Join DM Container Studio (Live Preview)\n` +
-    `-# *Format: **Modern Container (Components V2)** • Join DM: \`${config.joinDmEnabled ? "ACTIVE" : "INACTIVE"}\`*`;
-  if (notice) {
-    headerText = `${notice}\n\n${headerText}`;
-  }
-
-  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(headerText));
-  container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
-
-  if (custom.image && custom.image.trim()) {
-    const imgUrl = welcomeManager.formatWelcomeText(custom.image, member, guild);
-    if (imgUrl && imgUrl.startsWith("http")) {
-      const mediaItem = new MediaGalleryItemBuilder().setURL(imgUrl);
-      container.addMediaGalleryComponents(new MediaGalleryBuilder().addItems(mediaItem));
-      container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
-    }
-  }
-
-  let bodyText = "";
-  if (custom.title && custom.title.trim()) {
-    bodyText += `# ${welcomeManager.formatWelcomeText(custom.title, member, guild)}\n\n`;
-  }
-  if (custom.description && custom.description.trim()) {
-    bodyText += welcomeManager.formatWelcomeText(custom.description, member, guild);
-  } else {
-    bodyText += "*✨ Empty Join DM container text. Use the dropdown menu below to add text, title, or images.*";
-  }
-
-  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(bodyText));
-
-  if (custom.footerText && custom.footerText.trim()) {
-    container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
-    const footText = `-# ${welcomeManager.formatWelcomeText(custom.footerText, member, guild)}`;
-    container.addTextDisplayComponents(new TextDisplayBuilder().setContent(footText));
-  }
-
-  container.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
-
-  const selectMenu = new StringSelectMenuBuilder()
-    .setCustomId("jdm_custom_dropdown")
-    .setPlaceholder("⚙️ Choose an element of Join DM to edit...")
-    .addOptions(
-      {
-        label: "Edit DM Description / Body",
-        value: "edit_desc",
-        description: "Main DM message text (supports {user}, {server}, etc.)",
-        emoji: "📝",
-      },
-      {
-        label: "Edit DM Title",
-        value: "edit_title",
-        description: "Greeting headline title in DM",
-        emoji: "🏷️",
-      },
-      {
-        label: "Edit Banner Image",
-        value: "edit_image",
-        description: "Banner image URL (or {guild.banner})",
-        emoji: "🖼️",
-      },
-      {
-        label: "Edit Footer Note",
-        value: "edit_footer",
-        description: "Footer text note",
-        emoji: "📌",
-      },
-      {
-        label: "Reset to Empty Draft",
-        value: "reset_draft",
-        description: "Clear all Join DM fields back to blank",
-        emoji: "🗑️",
-      }
-    );
-
-  const rowDropdown = new ActionRowBuilder().addComponents(selectMenu);
-
-  const btnSave = new ButtonBuilder()
-    .setCustomId("jdm_custom_save")
-    .setEmoji("💾")
-    .setLabel("Save & Enable DM")
-    .setStyle(ButtonStyle.Success);
-
-  const btnTest = new ButtonBuilder()
-    .setCustomId("jdm_custom_test")
-    .setEmoji("🧪")
-    .setLabel("Test My DM")
-    .setStyle(ButtonStyle.Primary);
-
-  const btnSwitch = new ButtonBuilder()
-    .setCustomId("jdm_custom_switch_fmt")
-    .setEmoji("🔄")
-    .setLabel("Switch to Embed")
-    .setStyle(ButtonStyle.Secondary);
-
-  const btnBack = new ButtonBuilder()
-    .setCustomId("wlcm_hub_joindm")
-    .setEmoji("⬅️")
-    .setLabel("Join DM Menu")
-    .setStyle(ButtonStyle.Secondary);
-
-  const rowButtons = new ActionRowBuilder().addComponents(btnSave, btnTest, btnSwitch, btnBack);
-
-  container.addActionRowComponents(rowDropdown);
-  container.addActionRowComponents(rowButtons);
-
-  return {
-    components: [container],
-    flags: MessageFlags.IsComponentsV2,
-  };
-}
-
-/**
- * Unified message renderer for Join DMs (Premade Canvas Card / Custom Embed / Custom Container)
+ * 10. DISPATCH RENDERER FOR JOIN DM
  */
 async function renderJoinDmMessage(member, config) {
   const guild = member.guild;
@@ -1294,49 +1075,22 @@ async function renderJoinDmMessage(member, config) {
 }
 
 /**
- * Safely updates an interaction without failing on Discord V2 flag conflicts
+ * Safe in-place update for all V2 containers
  */
 async function safeUpdate(interaction, payload) {
-  const isV2 = Boolean(interaction.message?.flags?.has(MessageFlags.IsComponentsV2));
-  const hasEmbeds = Array.isArray(payload.embeds) && payload.embeds.length > 0;
-  const isV2Payload = Boolean(payload.flags && (payload.flags & MessageFlags.IsComponentsV2));
-
-  // Incompatible transition: Components V2 message cannot be edited to have embeds
-  if (isV2 && hasEmbeds) {
-    await interaction.deferUpdate().catch(() => null);
-    await interaction.message.delete().catch(() => null);
-    return interaction.channel.send(payload).catch((err) =>
-      console.error("[WelcomeBuilder] Failed to send embed editor:", err)
-    );
-  }
-
-  // If currently Embed message and transitioning to Components V2
-  if (!isV2 && isV2Payload) {
-    try {
-      return await interaction.update(payload);
-    } catch (_) {
-      await interaction.deferUpdate().catch(() => null);
-      await interaction.message.delete().catch(() => null);
-      return interaction.channel.send(payload).catch((err) =>
-        console.error("[WelcomeBuilder] Failed to send container editor:", err)
-      );
-    }
-  }
-
   return interaction.update(payload).catch(async (err) => {
-    console.error("[WelcomeBuilder] Update error, fallback to delete & send:", err);
+    console.error("[WelcomeBuilder] Update error, fallback to editReply:", err);
     try {
       if (!interaction.deferred && !interaction.replied) {
         await interaction.deferUpdate().catch(() => null);
       }
-      await interaction.message.delete().catch(() => null);
-      return interaction.channel.send(payload).catch(() => null);
+      return interaction.message.edit(payload).catch(() => null);
     } catch (_) {}
   });
 }
 
 /**
- * Main Interaction Handler for all Welcome Builder actions, selects, and modals
+ * MAIN INTERACTION ROUTER
  */
 async function handleWelcomeBuilderInteraction(client, interaction) {
   const { customId } = interaction;
@@ -1345,16 +1099,253 @@ async function handleWelcomeBuilderInteraction(client, interaction) {
   const guild = interaction.guild;
   const member = interaction.member;
 
-  // 1. Hub Navigation
+  // --- WELCOME MAIN HUB ACTIONS ---
+  if (customId === "wlcm_hub_dropdown" && interaction.isStringSelectMenu()) {
+    const action = interaction.values[0];
+
+    if (action === "wlcm_act_premade") {
+      welcomeManager.updateGuildWelcome(guild.id, { welcomeType: "premade" });
+      const payload = await buildPremadeDashboardPayload(guild, member, "✅ Switched to **Astrix Premade Canvas**.");
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (action === "wlcm_act_custom") {
+      const payload = buildFormatChoicePayload(guild, member);
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (action === "wlcm_act_joindm") {
+      const payload = buildJoinDmHubPayload(guild, member);
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (action === "wlcm_act_channel") {
+      const payload = buildChannelSelectPayload(guild, "custom");
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (action === "wlcm_act_toggle") {
+      const config = welcomeManager.getGuildWelcome(guild.id);
+      const newState = !config.enabled;
+      welcomeManager.updateGuildWelcome(guild.id, { enabled: newState });
+      const payload = buildWelcomeHubPayload(
+        guild,
+        member,
+        newState ? "✅ Welcome Module is now **ENABLED**!" : "⚠️ Welcome Module is now **DISABLED**."
+      );
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (action === "wlcm_act_test") {
+      const config = welcomeManager.getGuildWelcome(guild.id);
+      if (!config.enabled || !config.channelId) {
+        await interaction.reply({
+          content: "⚠️ **Preview Unavailable:** Welcome greetings are currently **DISABLED** or welcome channel is not configured. Please set a channel and enable greetings first.",
+          flags: MessageFlags.Ephemeral,
+        }).catch(() => null);
+        return true;
+      }
+
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => null);
+      try {
+        const testMsg = await renderWelcomeMessage(member, config);
+        await interaction.channel.send(testMsg);
+        await interaction.editReply("✅ Test welcome message sent to this channel!").catch(() => null);
+      } catch (err) {
+        console.error("[WelcomeBuilder] Test error:", err);
+        await interaction.editReply("❌ Failed to send test welcome message. Check bot permissions.").catch(() => null);
+      }
+      return true;
+    }
+  }
+
+  // --- PREMADE DASHBOARD ACTIONS ---
+  if (customId === "wlcm_premade_dropdown" && interaction.isStringSelectMenu()) {
+    const action = interaction.values[0];
+
+    if (action === "premade_channel") {
+      const payload = buildChannelSelectPayload(guild, "premade");
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (action === "premade_studio") {
+      const { buildCardConfigPayload } = require("./handleWelcomeCanvasInteraction");
+      const payload = await buildCardConfigPayload(member);
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (action === "premade_toggle") {
+      const config = welcomeManager.getGuildWelcome(guild.id);
+      const newState = !config.enabled;
+      welcomeManager.updateGuildWelcome(guild.id, { enabled: newState });
+      const payload = await buildPremadeDashboardPayload(
+        guild,
+        member,
+        newState ? "✅ Premade greetings are now **ENABLED**!" : "⚠️ Premade greetings are now **DISABLED**."
+      );
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (action === "premade_test") {
+      const config = welcomeManager.getGuildWelcome(guild.id);
+      if (!config.enabled || !config.channelId) {
+        await interaction.reply({
+          content: "⚠️ **Preview Unavailable:** Welcome greetings are currently **DISABLED** or welcome channel is not configured. Please set a channel and enable greetings first.",
+          flags: MessageFlags.Ephemeral,
+        }).catch(() => null);
+        return true;
+      }
+
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => null);
+      try {
+        const testMsg = await renderWelcomeMessage(member, config);
+        await interaction.channel.send(testMsg);
+        await interaction.editReply("✅ Test welcome card sent to this channel!").catch(() => null);
+      } catch (err) {
+        await interaction.editReply("❌ Failed to send test welcome card.").catch(() => null);
+      }
+      return true;
+    }
+
+    if (action === "premade_back") {
+      const payload = buildWelcomeHubPayload(guild, member);
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+  }
+
+  // --- CUSTOM WELCOME FORMAT SELECTION ---
+  if (customId === "wlcm_format_dropdown" && interaction.isStringSelectMenu()) {
+    const selected = interaction.values[0];
+
+    if (selected === "fmt_embed") {
+      welcomeManager.updateGuildWelcome(guild.id, { welcomeType: "custom_embed" });
+      const payload = buildCustomEditorPayload(guild, member, "custom_embed", "✨ Format set to **Classic Embed**.");
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (selected === "fmt_container") {
+      welcomeManager.updateGuildWelcome(guild.id, { welcomeType: "custom_container" });
+      const payload = buildCustomEditorPayload(guild, member, "custom_container", "✨ Format set to **Modern Container**.");
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (selected === "fmt_back") {
+      const payload = buildWelcomeHubPayload(guild, member);
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+  }
+
+  // --- JOIN DM HUB ACTIONS ---
+  if (customId === "jdm_hub_dropdown" && interaction.isStringSelectMenu()) {
+    const action = interaction.values[0];
+
+    if (action === "jdm_act_premade") {
+      welcomeManager.updateGuildWelcome(guild.id, { joinDmType: "premade" });
+      const payload = buildJoinDmHubPayload(guild, member, "✅ Join DM set to **Astrix Premade Canvas Card**.");
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (action === "jdm_act_custom") {
+      const payload = buildJoinDmFormatChoicePayload(guild, member);
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (action === "jdm_act_toggle") {
+      const config = welcomeManager.getGuildWelcome(guild.id);
+      const newState = !config.joinDmEnabled;
+      welcomeManager.updateGuildWelcome(guild.id, { joinDmEnabled: newState });
+      const payload = buildJoinDmHubPayload(
+        guild,
+        member,
+        newState ? "✅ Join DM greetings are now **ENABLED**!" : "⚠️ Join DM greetings are now **DISABLED**."
+      );
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (action === "jdm_act_test") {
+      const config = welcomeManager.getGuildWelcome(guild.id);
+      if (!config.joinDmEnabled) {
+        await interaction.reply({
+          content: "⚠️ **Preview Unavailable:** Join DM greetings are currently **DISABLED**. Please enable Join DM first.",
+          flags: MessageFlags.Ephemeral,
+        }).catch(() => null);
+        return true;
+      }
+
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => null);
+      try {
+        const dmMsg = await renderJoinDmMessage(member, config);
+        await member.send(dmMsg);
+        await interaction.editReply("✅ Test Join DM sent directly to your DMs! Check your direct messages.").catch(() => null);
+      } catch (err) {
+        await interaction.editReply("❌ Failed to send DM. Please ensure your DMs from server members are open!").catch(() => null);
+      }
+      return true;
+    }
+
+    if (action === "jdm_act_back") {
+      const payload = buildWelcomeHubPayload(guild, member);
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+  }
+
+  // --- JOIN DM FORMAT SELECTION ---
+  if (customId === "jdm_format_dropdown" && interaction.isStringSelectMenu()) {
+    const selected = interaction.values[0];
+
+    if (selected === "jdm_fmt_embed") {
+      welcomeManager.updateGuildWelcome(guild.id, { joinDmType: "custom_embed" });
+      const payload = buildJoinDmEditorPayload(guild, member, "custom_embed", "✨ Join DM format set to **Classic Embed**.");
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (selected === "jdm_fmt_container") {
+      welcomeManager.updateGuildWelcome(guild.id, { joinDmType: "custom_container" });
+      const payload = buildJoinDmEditorPayload(guild, member, "custom_container", "✨ Join DM format set to **Modern Container**.");
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (selected === "jdm_fmt_back") {
+      const payload = buildJoinDmHubPayload(guild, member);
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+  }
+
+  // --- BACKWARDS COMPATIBILITY BUTTONS ---
   if (customId === "wlcm_hub_premade") {
     welcomeManager.updateGuildWelcome(guild.id, { welcomeType: "premade" });
-    const payload = buildPremadeDashboardPayload(guild, member, "✅ Switched to **Astrix Premade Canvas UI**.");
+    const payload = await buildPremadeDashboardPayload(guild, member, "✅ Switched to **Astrix Premade Canvas**.");
     await safeUpdate(interaction, payload);
     return true;
   }
 
   if (customId === "wlcm_hub_custom") {
     const payload = buildFormatChoicePayload(guild, member);
+    await safeUpdate(interaction, payload);
+    return true;
+  }
+
+  if (customId === "wlcm_hub_joindm") {
+    const payload = buildJoinDmHubPayload(guild, member);
     await safeUpdate(interaction, payload);
     return true;
   }
@@ -1372,148 +1363,184 @@ async function handleWelcomeBuilderInteraction(client, interaction) {
     return true;
   }
 
-  if (customId === "wlcm_hub_status") {
-    const config = welcomeManager.getGuildWelcome(guild.id);
-    const channelMention = config.channelId ? `<#${config.channelId}>` : "`Not Configured`";
-    const statusEmbed = new EmbedBuilder()
-      .setColor("#5865F2")
-      .setTitle("⚙️ Welcome System Status")
-      .setDescription(
-        `> - **Enabled:** \`${config.enabled ? "YES 🟢" : "NO 🔴"}\`\n` +
-        `> - **Welcome Mode:** \`${config.welcomeType}\`\n` +
-        `> - **Channel:** ${channelMention}\n` +
-        `> - **Auto-Role:** ${config.autoRoleId ? `<@&${config.autoRoleId}>` : "`None`"}\n` +
-        `> - **Join DM:** \`${config.joinDmEnabled ? "YES" : "NO"}\``
+  // --- CHANNEL SELECTOR PICKED ---
+  if (customId.startsWith("wlcm_channel_picked_") && interaction.isChannelSelectMenu()) {
+    const origin = customId.replace("wlcm_channel_picked_", "");
+    const pickedId = interaction.values[0];
+    welcomeManager.updateGuildWelcome(guild.id, { channelId: pickedId, enabled: true });
+
+    if (origin === "premade") {
+      const payload = await buildPremadeDashboardPayload(
+        guild,
+        member,
+        `✅ Welcome channel set to <#${pickedId}> and enabled!`
       );
-
-    const btnBack = new ButtonBuilder()
-      .setCustomId("wlcm_hub_back")
-      .setEmoji("⬅️")
-      .setLabel("Back to Setup")
-      .setStyle(ButtonStyle.Secondary);
-
-    const row = new ActionRowBuilder().addComponents(btnBack);
-
-    await safeUpdate(interaction, { embeds: [statusEmbed], components: [row] });
-    return true;
-  }
-
-  // --- JOIN DM HUB HANDLERS ---
-  if (customId === "wlcm_hub_joindm") {
-    const payload = buildJoinDmHubPayload(guild, member);
-    await safeUpdate(interaction, payload);
-    return true;
-  }
-
-  if (customId === "jdm_hub_premade") {
-    welcomeManager.updateGuildWelcome(guild.id, { joinDmType: "premade" });
-    const payload = buildJoinDmHubPayload(guild, member, "✅ Join DM set to **Astrix Premade Canvas Card**.");
-    await safeUpdate(interaction, payload);
-    return true;
-  }
-
-  if (customId === "jdm_hub_custom") {
-    const payload = buildJoinDmFormatChoicePayload(guild, member);
-    await safeUpdate(interaction, payload);
-    return true;
-  }
-
-  if (customId === "jdm_hub_toggle") {
-    const config = welcomeManager.getGuildWelcome(guild.id);
-    const newState = !config.joinDmEnabled;
-    welcomeManager.updateGuildWelcome(guild.id, { joinDmEnabled: newState });
-    const payload = buildJoinDmHubPayload(
-      guild,
-      member,
-      newState ? "✅ Join DM greetings are now **ENABLED**!" : "⚠️ Join DM greetings are now **DISABLED**."
-    );
-    await safeUpdate(interaction, payload);
-    return true;
-  }
-
-  if (customId === "jdm_hub_test" || customId === "jdm_custom_test") {
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => null);
-    const config = welcomeManager.getGuildWelcome(guild.id);
-    try {
-      const dmMsg = await renderJoinDmMessage(member, config);
-      await member.send(dmMsg);
-      await interaction.editReply("✅ Test Join DM sent directly to your DMs! Check your direct messages.").catch(() => null);
-    } catch (err) {
-      console.error("[JoinDm] Test error:", err);
-      await interaction.editReply("❌ Failed to send DM. Please ensure your Direct Messages from server members are open!").catch(() => null);
+      await safeUpdate(interaction, payload);
+    } else {
+      const config = welcomeManager.getGuildWelcome(guild.id);
+      const payload = buildCustomEditorPayload(
+        guild,
+        member,
+        config.welcomeType,
+        `✅ Welcome channel set to <#${pickedId}>!`
+      );
+      await safeUpdate(interaction, payload);
     }
     return true;
   }
 
-  // --- JOIN DM FORMAT SELECTION ---
-  if (customId === "jdm_choose_embed") {
-    welcomeManager.updateGuildWelcome(guild.id, { joinDmType: "custom_embed" });
-    const payload = buildJoinDmEditorPayload(guild, member, "custom_embed", "✨ Join DM mode set to **Classic Embed**.");
-    await safeUpdate(interaction, payload);
-    return true;
-  }
-
-  if (customId === "jdm_choose_container") {
-    welcomeManager.updateGuildWelcome(guild.id, { joinDmType: "custom_container" });
-    const payload = buildJoinDmEditorPayload(guild, member, "custom_container", "✨ Join DM mode set to **Modern Container (Components V2)**.");
-    await safeUpdate(interaction, payload);
-    return true;
-  }
-
-  // --- JOIN DM SWITCH FORMAT ---
-  if (customId === "jdm_custom_switch_fmt") {
+  // --- CUSTOM WELCOME EDITOR BUTTONS ---
+  if (customId === "wlcm_custom_save") {
     const config = welcomeManager.getGuildWelcome(guild.id);
-    const newFmt = config.joinDmType === "custom_container" ? "custom_embed" : "custom_container";
-    welcomeManager.updateGuildWelcome(guild.id, { joinDmType: newFmt });
-    const payload = buildJoinDmEditorPayload(guild, member, newFmt, `🔄 Format switched to **${newFmt === "custom_embed" ? "Classic Embed" : "Modern Container (V2)"}**.`);
-    await safeUpdate(interaction, payload);
-    return true;
-  }
-
-  // --- JOIN DM SAVE & ENABLE ---
-  if (customId === "jdm_custom_save") {
-    welcomeManager.updateGuildWelcome(guild.id, { joinDmEnabled: true });
-    const config = welcomeManager.getGuildWelcome(guild.id);
-    const payload = buildJoinDmEditorPayload(
+    if (!config.channelId) {
+      const payload = buildChannelSelectPayload(guild, "custom");
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+    welcomeManager.updateGuildWelcome(guild.id, { enabled: true });
+    const payload = buildCustomEditorPayload(
       guild,
       member,
-      config.joinDmType,
-      "🎉 **Saved & Enabled!** Custom Join DM greetings are now active for new members."
+      config.welcomeType,
+      `🎉 **Saved & Enabled!** Custom welcome is now active in <#${config.channelId}>.`
     );
     await safeUpdate(interaction, payload);
     return true;
   }
 
-  // --- JOIN DM DROPDOWN ACTIONS ---
-  if (customId === "jdm_custom_dropdown" && interaction.isStringSelectMenu()) {
+  if (customId === "wlcm_custom_test") {
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => null);
+    const config = welcomeManager.getGuildWelcome(guild.id);
+    try {
+      const testMsg = await renderWelcomeMessage(member, config);
+      await interaction.channel.send(testMsg);
+      await interaction.editReply("✅ Test welcome message sent to this channel!").catch(() => null);
+    } catch (err) {
+      console.error("[WelcomeBuilder] Test error:", err);
+      await interaction.editReply("❌ Failed to send test welcome message. Check bot permissions.").catch(() => null);
+    }
+    return true;
+  }
+
+  // --- CUSTOM WELCOME DROPDOWN MENU ---
+  if (customId === "wlcm_custom_dropdown" && interaction.isStringSelectMenu()) {
     const selected = interaction.values[0];
     const config = welcomeManager.getGuildWelcome(guild.id);
-    const custom = config.joinDmCustomData || {};
+    const custom = config.customData || {};
 
+    if (selected === "switch_fmt") {
+      const newFmt = config.welcomeType === "custom_container" ? "custom_embed" : "custom_container";
+      welcomeManager.updateGuildWelcome(guild.id, { welcomeType: newFmt });
+      const payload = buildCustomEditorPayload(
+        guild,
+        member,
+        newFmt,
+        `🔄 Format switched to **${newFmt === "custom_embed" ? "Classic Embed" : "Modern Container"}**.`
+      );
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (selected === "save_enable") {
+      if (!config.channelId) {
+        const payload = buildChannelSelectPayload(guild, "custom");
+        await safeUpdate(interaction, payload);
+        return true;
+      }
+      welcomeManager.updateGuildWelcome(guild.id, { enabled: true });
+      const payload = buildCustomEditorPayload(
+        guild,
+        member,
+        config.welcomeType,
+        `🎉 **Saved & Enabled!** Custom welcome is active in <#${config.channelId}>.`
+      );
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (selected === "send_test") {
+      if (!config.enabled || !config.channelId) {
+        await interaction.reply({
+          content: "⚠️ **Preview Unavailable:** Welcome greetings are currently **DISABLED** or welcome channel is not configured. Please set a channel and save/enable first.",
+          flags: MessageFlags.Ephemeral,
+        }).catch(() => null);
+        return true;
+      }
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => null);
+      try {
+        const testMsg = await renderWelcomeMessage(member, config);
+        await interaction.channel.send(testMsg);
+        await interaction.editReply("✅ Test welcome message sent to this channel!").catch(() => null);
+      } catch (err) {
+        await interaction.editReply("❌ Failed to send test welcome message. Check permissions.").catch(() => null);
+      }
+      return true;
+    }
+
+    if (selected === "back_hub") {
+      const payload = buildWelcomeHubPayload(guild, member);
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (selected === "set_channel") {
+      const payload = buildChannelSelectPayload(guild, "custom");
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (selected === "toggle_time") {
+      const newTime = !custom.timestamp;
+      welcomeManager.updateGuildWelcome(guild.id, { customData: { timestamp: newTime } });
+      const payload = buildCustomEditorPayload(
+        guild,
+        member,
+        config.welcomeType,
+        `🕒 Timestamp display is now **${newTime ? "ENABLED ✅" : "DISABLED ❌"}**.`
+      );
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (selected === "reset_draft") {
+      welcomeManager.updateGuildWelcome(guild.id, {
+        customData: {
+          title: "",
+          description: "",
+          color: "#5865F2",
+          authorName: "",
+          authorIcon: "",
+          authorUrl: "",
+          footerText: "",
+          footerIcon: "",
+          thumbnail: "",
+          image: "",
+          timestamp: false,
+        },
+      });
+      const payload = buildCustomEditorPayload(guild, member, config.welcomeType, "🗑️ Welcome draft reset to empty.");
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    // Modal Triggers for Welcome Editor
     if (selected === "edit_desc") {
-      const modal = new ModalBuilder()
-        .setCustomId("jdm_modal_desc")
-        .setTitle("Edit Join DM Description");
-
+      const modal = new ModalBuilder().setCustomId("wlcm_modal_desc").setTitle("Edit Welcome Description");
       const input = new TextInputBuilder()
         .setCustomId("input_desc")
-        .setLabel("DM Text (Supports Variables)")
+        .setLabel("Message Body (Supports Variables)")
         .setStyle(TextInputStyle.Paragraph)
-        .setPlaceholder("Welcome {user} to **{server}**! Enjoy your stay!")
+        .setPlaceholder("Welcome {user} to {server}! Member #{memberCount}")
         .setValue(custom.description || "")
         .setMaxLength(3000)
         .setRequired(false);
-
       modal.addComponents(new ActionRowBuilder().addComponents(input));
       await interaction.showModal(modal).catch(() => null);
       return true;
     }
 
     if (selected === "edit_title") {
-      const modal = new ModalBuilder()
-        .setCustomId("jdm_modal_title")
-        .setTitle("Edit Join DM Title");
-
+      const modal = new ModalBuilder().setCustomId("wlcm_modal_title").setTitle("Edit Welcome Title");
       const input = new TextInputBuilder()
         .setCustomId("input_title")
         .setLabel("Title Headline")
@@ -1522,60 +1549,31 @@ async function handleWelcomeBuilderInteraction(client, interaction) {
         .setValue(custom.title || "")
         .setMaxLength(250)
         .setRequired(false);
-
       modal.addComponents(new ActionRowBuilder().addComponents(input));
       await interaction.showModal(modal).catch(() => null);
       return true;
     }
 
     if (selected === "edit_color") {
-      const modal = new ModalBuilder()
-        .setCustomId("jdm_modal_color")
-        .setTitle("Edit Accent HEX Color");
-
+      const modal = new ModalBuilder().setCustomId("wlcm_modal_color").setTitle("Edit Accent HEX Color");
       const input = new TextInputBuilder()
         .setCustomId("input_color")
         .setLabel("HEX Color Code")
         .setStyle(TextInputStyle.Short)
-        .setPlaceholder("#5865F2, #22C55E, #FF3131, etc.")
+        .setPlaceholder("#5865F2, #22C55E, #FF3131")
         .setValue(custom.color || "#5865F2")
         .setMaxLength(7)
         .setRequired(true);
-
       modal.addComponents(new ActionRowBuilder().addComponents(input));
       await interaction.showModal(modal).catch(() => null);
       return true;
     }
 
     if (selected === "edit_author") {
-      const modal = new ModalBuilder()
-        .setCustomId("jdm_modal_author")
-        .setTitle("Edit DM Author Header");
-
-      const inputName = new TextInputBuilder()
-        .setCustomId("input_author_name")
-        .setLabel("Author Name")
-        .setStyle(TextInputStyle.Short)
-        .setPlaceholder("👋 Welcome to the Server!")
-        .setValue(custom.authorName || "")
-        .setRequired(false);
-
-      const inputIcon = new TextInputBuilder()
-        .setCustomId("input_author_icon")
-        .setLabel("Author Icon URL")
-        .setStyle(TextInputStyle.Short)
-        .setPlaceholder("{guild.icon} or image URL")
-        .setValue(custom.authorIcon || "")
-        .setRequired(false);
-
-      const inputUrl = new TextInputBuilder()
-        .setCustomId("input_author_url")
-        .setLabel("Author Link (Optional)")
-        .setStyle(TextInputStyle.Short)
-        .setPlaceholder("https://discord.gg/...")
-        .setValue(custom.authorUrl || "")
-        .setRequired(false);
-
+      const modal = new ModalBuilder().setCustomId("wlcm_modal_author").setTitle("Edit Author Header");
+      const inputName = new TextInputBuilder().setCustomId("input_author_name").setLabel("Author Name").setStyle(TextInputStyle.Short).setValue(custom.authorName || "").setRequired(false);
+      const inputIcon = new TextInputBuilder().setCustomId("input_author_icon").setLabel("Author Icon URL").setStyle(TextInputStyle.Short).setValue(custom.authorIcon || "").setRequired(false);
+      const inputUrl = new TextInputBuilder().setCustomId("input_author_url").setLabel("Author Click Link").setStyle(TextInputStyle.Short).setValue(custom.authorUrl || "").setRequired(false);
       modal.addComponents(
         new ActionRowBuilder().addComponents(inputName),
         new ActionRowBuilder().addComponents(inputIcon),
@@ -1586,75 +1584,117 @@ async function handleWelcomeBuilderInteraction(client, interaction) {
     }
 
     if (selected === "edit_image") {
-      const modal = new ModalBuilder()
-        .setCustomId("jdm_modal_image")
-        .setTitle("Edit Banner Image");
-
-      const input = new TextInputBuilder()
-        .setCustomId("input_image")
-        .setLabel("Image URL (or {guild.banner})")
-        .setStyle(TextInputStyle.Short)
-        .setPlaceholder("https://... or {guild.banner}")
-        .setValue(custom.image || "")
-        .setRequired(false);
-
+      const modal = new ModalBuilder().setCustomId("wlcm_modal_image").setTitle("Edit Banner Image");
+      const input = new TextInputBuilder().setCustomId("input_image").setLabel("Banner URL (or {guild.banner})").setStyle(TextInputStyle.Short).setValue(custom.image || "").setRequired(false);
       modal.addComponents(new ActionRowBuilder().addComponents(input));
       await interaction.showModal(modal).catch(() => null);
       return true;
     }
 
     if (selected === "edit_thumb") {
-      const modal = new ModalBuilder()
-        .setCustomId("jdm_modal_thumb")
-        .setTitle("Edit Thumbnail Image");
-
-      const input = new TextInputBuilder()
-        .setCustomId("input_thumb")
-        .setLabel("Thumbnail URL (or {user.avatar})")
-        .setStyle(TextInputStyle.Short)
-        .setPlaceholder("{user.avatar} or https://...")
-        .setValue(custom.thumbnail || "")
-        .setRequired(false);
-
+      const modal = new ModalBuilder().setCustomId("wlcm_modal_thumb").setTitle("Edit Thumbnail Image");
+      const input = new TextInputBuilder().setCustomId("input_thumb").setLabel("Thumbnail URL (or {user.avatar})").setStyle(TextInputStyle.Short).setValue(custom.thumbnail || "").setRequired(false);
       modal.addComponents(new ActionRowBuilder().addComponents(input));
       await interaction.showModal(modal).catch(() => null);
       return true;
     }
 
     if (selected === "edit_footer") {
-      const modal = new ModalBuilder()
-        .setCustomId("jdm_modal_footer")
-        .setTitle("Edit Footer Note");
-
-      const inputText = new TextInputBuilder()
-        .setCustomId("input_footer_text")
-        .setLabel("Footer Note Text")
-        .setStyle(TextInputStyle.Short)
-        .setPlaceholder("Enjoy your stay in {server}!")
-        .setValue(custom.footerText || "")
-        .setRequired(false);
-
-      const inputIcon = new TextInputBuilder()
-        .setCustomId("input_footer_icon")
-        .setLabel("Footer Icon URL (Optional)")
-        .setStyle(TextInputStyle.Short)
-        .setPlaceholder("{guild.icon} or https://...")
-        .setValue(custom.footerIcon || "")
-        .setRequired(false);
-
-      modal.addComponents(
-        new ActionRowBuilder().addComponents(inputText),
-        new ActionRowBuilder().addComponents(inputIcon)
-      );
+      const modal = new ModalBuilder().setCustomId("wlcm_modal_footer").setTitle("Edit Footer Note");
+      const inputText = new TextInputBuilder().setCustomId("input_footer_text").setLabel("Footer Note Text").setStyle(TextInputStyle.Short).setValue(custom.footerText || "").setRequired(false);
+      const inputIcon = new TextInputBuilder().setCustomId("input_footer_icon").setLabel("Footer Icon URL").setStyle(TextInputStyle.Short).setValue(custom.footerIcon || "").setRequired(false);
+      modal.addComponents(new ActionRowBuilder().addComponents(inputText), new ActionRowBuilder().addComponents(inputIcon));
       await interaction.showModal(modal).catch(() => null);
+      return true;
+    }
+  }
+
+  // --- JOIN DM EDITOR BUTTONS ---
+  if (customId === "jdm_custom_save") {
+    welcomeManager.updateGuildWelcome(guild.id, { joinDmEnabled: true });
+    const config = welcomeManager.getGuildWelcome(guild.id);
+    const payload = buildJoinDmEditorPayload(
+      guild,
+      member,
+      config.joinDmType,
+      "🎉 **Saved & Enabled!** Custom Join DM greetings are now active."
+    );
+    await safeUpdate(interaction, payload);
+    return true;
+  }
+
+  if (customId === "jdm_custom_test") {
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => null);
+    const config = welcomeManager.getGuildWelcome(guild.id);
+    try {
+      const dmMsg = await renderJoinDmMessage(member, config);
+      await member.send(dmMsg);
+      await interaction.editReply("✅ Test Join DM sent directly to your DMs! Check your direct messages.").catch(() => null);
+    } catch (err) {
+      await interaction.editReply("❌ Failed to send DM. Please ensure your DMs from server members are open!").catch(() => null);
+    }
+    return true;
+  }
+
+  // --- JOIN DM DROPDOWN MENU ---
+  if (customId === "jdm_custom_dropdown" && interaction.isStringSelectMenu()) {
+    const selected = interaction.values[0];
+    const config = welcomeManager.getGuildWelcome(guild.id);
+    const custom = config.joinDmCustomData || {};
+
+    if (selected === "switch_fmt") {
+      const newFmt = config.joinDmType === "custom_container" ? "custom_embed" : "custom_container";
+      welcomeManager.updateGuildWelcome(guild.id, { joinDmType: newFmt });
+      const payload = buildJoinDmEditorPayload(
+        guild,
+        member,
+        newFmt,
+        `🔄 Format switched to **${newFmt === "custom_embed" ? "Classic Embed" : "Modern Container"}**.`
+      );
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (selected === "save_enable") {
+      welcomeManager.updateGuildWelcome(guild.id, { joinDmEnabled: true });
+      const payload = buildJoinDmEditorPayload(
+        guild,
+        member,
+        config.joinDmType,
+        "🎉 **Saved & Enabled!** Custom Join DM greetings are now active."
+      );
+      await safeUpdate(interaction, payload);
+      return true;
+    }
+
+    if (selected === "send_test") {
+      if (!config.joinDmEnabled) {
+        await interaction.reply({
+          content: "⚠️ **Preview Unavailable:** Join DM greetings are currently **DISABLED**. Please save & enable first.",
+          flags: MessageFlags.Ephemeral,
+        }).catch(() => null);
+        return true;
+      }
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => null);
+      try {
+        const dmMsg = await renderJoinDmMessage(member, config);
+        await member.send(dmMsg);
+        await interaction.editReply("✅ Test Join DM sent directly to your DMs! Check your direct messages.").catch(() => null);
+      } catch (err) {
+        await interaction.editReply("❌ Failed to send DM. Please ensure your DMs from server members are open!").catch(() => null);
+      }
+      return true;
+    }
+
+    if (selected === "back_hub") {
+      const payload = buildJoinDmHubPayload(guild, member);
+      await safeUpdate(interaction, payload);
       return true;
     }
 
     if (selected === "toggle_time") {
       const newTime = !custom.timestamp;
-      welcomeManager.updateGuildWelcome(guild.id, {
-        joinDmCustomData: { timestamp: newTime },
-      });
+      welcomeManager.updateGuildWelcome(guild.id, { joinDmCustomData: { timestamp: newTime } });
       const payload = buildJoinDmEditorPayload(
         guild,
         member,
@@ -1681,134 +1721,59 @@ async function handleWelcomeBuilderInteraction(client, interaction) {
           timestamp: false,
         },
       });
-      const payload = buildJoinDmEditorPayload(
-        guild,
-        member,
-        config.joinDmType,
-        "🗑️ Join DM draft reset to empty."
-      );
+      const payload = buildJoinDmEditorPayload(guild, member, config.joinDmType, "🗑️ Join DM draft reset to empty.");
       await safeUpdate(interaction, payload);
       return true;
     }
-  }
 
-  // 2. Format Selection: Embed vs Container
-  if (customId === "wlcm_choose_embed") {
-    welcomeManager.updateGuildWelcome(guild.id, { welcomeType: "custom_embed" });
-    const payload = buildCustomEditorPayload(guild, member, "custom_embed", "✨ Welcome mode set to **Classic Embed**.");
-    await safeUpdate(interaction, payload);
-    return true;
-  }
-
-  if (customId === "wlcm_choose_container") {
-    welcomeManager.updateGuildWelcome(guild.id, { welcomeType: "custom_container" });
-    const payload = buildCustomEditorPayload(guild, member, "custom_container", "✨ Welcome mode set to **Modern Container (Components V2)**.");
-    await safeUpdate(interaction, payload);
-    return true;
-  }
-
-  // 3. Switch Format in Editor
-  if (customId === "wlcm_custom_switch_fmt") {
-    const config = welcomeManager.getGuildWelcome(guild.id);
-    const newFmt = config.welcomeType === "custom_container" ? "custom_embed" : "custom_container";
-    welcomeManager.updateGuildWelcome(guild.id, { welcomeType: newFmt });
-    const payload = buildCustomEditorPayload(guild, member, newFmt, `🔄 Format switched to **${newFmt === "custom_embed" ? "Classic Embed" : "Modern Container (V2)"}**.`);
-    await safeUpdate(interaction, payload);
-    return true;
-  }
-
-  // 4. Custom Editor Dropdown Selection (Opens Modals or toggles)
-  if (customId === "wlcm_custom_dropdown" && interaction.isStringSelectMenu()) {
-    const selected = interaction.values[0];
-    const config = welcomeManager.getGuildWelcome(guild.id);
-    const custom = config.customData || {};
-
+    // Modal Triggers for Join DM Editor
     if (selected === "edit_desc") {
-      const modal = new ModalBuilder()
-        .setCustomId("wlcm_modal_desc")
-        .setTitle("Edit Message Description");
-
+      const modal = new ModalBuilder().setCustomId("jdm_modal_desc").setTitle("Edit Join DM Description");
       const input = new TextInputBuilder()
         .setCustomId("input_desc")
-        .setLabel("Welcome Text (Supports Variables)")
+        .setLabel("DM Text (Supports Variables)")
         .setStyle(TextInputStyle.Paragraph)
-        .setPlaceholder("Welcome {user} to **{server}**! Member #{memberCount}!")
         .setValue(custom.description || "")
         .setMaxLength(3000)
         .setRequired(false);
-
       modal.addComponents(new ActionRowBuilder().addComponents(input));
       await interaction.showModal(modal).catch(() => null);
       return true;
     }
 
     if (selected === "edit_title") {
-      const modal = new ModalBuilder()
-        .setCustomId("wlcm_modal_title")
-        .setTitle("Edit Greeting Title");
-
+      const modal = new ModalBuilder().setCustomId("jdm_modal_title").setTitle("Edit Join DM Title");
       const input = new TextInputBuilder()
         .setCustomId("input_title")
         .setLabel("Title Headline")
         .setStyle(TextInputStyle.Short)
-        .setPlaceholder("👋 Welcome to {server}!")
         .setValue(custom.title || "")
         .setMaxLength(250)
         .setRequired(false);
-
       modal.addComponents(new ActionRowBuilder().addComponents(input));
       await interaction.showModal(modal).catch(() => null);
       return true;
     }
 
     if (selected === "edit_color") {
-      const modal = new ModalBuilder()
-        .setCustomId("wlcm_modal_color")
-        .setTitle("Edit Accent HEX Color");
-
+      const modal = new ModalBuilder().setCustomId("jdm_modal_color").setTitle("Edit Accent HEX Color");
       const input = new TextInputBuilder()
         .setCustomId("input_color")
         .setLabel("HEX Color Code")
         .setStyle(TextInputStyle.Short)
-        .setPlaceholder("#5865F2, #22C55E, #FF3131, etc.")
         .setValue(custom.color || "#5865F2")
         .setMaxLength(7)
         .setRequired(true);
-
       modal.addComponents(new ActionRowBuilder().addComponents(input));
       await interaction.showModal(modal).catch(() => null);
       return true;
     }
 
     if (selected === "edit_author") {
-      const modal = new ModalBuilder()
-        .setCustomId("wlcm_modal_author")
-        .setTitle("Edit Author Header");
-
-      const inputName = new TextInputBuilder()
-        .setCustomId("input_author_name")
-        .setLabel("Author Name")
-        .setStyle(TextInputStyle.Short)
-        .setPlaceholder("👋 New Member Joined!")
-        .setValue(custom.authorName || "")
-        .setRequired(false);
-
-      const inputIcon = new TextInputBuilder()
-        .setCustomId("input_author_icon")
-        .setLabel("Author Icon URL (e.g. {user.avatar})")
-        .setStyle(TextInputStyle.Short)
-        .setPlaceholder("{user.avatar} or image URL")
-        .setValue(custom.authorIcon || "")
-        .setRequired(false);
-
-      const inputUrl = new TextInputBuilder()
-        .setCustomId("input_author_url")
-        .setLabel("Author Click Link (Optional)")
-        .setStyle(TextInputStyle.Short)
-        .setPlaceholder("https://discord.gg/...")
-        .setValue(custom.authorUrl || "")
-        .setRequired(false);
-
+      const modal = new ModalBuilder().setCustomId("jdm_modal_author").setTitle("Edit DM Author Header");
+      const inputName = new TextInputBuilder().setCustomId("input_author_name").setLabel("Author Name").setStyle(TextInputStyle.Short).setValue(custom.authorName || "").setRequired(false);
+      const inputIcon = new TextInputBuilder().setCustomId("input_author_icon").setLabel("Author Icon URL").setStyle(TextInputStyle.Short).setValue(custom.authorIcon || "").setRequired(false);
+      const inputUrl = new TextInputBuilder().setCustomId("input_author_url").setLabel("Author Click Link").setStyle(TextInputStyle.Short).setValue(custom.authorUrl || "").setRequired(false);
       modal.addComponents(
         new ActionRowBuilder().addComponents(inputName),
         new ActionRowBuilder().addComponents(inputIcon),
@@ -1819,205 +1784,36 @@ async function handleWelcomeBuilderInteraction(client, interaction) {
     }
 
     if (selected === "edit_image") {
-      const modal = new ModalBuilder()
-        .setCustomId("wlcm_modal_image")
-        .setTitle("Edit Main Banner Image");
-
-      const input = new TextInputBuilder()
-        .setCustomId("input_image")
-        .setLabel("Image URL (or {guild.banner})")
-        .setStyle(TextInputStyle.Short)
-        .setPlaceholder("https://... or {guild.banner}")
-        .setValue(custom.image || "")
-        .setRequired(false);
-
+      const modal = new ModalBuilder().setCustomId("jdm_modal_image").setTitle("Edit Banner Image");
+      const input = new TextInputBuilder().setCustomId("input_image").setLabel("Banner URL (or {guild.banner})").setStyle(TextInputStyle.Short).setValue(custom.image || "").setRequired(false);
       modal.addComponents(new ActionRowBuilder().addComponents(input));
       await interaction.showModal(modal).catch(() => null);
       return true;
     }
 
     if (selected === "edit_thumb") {
-      const modal = new ModalBuilder()
-        .setCustomId("wlcm_modal_thumb")
-        .setTitle("Edit Thumbnail Image");
-
-      const input = new TextInputBuilder()
-        .setCustomId("input_thumb")
-        .setLabel("Thumbnail URL (or {user.avatar})")
-        .setStyle(TextInputStyle.Short)
-        .setPlaceholder("{user.avatar} or https://...")
-        .setValue(custom.thumbnail || "")
-        .setRequired(false);
-
+      const modal = new ModalBuilder().setCustomId("jdm_modal_thumb").setTitle("Edit Thumbnail Image");
+      const input = new TextInputBuilder().setCustomId("input_thumb").setLabel("Thumbnail URL (or {user.avatar})").setStyle(TextInputStyle.Short).setValue(custom.thumbnail || "").setRequired(false);
       modal.addComponents(new ActionRowBuilder().addComponents(input));
       await interaction.showModal(modal).catch(() => null);
       return true;
     }
 
     if (selected === "edit_footer") {
-      const modal = new ModalBuilder()
-        .setCustomId("wlcm_modal_footer")
-        .setTitle("Edit Footer Note");
-
-      const inputText = new TextInputBuilder()
-        .setCustomId("input_footer_text")
-        .setLabel("Footer Note Text")
-        .setStyle(TextInputStyle.Short)
-        .setPlaceholder("Member #{memberCount} • Enjoy your stay!")
-        .setValue(custom.footerText || "")
-        .setRequired(false);
-
-      const inputIcon = new TextInputBuilder()
-        .setCustomId("input_footer_icon")
-        .setLabel("Footer Icon URL (Optional)")
-        .setStyle(TextInputStyle.Short)
-        .setPlaceholder("{guild.icon} or https://...")
-        .setValue(custom.footerIcon || "")
-        .setRequired(false);
-
-      modal.addComponents(
-        new ActionRowBuilder().addComponents(inputText),
-        new ActionRowBuilder().addComponents(inputIcon)
-      );
+      const modal = new ModalBuilder().setCustomId("jdm_modal_footer").setTitle("Edit Footer Note");
+      const inputText = new TextInputBuilder().setCustomId("input_footer_text").setLabel("Footer Note Text").setStyle(TextInputStyle.Short).setValue(custom.footerText || "").setRequired(false);
+      const inputIcon = new TextInputBuilder().setCustomId("input_footer_icon").setLabel("Footer Icon URL").setStyle(TextInputStyle.Short).setValue(custom.footerIcon || "").setRequired(false);
+      modal.addComponents(new ActionRowBuilder().addComponents(inputText), new ActionRowBuilder().addComponents(inputIcon));
       await interaction.showModal(modal).catch(() => null);
       return true;
     }
-
-    if (selected === "toggle_time") {
-      const newTime = !custom.timestamp;
-      welcomeManager.updateGuildWelcome(guild.id, {
-        customData: { timestamp: newTime },
-      });
-      const payload = buildCustomEditorPayload(
-        guild,
-        member,
-        config.welcomeType,
-        `🕒 Timestamp display is now **${newTime ? "ENABLED ✅" : "DISABLED ❌"}**.`
-      );
-      await safeUpdate(interaction, payload);
-      return true;
-    }
-
-    if (selected === "set_channel") {
-      const payload = buildChannelSelectPayload(guild, "custom");
-      await safeUpdate(interaction, payload);
-      return true;
-    }
-
-    if (selected === "reset_draft") {
-      welcomeManager.updateGuildWelcome(guild.id, {
-        customData: {
-          title: "",
-          description: "",
-          color: "#5865F2",
-          authorName: "",
-          authorIcon: "",
-          authorUrl: "",
-          footerText: "",
-          footerIcon: "",
-          thumbnail: "",
-          image: "",
-          timestamp: false,
-        },
-      });
-      const payload = buildCustomEditorPayload(
-        guild,
-        member,
-        config.welcomeType,
-        "🗑️ Welcome draft reset to empty."
-      );
-      await safeUpdate(interaction, payload);
-      return true;
-    }
   }
 
-  // 5. Channel Picker Interaction
-  if (customId === "wlcm_premade_channel") {
-    const payload = buildChannelSelectPayload(guild, "premade");
-    await safeUpdate(interaction, payload);
-    return true;
-  }
-
-  if (customId.startsWith("wlcm_channel_picked_") && interaction.isChannelSelectMenu()) {
-    const origin = customId.replace("wlcm_channel_picked_", "");
-    const pickedId = interaction.values[0];
-    welcomeManager.updateGuildWelcome(guild.id, { channelId: pickedId, enabled: true });
-
-    if (origin === "premade") {
-      const payload = buildPremadeDashboardPayload(
-        guild,
-        member,
-        `✅ Welcome channel set to <#${pickedId}> and enabled!`
-      );
-      await safeUpdate(interaction, payload);
-    } else {
-      const config = welcomeManager.getGuildWelcome(guild.id);
-      const payload = buildCustomEditorPayload(
-        guild,
-        member,
-        config.welcomeType,
-        `✅ Welcome channel set to <#${pickedId}>!`
-      );
-      await safeUpdate(interaction, payload);
-    }
-    return true;
-  }
-
-  // 6. Premade Toggle Button
-  if (customId === "wlcm_premade_toggle") {
-    const config = welcomeManager.getGuildWelcome(guild.id);
-    const newState = !config.enabled;
-    welcomeManager.updateGuildWelcome(guild.id, { enabled: newState });
-    const payload = buildPremadeDashboardPayload(
-      guild,
-      member,
-      newState
-        ? "✅ Astrix Premade Welcome greetings are now **ENABLED**!"
-        : "⚠️ Astrix Premade Welcome greetings are now **DISABLED**."
-    );
-    await safeUpdate(interaction, payload);
-    return true;
-  }
-
-  // 7. Save & Enable Button
-  if (customId === "wlcm_custom_save") {
-    const config = welcomeManager.getGuildWelcome(guild.id);
-    if (!config.channelId) {
-      const payload = buildChannelSelectPayload(guild, "custom");
-      await safeUpdate(interaction, payload);
-      return true;
-    }
-
-    welcomeManager.updateGuildWelcome(guild.id, { enabled: true });
-    const payload = buildCustomEditorPayload(
-      guild,
-      member,
-      config.welcomeType,
-      `🎉 **Saved & Enabled!** Custom welcome greetings are now active in <#${config.channelId}>.`
-    );
-    await safeUpdate(interaction, payload);
-    return true;
-  }
-
-  // 8. Live Test Buttons
-  if (customId === "wlcm_custom_test" || customId === "wlcm_btn_test_premade") {
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => null);
-    const config = welcomeManager.getGuildWelcome(guild.id);
-    try {
-      const testMsg = await renderWelcomeMessage(member, config);
-      await interaction.channel.send(testMsg);
-      await interaction.editReply("✅ Test welcome message sent to this channel!").catch(() => null);
-    } catch (err) {
-      console.error("[WelcomeBuilder] Test error:", err);
-      await interaction.editReply("❌ Failed to send test welcome message. Check bot permissions.").catch(() => null);
-    }
-    return true;
-  }
-
-  // 9. Modal Submissions
+  // --- MODAL SUBMISSIONS ---
   if (interaction.isModalSubmit()) {
     const config = welcomeManager.getGuildWelcome(guild.id);
 
+    // Welcome Editor Modals
     if (customId === "wlcm_modal_desc") {
       const val = interaction.fields.getTextInputValue("input_desc") || "";
       welcomeManager.updateGuildWelcome(guild.id, { customData: { description: val } });
@@ -2047,9 +1843,7 @@ async function handleWelcomeBuilderInteraction(client, interaction) {
       const authName = interaction.fields.getTextInputValue("input_author_name") || "";
       const authIcon = interaction.fields.getTextInputValue("input_author_icon") || "";
       const authUrl = interaction.fields.getTextInputValue("input_author_url") || "";
-      welcomeManager.updateGuildWelcome(guild.id, {
-        customData: { authorName: authName, authorIcon: authIcon, authorUrl: authUrl },
-      });
+      welcomeManager.updateGuildWelcome(guild.id, { customData: { authorName: authName, authorIcon: authIcon, authorUrl: authUrl } });
       const payload = buildCustomEditorPayload(guild, member, config.welcomeType, "✅ Updated author info.");
       await safeUpdate(interaction, payload);
       return true;
@@ -2074,13 +1868,13 @@ async function handleWelcomeBuilderInteraction(client, interaction) {
     if (customId === "wlcm_modal_footer") {
       const footText = interaction.fields.getTextInputValue("input_footer_text") || "";
       const footIcon = interaction.fields.getTextInputValue("input_footer_icon") || "";
-      welcomeManager.updateGuildWelcome(guild.id, {
-        customData: { footerText: footText, footerIcon: footIcon },
-      });
+      welcomeManager.updateGuildWelcome(guild.id, { customData: { footerText: footText, footerIcon: footIcon } });
       const payload = buildCustomEditorPayload(guild, member, config.welcomeType, "✅ Updated footer note.");
       await safeUpdate(interaction, payload);
       return true;
     }
+
+    // Join DM Editor Modals
     if (customId === "jdm_modal_desc") {
       const val = interaction.fields.getTextInputValue("input_desc") || "";
       welcomeManager.updateGuildWelcome(guild.id, { joinDmCustomData: { description: val } });
@@ -2110,9 +1904,7 @@ async function handleWelcomeBuilderInteraction(client, interaction) {
       const authName = interaction.fields.getTextInputValue("input_author_name") || "";
       const authIcon = interaction.fields.getTextInputValue("input_author_icon") || "";
       const authUrl = interaction.fields.getTextInputValue("input_author_url") || "";
-      welcomeManager.updateGuildWelcome(guild.id, {
-        joinDmCustomData: { authorName: authName, authorIcon: authIcon, authorUrl: authUrl },
-      });
+      welcomeManager.updateGuildWelcome(guild.id, { joinDmCustomData: { authorName: authName, authorIcon: authIcon, authorUrl: authUrl } });
       const payload = buildJoinDmEditorPayload(guild, member, config.joinDmType, "✅ Updated DM author info.");
       await safeUpdate(interaction, payload);
       return true;
@@ -2137,21 +1929,11 @@ async function handleWelcomeBuilderInteraction(client, interaction) {
     if (customId === "jdm_modal_footer") {
       const footText = interaction.fields.getTextInputValue("input_footer_text") || "";
       const footIcon = interaction.fields.getTextInputValue("input_footer_icon") || "";
-      welcomeManager.updateGuildWelcome(guild.id, {
-        joinDmCustomData: { footerText: footText, footerIcon: footIcon },
-      });
+      welcomeManager.updateGuildWelcome(guild.id, { joinDmCustomData: { footerText: footText, footerIcon: footIcon } });
       const payload = buildJoinDmEditorPayload(guild, member, config.joinDmType, "✅ Updated DM footer note.");
       await safeUpdate(interaction, payload);
       return true;
     }
-  }
-
-  // 10. Open Studio Button from Premade Dashboard
-  if (customId === "wcc_btn_open_studio") {
-    const { buildCardConfigPayload } = require("./handleWelcomeCanvasInteraction");
-    const payload = await buildCardConfigPayload(member);
-    await safeUpdate(interaction, payload);
-    return true;
   }
 
   return false;
@@ -2162,6 +1944,7 @@ module.exports = {
   buildFormatChoicePayload,
   buildCustomEditorPayload,
   buildPremadeDashboardPayload,
+  buildChannelSelectPayload,
   buildJoinDmHubPayload,
   buildJoinDmFormatChoicePayload,
   buildJoinDmEditorPayload,
