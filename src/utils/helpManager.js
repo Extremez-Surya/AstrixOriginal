@@ -15,17 +15,21 @@ const {
 } = require("discord.js");
 const path = require("path");
 const allCategories = require("../lib/categories.json");
-const EMOJIS = require("../lib/emojis");
 const prefixManager = require("../lib/prefixManager");
+const {
+  generateCategoryCard,
+  generateCommandDetailCard,
+  CATEGORY_EMOJIS,
+} = require("../lib/helpCanvas");
 
-// Banner Attachment Setup
+// Main Banner Attachment Setup
 const logoPath = path.join(__dirname, "../assets/helpmenu.png");
 function createBannerAttachment() {
   return new AttachmentBuilder(logoPath, { name: "helpmenu.png" });
 }
 
-function createMediaGallery() {
-  const mediaItem = new MediaGalleryItemBuilder().setURL("attachment://helpmenu.png");
+function createMediaGallery(attachmentName = "helpmenu.png") {
+  const mediaItem = new MediaGalleryItemBuilder().setURL(`attachment://${attachmentName}`);
   return new MediaGalleryBuilder().addItems(mediaItem);
 }
 
@@ -146,7 +150,7 @@ function buildCategoryActionRows(client, userId, disabled = false) {
             .setLabel(cat)
             .setValue(`cat_${cat.toLowerCase()}`)
             .setDescription(`${cmds.length} command(s)`)
-            .setEmoji(allCategories[cat]?.emoji || "📁");
+            .setEmoji(CATEGORY_EMOJIS[cat] || allCategories[cat]?.emoji || "📁");
         }),
       ];
 
@@ -161,7 +165,7 @@ function buildCategoryActionRows(client, userId, disabled = false) {
 }
 
 /**
- * Build external link buttons row
+ * Build external link buttons row with clean Unicode emojis
  */
 function buildLinkButtonsRow(client) {
   const inviteUrl = `https://discord.com/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot%20applications.commands`;
@@ -179,6 +183,7 @@ function buildLinkButtonsRow(client) {
     .setURL("https://discord.gg/FR9pXG2Mwb");
 
   const hostingBtn = new ButtonBuilder()
+    .setEmoji("🌐")
     .setLabel("Website")
     .setStyle(ButtonStyle.Link)
     .setURL("https://extremez.vercel.app/");
@@ -187,7 +192,7 @@ function buildLinkButtonsRow(client) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 1. MAIN CONTAINER (Same Old UI + Dropdowns inside Container)
+// 1. MAIN CONTAINER (Clean Canvas Banner Image UI + Dropdowns & Buttons)
 // ─────────────────────────────────────────────────────────────────────────────
 function buildMainContainer(client, guildId, userId, disabled = false) {
   const { sortedCategories } = getCategoryData(client, userId);
@@ -198,7 +203,7 @@ function buildMainContainer(client, guildId, userId, disabled = false) {
   const linkRow = buildLinkButtonsRow(client);
 
   const container = new ContainerBuilder()
-    .addMediaGalleryComponents(createMediaGallery())
+    .addMediaGalleryComponents(createMediaGallery("helpmenu.png"))
     .addSeparatorComponents(
       new SeparatorBuilder()
         .setSpacing(SeparatorSpacingSize.Small)
@@ -206,29 +211,13 @@ function buildMainContainer(client, guildId, userId, disabled = false) {
     )
     .addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
-        `-# *Your ultimate network diagnostics companion — powerful, clean & always accurate.*\n` +
-          `[Support](https://discord.gg/FR9pXG2Mwb) • [Website](https://extremez.vercel.app/)`
+        `> **Prefix:** \`${prefix}\` • **Commands:** \`${totalCommands}\` • **Categories:** \`${sortedCategories.length}\``
       )
     )
     .addSeparatorComponents(
       new SeparatorBuilder()
         .setSpacing(SeparatorSpacingSize.Small)
         .setDivider(true)
-    )
-    .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        ` > **Prefix:** \`${prefix}\` | **Commands:** \`${totalCommands}\` | **Categories:** \`${sortedCategories.length}\``
-      )
-    )
-    .addSeparatorComponents(
-      new SeparatorBuilder()
-        .setSpacing(SeparatorSpacingSize.Small)
-        .setDivider(true)
-    )
-    .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        `-# *${EMOJIS.astrix || "✨"} Built with ${EMOJIS.Red_heart || "❤️"} by ASTRIXCODE™ • © 2026 ASTRIXCODE. All rights reserved.*`
-      )
     )
     .addActionRowComponents(...categoryRows, linkRow);
 
@@ -236,10 +225,11 @@ function buildMainContainer(client, guildId, userId, disabled = false) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 2. CATEGORY CONTAINER (Shows Commands + Dropdown for All Commands in Container)
+// 2. CATEGORY CANVAS CONTAINER (Dynamic Visual Card + Command Dropdown)
 // ─────────────────────────────────────────────────────────────────────────────
-function buildCategoryContainer(client, categoryQuery, userId, guildId, page = 0) {
+async function buildCategoryContainerPayload(client, categoryQuery, userId, guildId, page = 0) {
   const { categoryMap, sortedCategories } = getCategoryData(client, userId);
+  const prefix = guildId ? prefixManager.getPrefix(guildId) : ".";
 
   // Match category name case-insensitively
   const categoryName =
@@ -247,16 +237,21 @@ function buildCategoryContainer(client, categoryQuery, userId, guildId, page = 0
       (c) => c.toLowerCase() === categoryQuery.toLowerCase()
     ) || "General";
 
-  const categoryEmoji = allCategories[categoryName]?.emoji || "📁";
+  const categoryEmoji = CATEGORY_EMOJIS[categoryName] || "📁";
   const cmds = categoryMap.get(categoryName) || [];
 
-  const cmdAliases = cmds.map((c) => `\`${c.alias[0]}\``);
-  const commandsListText =
-    cmdAliases.length > 0
-      ? `**Commands (${cmdAliases.length}):**\n` + cmdAliases.join(", ")
-      : "*No commands available in this category yet.*";
+  // Generate crisp 2x High-DPI Category Canvas Card
+  const categoryBuffer = await generateCategoryCard(
+    categoryName,
+    cmds,
+    prefix,
+    sortedCategories.length
+  );
+  const attachment = new AttachmentBuilder(categoryBuffer, {
+    name: "category_card.png",
+  });
 
-  // Build paginated command select menu inside the container
+  // Build paginated command select menu options
   const pageSize = 23;
   const totalPages = Math.ceil(cmds.length / pageSize) || 1;
   const currentPage = Math.max(0, Math.min(page, totalPages - 1));
@@ -270,7 +265,7 @@ function buildCategoryContainer(client, categoryQuery, userId, guildId, page = 0
   if (currentPage > 0) {
     options.push(
       new StringSelectMenuOptionBuilder()
-        .setLabel(`⬅️ Previous Page (${currentPage}/${totalPages})`)
+        .setLabel(`Previous Page (${currentPage}/${totalPages})`)
         .setValue(`page_${categoryName.toLowerCase()}_${currentPage - 1}`)
         .setDescription(`Browse previous commands in ${categoryName}`)
         .setEmoji("⬅️")
@@ -278,13 +273,13 @@ function buildCategoryContainer(client, categoryQuery, userId, guildId, page = 0
   }
 
   currentCmds.forEach((cmd) => {
-    const primaryName = cmd.alias[0];
+    const primaryName = cmd.alias?.[0] || cmd.name;
     const desc = cmd.desc || cmd.description || `Command details for ${primaryName}`;
     const truncatedDesc = desc.length > 70 ? desc.slice(0, 67) + "..." : desc;
 
     options.push(
       new StringSelectMenuOptionBuilder()
-        .setLabel(primaryName)
+        .setLabel(`${prefix}${primaryName}`)
         .setValue(`cmd_${primaryName}`)
         .setDescription(truncatedDesc)
         .setEmoji(categoryEmoji)
@@ -294,7 +289,7 @@ function buildCategoryContainer(client, categoryQuery, userId, guildId, page = 0
   if (currentPage < totalPages - 1) {
     options.push(
       new StringSelectMenuOptionBuilder()
-        .setLabel(`➡️ Next Page (${currentPage + 2}/${totalPages})`)
+        .setLabel(`Next Page (${currentPage + 2}/${totalPages})`)
         .setValue(`page_${categoryName.toLowerCase()}_${currentPage + 1}`)
         .setDescription(`Browse more commands in ${categoryName}`)
         .setEmoji("➡️")
@@ -302,19 +297,7 @@ function buildCategoryContainer(client, categoryQuery, userId, guildId, page = 0
   }
 
   const container = new ContainerBuilder()
-    .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        `### ${categoryEmoji} ${categoryName} Module`
-      )
-    )
-    .addSeparatorComponents(
-      new SeparatorBuilder()
-        .setSpacing(SeparatorSpacingSize.Small)
-        .setDivider(true)
-    )
-    .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(commandsListText)
-    )
+    .addMediaGalleryComponents(createMediaGallery("category_card.png"))
     .addSeparatorComponents(
       new SeparatorBuilder()
         .setSpacing(SeparatorSpacingSize.Small)
@@ -325,7 +308,7 @@ function buildCategoryContainer(client, categoryQuery, userId, guildId, page = 0
   if (options.length > 0) {
     const commandSelectMenu = new StringSelectMenuBuilder()
       .setCustomId("help_command_select")
-      .setPlaceholder("Select a command or sub-module...")
+      .setPlaceholder(`🔍 Select a ${categoryName} command...`)
       .addOptions(options);
 
     const commandSelectRow = new ActionRowBuilder().addComponents(commandSelectMenu);
@@ -348,19 +331,20 @@ function buildCategoryContainer(client, categoryQuery, userId, guildId, page = 0
   const buttonRow = new ActionRowBuilder().addComponents(homeBtn, closeBtn);
   container.addActionRowComponents(buttonRow);
 
-  return container;
+  return { container, attachment };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 3. COMMAND DETAIL CONTAINER (Shows Full Command Info in Container)
+// 3. COMMAND DETAIL CANVAS CONTAINER (Dynamic Visual Card + Navigation Buttons)
 // ─────────────────────────────────────────────────────────────────────────────
-function buildCommandContainer(client, commandQuery, userId, guildId) {
+async function buildCommandContainerPayload(client, commandQuery, userId, guildId) {
+  const prefix = guildId ? prefixManager.getPrefix(guildId) : ".";
   const exactCmd = findCommand(client, commandQuery);
 
   if (!exactCmd) {
     const notFoundContainer = new ContainerBuilder().addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
-        `### ${EMOJIS.red_star || "⭐"} Command Not Found\n` +
+        `### ⭐ Command Not Found\n` +
           `-# *No command or alias matching \`${commandQuery}\` was found in the database.*\n\n` +
           `> - **Tip:** Type \`.help\` without arguments to explore all categories.`
       )
@@ -373,84 +357,18 @@ function buildCommandContainer(client, commandQuery, userId, guildId) {
       .setStyle(ButtonStyle.Primary);
 
     notFoundContainer.addActionRowComponents(new ActionRowBuilder().addComponents(homeBtn));
-    return notFoundContainer;
+    return { container: notFoundContainer, attachment: null };
   }
 
   const primaryName = exactCmd.alias ? exactCmd.alias[0] : (exactCmd.name || commandQuery);
   const categoryName = exactCmd.category || "General";
-  const categoryEmoji = allCategories[categoryName]?.emoji || "✨";
   const slashCmd = client.slashCommands.get(primaryName) || client.slashCommands.get(exactCmd.name);
 
-  const description =
-    exactCmd.desc || exactCmd.description || "No description provided.";
-  const cooldown = exactCmd.cooldown ? `${exactCmd.cooldown}s` : "3s";
-
-  // Usage synthesis
-  let usage = exactCmd.usage;
-  if (!usage) {
-    if (slashCmd?.options?.length > 0) {
-      const opts = slashCmd.options
-        .map((o) => (o.required ? `<${o.name}>` : `[${o.name}]`))
-        .join(" ");
-      usage = `${primaryName} ${opts}`.trim();
-    } else {
-      usage = `${primaryName}`;
-    }
-  }
-
-  // Aliases
-  let aliasesText = "None";
-  if (exactCmd.alias && exactCmd.alias.length > 1) {
-    const extraAliases = exactCmd.alias.filter(
-      (a) => a.toLowerCase() !== primaryName.toLowerCase()
-    );
-    if (extraAliases.length > 0) {
-      aliasesText = extraAliases.map((a) => `\`${a}\``).join(", ");
-    }
-  }
-
-  // Subcommands & Options
-  let optionsBlock = "";
-  if (slashCmd?.options && slashCmd.options.length > 0) {
-    const optionLines = slashCmd.options.map((opt) => {
-      const reqStr = opt.required ? "*(Required)*" : "*(Optional)*";
-      const descStr = opt.description ? ` — *${opt.description}*` : "";
-      return `• \`${opt.name}\` ${reqStr}${descStr}`;
-    });
-    optionsBlock = `\n\n**Subcommands & Options**:\n${optionLines.join("\n")}`;
-  } else if (exactCmd.subcommands && Array.isArray(exactCmd.subcommands) && exactCmd.subcommands.length > 0) {
-    const subLines = exactCmd.subcommands.map(
-      (s) => `• \`${s.name}\` — *${s.description || "Subcommand option"}*`
-    );
-    optionsBlock = `\n\n**Subcommands & Options**:\n${subLines.join("\n")}`;
-  }
-
-  // Examples
-  let examplesBlock = "";
-  if (exactCmd.examples && Array.isArray(exactCmd.examples) && exactCmd.examples.length > 0) {
-    examplesBlock = exactCmd.examples.map((ex) => `• \`${ex}\``).join("\n");
-  } else {
-    const exList = [`• \`${primaryName}\``];
-    if (slashCmd?.options?.[0]) {
-      exList.push(`• \`${primaryName} ${slashCmd.options[0].name}\``);
-    }
-    if (exactCmd.alias && exactCmd.alias.length > 1) {
-      exList.push(`• \`${exactCmd.alias[1]}\``);
-    }
-    examplesBlock = exList.join("\n");
-  }
-
-  const detailsContent =
-    `### ${categoryEmoji} Command Info ── \`.${primaryName}\`\n` +
-    `-# *${description}*\n\n` +
-    `**Usage**: \`${usage}\`\n` +
-    `**Category**: \`${categoryName}\` • **Cooldown**: \`${cooldown}\`\n` +
-    `**Aliases**: ${aliasesText}` +
-    `${optionsBlock}\n\n` +
-    `**Examples**:\n` +
-    `${examplesBlock}`;
-
-  const footerText = `-# Powered by ASTRIXCODE™ • © 2026 ASTRIXCODE`;
+  // Generate crisp 2x High-DPI Command Detail Canvas Card
+  const cmdBuffer = await generateCommandDetailCard(exactCmd, prefix, slashCmd);
+  const attachment = new AttachmentBuilder(cmdBuffer, {
+    name: "command_card.png",
+  });
 
   // Buttons inside container: [⬅ Back] [📁 Home] [ℹ Slash Info]
   const backBtn = new ButtonBuilder()
@@ -474,16 +392,15 @@ function buildCommandContainer(client, commandQuery, userId, guildId) {
   const buttonRow = new ActionRowBuilder().addComponents(backBtn, homeBtn, slashBtn);
 
   const container = new ContainerBuilder()
-    .addTextDisplayComponents(new TextDisplayBuilder().setContent(detailsContent))
+    .addMediaGalleryComponents(createMediaGallery("command_card.png"))
     .addSeparatorComponents(
       new SeparatorBuilder()
         .setSpacing(SeparatorSpacingSize.Small)
         .setDivider(true)
     )
-    .addTextDisplayComponents(new TextDisplayBuilder().setContent(footerText))
     .addActionRowComponents(buttonRow);
 
-  return container;
+  return { container, attachment };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -501,7 +418,7 @@ function setupHelpCollector({ client, messageOrInteraction, initialContainer, us
     // Author protection
     if (i.user.id !== userId) {
       return i.reply({
-        content: "You cannot interact with this menu.",
+        content: "❌ You cannot interact with this menu.",
         ephemeral: true,
       });
     }
@@ -517,17 +434,27 @@ function setupHelpCollector({ client, messageOrInteraction, initialContainer, us
         const val = i.values[0];
 
         if (val === "home") {
+          const bannerAttachment = createBannerAttachment();
           const mainContainer = buildMainContainer(client, guildId, userId);
           return await i.update({
             components: [mainContainer],
+            files: [bannerAttachment],
             flags: MessageFlags.IsComponentsV2,
           });
         }
 
         const categoryName = val.replace("cat_", "");
-        const categoryContainer = buildCategoryContainer(client, categoryName, userId, guildId, 0);
+        const { container, attachment } = await buildCategoryContainerPayload(
+          client,
+          categoryName,
+          userId,
+          guildId,
+          0
+        );
+
         return await i.update({
-          components: [categoryContainer],
+          components: [container],
+          files: [attachment],
           flags: MessageFlags.IsComponentsV2,
         });
       }
@@ -541,9 +468,16 @@ function setupHelpCollector({ client, messageOrInteraction, initialContainer, us
           const parts = selectedVal.split("_");
           const catName = parts[1];
           const pageNum = parseInt(parts[2], 10);
-          const paginatedContainer = buildCategoryContainer(client, catName, userId, guildId, pageNum);
+          const { container, attachment } = await buildCategoryContainerPayload(
+            client,
+            catName,
+            userId,
+            guildId,
+            pageNum
+          );
           return await i.update({
-            components: [paginatedContainer],
+            components: [container],
+            files: [attachment],
             flags: MessageFlags.IsComponentsV2,
           });
         }
@@ -551,9 +485,15 @@ function setupHelpCollector({ client, messageOrInteraction, initialContainer, us
         // Command details selected
         if (selectedVal.startsWith("cmd_")) {
           const cmdName = selectedVal.replace("cmd_", "");
-          const commandContainer = buildCommandContainer(client, cmdName, userId, guildId);
+          const { container, attachment } = await buildCommandContainerPayload(
+            client,
+            cmdName,
+            userId,
+            guildId
+          );
           return await i.update({
-            components: [commandContainer],
+            components: [container],
+            files: attachment ? [attachment] : [],
             flags: MessageFlags.IsComponentsV2,
           });
         }
@@ -563,9 +503,11 @@ function setupHelpCollector({ client, messageOrInteraction, initialContainer, us
       if (i.isButton()) {
         // [📁 Home]
         if (customId === "help_btn_home") {
+          const bannerAttachment = createBannerAttachment();
           const mainContainer = buildMainContainer(client, guildId, userId);
           return await i.update({
             components: [mainContainer],
+            files: [bannerAttachment],
             flags: MessageFlags.IsComponentsV2,
           });
         }
@@ -584,9 +526,16 @@ function setupHelpCollector({ client, messageOrInteraction, initialContainer, us
         // [⬅ Back] -> returns to Category Container
         if (customId.startsWith("help_btn_back_")) {
           const catName = customId.replace("help_btn_back_", "");
-          const categoryContainer = buildCategoryContainer(client, catName, userId, guildId, 0);
+          const { container, attachment } = await buildCategoryContainerPayload(
+            client,
+            catName,
+            userId,
+            guildId,
+            0
+          );
           return await i.update({
-            components: [categoryContainer],
+            components: [container],
+            files: [attachment],
             flags: MessageFlags.IsComponentsV2,
           });
         }
@@ -646,18 +595,52 @@ async function handlePrefixHelp(client, message, args) {
   const guildId = message.guild?.id;
   const userId = message.author.id;
 
-  // Direct command lookup (e.g. .help ping or .help ban)
+  // Direct lookup: .help <commandOrCategory>
   if (args[0]) {
-    const cmdContainer = buildCommandContainer(client, args[0], userId, guildId);
+    const query = args[0].toLowerCase().trim();
+    const { sortedCategories } = getCategoryData(client, userId);
+    const matchedCategory = sortedCategories.find((c) => c.toLowerCase() === query);
+
+    if (matchedCategory) {
+      const { container, attachment } = await buildCategoryContainerPayload(
+        client,
+        matchedCategory,
+        userId,
+        guildId,
+        0
+      );
+      const sentMsg = await message.reply({
+        components: [container],
+        files: [attachment],
+        flags: MessageFlags.IsComponentsV2,
+        allowedMentions: { parse: [], repliedUser: false },
+      });
+      setupHelpCollector({
+        client,
+        messageOrInteraction: sentMsg,
+        initialContainer: container,
+        userId,
+        guildId,
+      });
+      return;
+    }
+
+    const { container, attachment } = await buildCommandContainerPayload(
+      client,
+      query,
+      userId,
+      guildId
+    );
     const sentMsg = await message.reply({
-      components: [cmdContainer],
+      components: [container],
+      files: attachment ? [attachment] : [],
       flags: MessageFlags.IsComponentsV2,
       allowedMentions: { parse: [], repliedUser: false },
     });
     setupHelpCollector({
       client,
       messageOrInteraction: sentMsg,
-      initialContainer: cmdContainer,
+      initialContainer: container,
       userId,
       guildId,
     });
@@ -691,15 +674,47 @@ async function handleSlashHelp(client, interaction) {
 
   // Direct command lookup (e.g. /help command:ping)
   if (commandQuery) {
-    const cmdContainer = buildCommandContainer(client, commandQuery, userId, guildId);
+    const { sortedCategories } = getCategoryData(client, userId);
+    const matchedCategory = sortedCategories.find((c) => c.toLowerCase() === commandQuery);
+
+    if (matchedCategory) {
+      const { container, attachment } = await buildCategoryContainerPayload(
+        client,
+        matchedCategory,
+        userId,
+        guildId,
+        0
+      );
+      const replyMsg = await interaction.editReply({
+        components: [container],
+        files: [attachment],
+        flags: MessageFlags.IsComponentsV2,
+      });
+      setupHelpCollector({
+        client,
+        messageOrInteraction: replyMsg,
+        initialContainer: container,
+        userId,
+        guildId,
+      });
+      return;
+    }
+
+    const { container, attachment } = await buildCommandContainerPayload(
+      client,
+      commandQuery,
+      userId,
+      guildId
+    );
     const replyMsg = await interaction.editReply({
-      components: [cmdContainer],
+      components: [container],
+      files: attachment ? [attachment] : [],
       flags: MessageFlags.IsComponentsV2,
     });
     setupHelpCollector({
       client,
       messageOrInteraction: replyMsg,
-      initialContainer: cmdContainer,
+      initialContainer: container,
       userId,
       guildId,
     });
@@ -727,8 +742,8 @@ async function handleSlashHelp(client, interaction) {
 
 module.exports = {
   buildMainContainer,
-  buildCategoryContainer,
-  buildCommandContainer,
+  buildCategoryContainerPayload,
+  buildCommandContainerPayload,
   handlePrefixHelp,
   handleSlashHelp,
 };
