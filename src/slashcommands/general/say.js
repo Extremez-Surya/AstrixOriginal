@@ -28,7 +28,11 @@ module.exports = {
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
 
-  async execute(interaction) {
+  async execute(client, interaction) {
+    if (!interaction?.reply && client?.reply) {
+      interaction = client;
+      client = interaction.client;
+    }
     const messageText = interaction.options.getString("message", true);
     const targetChannel =
       interaction.options.getChannel("channel") || interaction.channel;

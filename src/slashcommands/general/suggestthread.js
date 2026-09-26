@@ -27,9 +27,13 @@ module.exports = {
         .setRequired(true)
     ),
 
-  async execute(interaction) {
+  async execute(client, interaction) {
+    if (!interaction?.reply && client?.reply) {
+      interaction = client;
+      client = interaction.client;
+    }
     const guildId = interaction.guild.id;
-    const config = suggestionManager.getGuildConfig(interaction.client, guildId);
+    const config = suggestionManager.getGuildConfig(interaction.client || client, guildId);
 
     if (!config.suggestThreadEnabled || !config.suggestThreadChannelId) {
       return interaction.reply({

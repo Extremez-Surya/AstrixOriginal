@@ -6,6 +6,7 @@ const {
   MessageFlags,
 } = require("discord.js");
 const { sanitizeString } = require("../../lib/security/secretShield");
+const noprefixManager = require("../../lib/noprefixManager");
 const { exec } = require("child_process");
 
 module.exports = {

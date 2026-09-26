@@ -386,6 +386,15 @@ module.exports = {
       return;
     }
 
-    Command.execute(client, interaction);
+    try {
+      const res = Command.execute(client, interaction);
+      if (res && typeof res.catch === "function") {
+        res.catch((err) => {
+          console.error(`[Interaction] Unhandled rejection in slash command "${interaction.commandName}":`, err);
+        });
+      }
+    } catch (err) {
+      console.error(`[Interaction] Execution error in slash command "${interaction.commandName}":`, err);
+    }
   },
 };

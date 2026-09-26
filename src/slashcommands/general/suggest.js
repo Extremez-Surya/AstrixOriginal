@@ -38,9 +38,13 @@ module.exports = {
         .setRequired(false)
     ),
 
-  async execute(interaction) {
+  async execute(client, interaction) {
+    if (!interaction?.reply && client?.reply) {
+      interaction = client;
+      client = interaction.client;
+    }
     const guildId = interaction.guild.id;
-    const config = suggestionManager.getGuildConfig(interaction.client, guildId);
+    const config = suggestionManager.getGuildConfig(interaction.client || client, guildId);
 
     if (!config.suggestChannelId) {
       return interaction.reply({

@@ -150,7 +150,11 @@ module.exports = {
     ],
   },
 
-  async execute(interaction, client) {
+  async execute(client, interaction) {
+    if (!interaction?.deferReply && client?.deferReply) {
+      interaction = client;
+      client = interaction.client;
+    }
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     const sub = interaction.options.getSubcommand();
 
