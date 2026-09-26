@@ -321,26 +321,52 @@ async function updateNowPlayingMessage(client, player, forcePaused = null) {
 function initMusicManager(client) {
   const nodes = [
     {
-      name: "Serenetia Node (v4)",
+      name: "Serenetia-Primary (v4 SSL)",
       url: "lavalinkv4.serenetia.com:443",
       auth: "https://seretia.link/discord",
       secure: true,
     },
     {
-      name: "Millohost Node (v4)",
+      name: "Serenetia-Main (v4 SSL)",
+      url: "lavalink.serenetia.com:443",
+      auth: "https://seretia.link/discord",
+      secure: true,
+    },
+    {
+      name: "Millohost-Public (v4 SSL)",
       url: "lava-v4.millohost.my.id:443",
       auth: "https://discord.gg/mjS5J2K3ep",
       secure: true,
     },
     {
-      name: process.env.LAVALINK_NAME || "Jirayu Node",
-      url: process.env.LAVALINK_HOST || "lavalink.jirayu.net:443",
-      auth: process.env.LAVALINK_PASSWORD || "youshallnotpass",
-      secure: process.env.LAVALINK_SECURE
-        ? process.env.LAVALINK_SECURE === "true"
-        : true,
+      name: "Vexanode-Nokia (Ultra-Resilient)",
+      url: "nokia.vexanode.gg:19133",
+      auth: "vexanode.cloud",
+      secure: false,
+    },
+    {
+      name: "AjieBlogs-Fallback (v4 SSL)",
+      url: "lava-v4.ajieblogs.eu.org:443",
+      auth: "https://dsc.gg/ajidevserver",
+      secure: true,
+    },
+    {
+      name: "Serenetia-NonSSL (v4)",
+      url: "lavalinkv4.serenetia.com:80",
+      auth: "https://seretia.link/discord",
+      secure: false,
     },
   ];
+
+  // If user provided a custom private Lavalink node in .env, prioritize it at the top
+  if (process.env.LAVALINK_HOST) {
+    nodes.unshift({
+      name: process.env.LAVALINK_NAME || "Custom Private Node",
+      url: process.env.LAVALINK_HOST,
+      auth: process.env.LAVALINK_PASSWORD || "youshallnotpass",
+      secure: process.env.LAVALINK_SECURE ? process.env.LAVALINK_SECURE === "true" : true,
+    });
+  }
 
   const spotifyPlugin = new ShoukakuSpotify({
     clientId:
@@ -348,6 +374,17 @@ function initMusicManager(client) {
     clientSecret:
       process.env.SPOTIFY_CLIENT_SECRET || "c7b7f14b60a34b2298e29a3f23aef542",
   });
+
+  const shoukakuOptions = {
+    moveOnDisconnect: true,
+    resume: true,
+    resumeTimeout: 60,
+    resumeByLibrary: true,
+    reconnectTries: 20,
+    reconnectInterval: 5,
+    restTimeout: 10000,
+    userAgent: "AstrixMusicBot/1.0 (DiscordBot)",
+  };
 
   const kazagumo = new Kazagumo(
     {
@@ -360,6 +397,7 @@ function initMusicManager(client) {
     },
     new Connectors.DiscordJS(client),
     nodes,
+    shoukakuOptions,
   );
 
   client.voiceHealthMonitor = new VoiceHealthMonitor(client);

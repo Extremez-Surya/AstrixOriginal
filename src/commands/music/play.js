@@ -81,7 +81,7 @@ module.exports = {
         });
       }
 
-      // Perform track search FIRST
+      // Perform track search FIRST with resilient multi-engine fallback
       const engine = getSearchEngine(query);
       let res;
       try {
@@ -91,9 +91,18 @@ module.exports = {
         });
       } catch (searchErr) {
         console.warn("[PlayCommand] Primary engine search failed, trying fallback:", searchErr?.message);
+        const fallback = engine === "youtube" ? "soundcloud" : "youtube";
         res = await client.manager.search(query, {
           requester: message.author,
-          engine: "youtube",
+          engine: fallback,
+        }).catch(() => null);
+      }
+
+      // If YouTube was blocked or returned no tracks, try SoundCloud
+      if ((!res || !res.tracks || !res.tracks.length) && !query.startsWith("http")) {
+        res = await client.manager.search(query, {
+          requester: message.author,
+          engine: "soundcloud",
         }).catch(() => null);
       }
 

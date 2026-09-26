@@ -77,9 +77,19 @@ module.exports = {
           engine: engine,
         });
       } catch (searchErr) {
+        console.warn("[SlashPlay] Primary engine search failed, trying fallback:", searchErr?.message);
+        const fallback = engine === "youtube" ? "soundcloud" : "youtube";
         res = await client.manager.search(query, {
           requester: interaction.user,
-          engine: "youtube",
+          engine: fallback,
+        }).catch(() => null);
+      }
+
+      // If YouTube was blocked or returned no tracks, try SoundCloud
+      if ((!res || !res.tracks || !res.tracks.length) && !query.startsWith("http")) {
+        res = await client.manager.search(query, {
+          requester: interaction.user,
+          engine: "soundcloud",
         }).catch(() => null);
       }
 
