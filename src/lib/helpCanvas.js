@@ -138,112 +138,66 @@ async function getBackgroundImage() {
 }
 
 /**
- * Draws common cinematic cyberpunk background & particle VFX
+ * Draws common cinematic monochrome dark gradient backdrop (Black, White & Grey)
  */
-function drawCinematicBackdrop(ctx, baseW, baseH, bgImg) {
-  if (bgImg) {
-    const bgAspect = bgImg.width / bgImg.height;
-    const targetAspect = baseW / baseH;
-    let sx = 0, sy = 0, sw = bgImg.width, sh = bgImg.height;
-
-    if (bgAspect > targetAspect) {
-      sw = bgImg.height * targetAspect;
-      sx = (bgImg.width - sw) * 0.5;
-    } else {
-      sh = bgImg.width / targetAspect;
-      sy = (bgImg.height - sh) * 0.45;
-    }
-
-    ctx.drawImage(bgImg, sx, sy, sw, sh, 0, 0, baseW, baseH);
-
-    // Deep Dark Crimson & Obsidian Overlay (balanced to showcase anime theme while ensuring contrast)
-    const overlayGrad = ctx.createLinearGradient(0, 0, baseW, baseH);
-    overlayGrad.addColorStop(0, "rgba(8, 10, 15, 0.78)");
-    overlayGrad.addColorStop(0.35, "rgba(10, 12, 18, 0.72)");
-    overlayGrad.addColorStop(0.7, "rgba(14, 12, 20, 0.70)");
-    overlayGrad.addColorStop(1, "rgba(6, 8, 12, 0.82)");
-    ctx.fillStyle = overlayGrad;
-    ctx.fillRect(0, 0, baseW, baseH);
-  } else {
-    const baseGrad = ctx.createLinearGradient(0, 0, baseW, baseH);
-    baseGrad.addColorStop(0, "#08090d");
-    baseGrad.addColorStop(0.3, "#0f121a");
-    baseGrad.addColorStop(0.7, "#141520");
-    baseGrad.addColorStop(1, "#06070a");
-    ctx.fillStyle = baseGrad;
-    ctx.fillRect(0, 0, baseW, baseH);
-  }
-
-  // 1. High-Tech Diamond Micro-Grid Pattern
-  ctx.save();
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.02)";
-  ctx.lineWidth = 1;
-  const gridSize = 28;
-  for (let x = -baseH; x < baseW + baseH; x += gridSize) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x + baseH, baseH);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(x + baseH, 0);
-    ctx.lineTo(x, baseH);
-    ctx.stroke();
-  }
-  ctx.restore();
-
-  // 2. Ambient Spotlights & Crimson Bloom
-  const redSpotlight = ctx.createRadialGradient(baseW * 0.2, 0, 20, baseW * 0.2, 80, 450);
-  redSpotlight.addColorStop(0, "rgba(255, 45, 85, 0.22)");
-  redSpotlight.addColorStop(0.5, "rgba(229, 62, 62, 0.06)");
-  redSpotlight.addColorStop(1, "rgba(0, 0, 0, 0)");
-  ctx.fillStyle = redSpotlight;
+function drawCinematicBackdrop(ctx, baseW, baseH) {
+  // 1. Deep Obsidian to Charcoal & Slate Grey Gradient
+  const baseGrad = ctx.createLinearGradient(0, 0, baseW, baseH);
+  baseGrad.addColorStop(0, "#08090c");
+  baseGrad.addColorStop(0.3, "#0e1117");
+  baseGrad.addColorStop(0.65, "#141722");
+  baseGrad.addColorStop(1, "#07080a");
+  ctx.fillStyle = baseGrad;
   ctx.fillRect(0, 0, baseW, baseH);
 
-  const rightBloom = ctx.createRadialGradient(baseW * 0.85, baseH, 10, baseW * 0.85, baseH, 350);
-  rightBloom.addColorStop(0, "rgba(255, 71, 87, 0.12)");
-  rightBloom.addColorStop(1, "rgba(0, 0, 0, 0)");
-  ctx.fillStyle = rightBloom;
+  // 2. Ambient Platinum & Silver Specular Blooms (Soft Lighting Sheen)
+  const topGlow = ctx.createRadialGradient(baseW * 0.22, 0, 10, baseW * 0.22, 0, 480);
+  topGlow.addColorStop(0, "rgba(255, 255, 255, 0.08)");
+  topGlow.addColorStop(0.5, "rgba(255, 255, 255, 0.02)");
+  topGlow.addColorStop(1, "rgba(0, 0, 0, 0)");
+  ctx.fillStyle = topGlow;
   ctx.fillRect(0, 0, baseW, baseH);
 
-  // 3. Sweeping Specular Beam
+  const bottomGlow = ctx.createRadialGradient(baseW * 0.82, baseH, 10, baseW * 0.82, baseH, 420);
+  bottomGlow.addColorStop(0, "rgba(255, 255, 255, 0.04)");
+  bottomGlow.addColorStop(1, "rgba(0, 0, 0, 0)");
+  ctx.fillStyle = bottomGlow;
+  ctx.fillRect(0, 0, baseW, baseH);
+
+  // 3. Diagonal Specular Lighting Beam
   const beamX = baseW * 0.48;
-  const beamGrad = ctx.createLinearGradient(beamX - 120, 0, beamX + 120, 0);
+  const beamGrad = ctx.createLinearGradient(beamX - 180, 0, beamX + 180, 0);
   beamGrad.addColorStop(0, "rgba(255, 255, 255, 0)");
-  beamGrad.addColorStop(0.5, "rgba(255, 255, 255, 0.04)");
+  beamGrad.addColorStop(0.5, "rgba(255, 255, 255, 0.025)");
   beamGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
   ctx.fillStyle = beamGrad;
   ctx.fillRect(0, 0, baseW, baseH);
 
-  // 4. Cyber Dust & Glowing Star Particles
+  // 4. Clean Carbon Micro-Grid
   ctx.save();
-  const particles = [
-    { x: 140, y: 45, r: 1.5, a: 0.6 },
-    { x: 280, y: 75, r: 1.2, a: 0.4 },
-    { x: 490, y: 35, r: 1.8, a: 0.7 },
-    { x: 670, y: 65, r: 1.0, a: 0.45 },
-    { x: 860, y: 40, r: 2.0, a: 0.65 },
-    { x: 220, y: 480, r: 1.4, a: 0.35 },
-    { x: 540, y: 510, r: 1.2, a: 0.4 },
-    { x: 820, y: 490, r: 1.6, a: 0.5 },
-  ];
-  particles.forEach((p) => {
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.02)";
+  ctx.lineWidth = 1;
+  const gridSize = 24;
+  for (let x = 0; x < baseW; x += gridSize) {
     ctx.beginPath();
-    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255, 220, 230, ${p.a})`;
-    ctx.shadowColor = "rgba(255, 75, 100, 0.85)";
-    ctx.shadowBlur = 6;
-    ctx.fill();
-  });
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, baseH);
+    ctx.stroke();
+  }
+  for (let y = 0; y < baseH; y += gridSize) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(baseW, y);
+    ctx.stroke();
+  }
   ctx.restore();
 
-  // 5. Card Border Frame with Rounded Corners
-  ctx.strokeStyle = "rgba(255, 60, 80, 0.35)";
+  // 5. Outer Frame & Hairline Borders
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
   ctx.lineWidth = 1.5;
   drawRoundRect(ctx, 12, 12, baseW - 24, baseH - 24, 20, false, true);
 
-  // Subtle Inner Edge
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.04)";
   ctx.lineWidth = 1;
   drawRoundRect(ctx, 14, 14, baseW - 28, baseH - 28, 18, false, true);
 }
@@ -253,22 +207,31 @@ function drawCinematicBackdrop(ctx, baseW, baseH, bgImg) {
  * 1. GENERATE MAIN HELP CARD (Ultra-Aesthetic Dynamic Home Overview)
  * ─────────────────────────────────────────────────────────────────────────────
  */
-async function generateMainHelpCard({
-  client,
-  guild,
-  prefix = ".",
-  totalCommands = 375,
-  totalCategories = 28,
-  latency = 0,
-}) {
+async function generateMainHelpCard(options = {}) {
+  let client = null;
+  let guild = null;
+  let prefix = ".";
+  let totalCommands = 372;
+  let totalCategories = 28;
+  let latency = 24;
+
+  if (typeof options === "object" && options !== null) {
+    client = options.client || null;
+    guild = options.guild || null;
+    prefix = options.prefix || ".";
+    totalCommands = options.totalCommands || 372;
+    totalCategories = options.totalCategories || 28;
+    latency = options.latency !== undefined ? options.latency : 24;
+  }
+
   const cacheKey = `main_${prefix}_${totalCommands}_${totalCategories}_${guild?.id || "dm"}`;
   if (mainCardCache.has(cacheKey)) {
     return mainCardCache.get(cacheKey);
   }
 
   const baseW = 1000;
-  const baseH = 540;
-  const scale = 1.5; // High-DPI optimized (fast rendering & compact upload)
+  const baseH = 580;
+  const scale = 1.5; // High-DPI optimized (1500 x 870)
   const width = baseW * scale;
   const height = baseH * scale;
 
@@ -276,212 +239,336 @@ async function generateMainHelpCard({
   const ctx = canvas.getContext("2d");
   ctx.scale(scale, scale);
 
-  const bgImg = await getBackgroundImage();
-
   // Clip Container
   ctx.save();
   ctx.beginPath();
   ctx.roundRect(0, 0, baseW, baseH, 20);
   ctx.clip();
 
-  // Backdrop
-  drawCinematicBackdrop(ctx, baseW, baseH, bgImg);
+  // Draw clean monochrome Black, White & Grey Backdrop
+  drawCinematicBackdrop(ctx, baseW, baseH);
 
   // Fetch Bot Avatar / Logo
   let avatarImg = null;
   try {
-    const avatarUrl = client.user.displayAvatarURL({ extension: "png", size: 512, forceStatic: true });
-    avatarImg = await loadImage(avatarUrl);
-  } catch (_) {
+    if (client?.user) {
+      const avatarUrl = client.user.displayAvatarURL({ extension: "png", size: 512, forceStatic: true });
+      avatarImg = await loadImage(avatarUrl);
+    }
+  } catch (_) {}
+
+  if (!avatarImg) {
     try {
       avatarImg = await loadImage(path.join(__dirname, "../assets/logo.png"));
     } catch (_) {}
   }
 
   // ── Top Header Bar ──────────────────────────────────────────
-  const headY = 32;
-  const avatarSize = 64;
+  const headY = 26;
+  const avatarSize = 60;
   const avatarX = 36;
 
   if (avatarImg) {
     ctx.save();
-    // Avatar Outer Glow Ring
     ctx.beginPath();
-    ctx.arc(avatarX + avatarSize / 2, headY + avatarSize / 2, avatarSize / 2 + 3, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(255, 42, 85, 0.25)";
-    ctx.shadowColor = "#ff2a55";
-    ctx.shadowBlur = 12;
-    ctx.fill();
+    ctx.arc(avatarX + avatarSize / 2, headY + avatarSize / 2, avatarSize / 2 + 2, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
 
-    // Avatar Circle Clip
     ctx.beginPath();
     ctx.arc(avatarX + avatarSize / 2, headY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
     ctx.clip();
     ctx.drawImage(avatarImg, avatarX, headY, avatarSize, avatarSize);
     ctx.restore();
+  } else {
+    // Elegant Monogram Fallback
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(avatarX + avatarSize / 2, headY + avatarSize / 2, avatarSize / 2 + 2, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(avatarX + avatarSize / 2, headY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+    ctx.fillStyle = "#121620";
+    ctx.fill();
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = `bold 28px ${FONT_FAMILY}`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("A", avatarX + avatarSize / 2, headY + avatarSize / 2);
+    ctx.restore();
   }
 
-  // Bot Title & Sub-brand
-  const textX = avatarImg ? avatarX + avatarSize + 18 : 36;
+  const textX = avatarX + avatarSize + 16;
   ctx.fillStyle = "#ffffff";
-  ctx.font = `bold 28px ${FONT_FAMILY}`;
-  ctx.fillText("ASTRIX COMMAND DIRECTORY", textX, headY + 28);
+  ctx.font = `bold 26px ${FONT_FAMILY}`;
+  ctx.fillText("ASTRIX COMMAND CENTER", textX, headY + 24);
 
-  ctx.fillStyle = "#ff4757";
-  ctx.font = `bold 12px ${FONT_FAMILY}`;
-  ctx.fillText("HIGH-PERFORMANCE DISCORD SECURITY & AUTOMATION ENGINE", textX, headY + 46);
-
-  ctx.fillStyle = "rgba(206, 214, 224, 0.75)";
-  ctx.font = `12px ${FONT_FAMILY}`;
-  ctx.fillText("Explore modular commands, automated protection suites, and utility systems.", textX, headY + 63);
-
-  // Top Right System Status Pill
-  const statusW = 142;
-  const statusH = 34;
-  const statusX = baseW - 36 - statusW;
-  const statusY = headY + 12;
-
-  ctx.fillStyle = "rgba(16, 22, 32, 0.75)";
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+  // Verified Badge next to title
+  const titleW = ctx.measureText("ASTRIX COMMAND CENTER").width;
+  const badgeX = textX + titleW + 12;
+  ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
   ctx.lineWidth = 1;
-  drawRoundRect(ctx, statusX, statusY, statusW, statusH, 17, true, true);
+  drawRoundRect(ctx, badgeX, headY + 7, 76, 20, 5, true, true);
+  ctx.fillStyle = "#cbd5e1";
+  ctx.font = `bold 10px ${FONT_FAMILY}`;
+  ctx.fillText("✓ VERIFIED", badgeX + 8, headY + 21);
 
-  // Green Dot
+  ctx.fillStyle = "#94a3b8";
+  ctx.font = `bold 12px ${FONT_FAMILY}`;
+  ctx.fillText("DISCORD SECURITY, MODERATION & HIGH-FIDELITY AUDIO SUITE", textX, headY + 42);
+
+  ctx.fillStyle = "#64748b";
+  ctx.font = `12px ${FONT_FAMILY}`;
+  ctx.fillText("Engineered for low latency, autonomous guild protection and seamless server management.", textX, headY + 58);
+
+  // Status Pill on top right
+  const statusW = 142;
+  const statusH = 32;
+  const statusPillX = baseW - 36 - statusW;
+  const statusPillY = headY + 12;
+
+  ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+  ctx.lineWidth = 1;
+  drawRoundRect(ctx, statusPillX, statusPillY, statusW, statusH, 16, true, true);
+
   ctx.beginPath();
-  ctx.arc(statusX + 16, statusY + statusH / 2, 4, 0, Math.PI * 2);
-  ctx.fillStyle = "#2ed573";
-  ctx.shadowColor = "#2ed573";
+  ctx.arc(statusPillX + 16, statusPillY + statusH / 2, 4, 0, Math.PI * 2);
+  ctx.fillStyle = "#10b981";
+  ctx.shadowColor = "#10b981";
   ctx.shadowBlur = 8;
   ctx.fill();
   ctx.shadowBlur = 0;
 
-  ctx.fillStyle = "#2ed573";
-  ctx.font = `bold 12px ${FONT_FAMILY}`;
-  ctx.fillText("SYSTEM ACTIVE", statusX + 28, statusY + 21);
+  ctx.fillStyle = "#10b981";
+  ctx.font = `bold 11px ${FONT_FAMILY}`;
+  ctx.fillText("SYSTEM ACTIVE", statusPillX + 28, statusPillY + 20);
 
   // ── Stats Row (4 Glassmorphic Metrics Cards) ─────────────────
-  const statY = 118;
+  const statY = 104;
   const statW = (baseW - 72 - 36) / 4; // ~218px
-  const statH = 74;
+  const statH = 72;
   const statGap = 12;
 
   const statsData = [
-    { label: "GUILD PREFIX", val: `${prefix}`, sub: "Server Custom", color: "#ff4757" },
-    { label: "ALL COMMANDS", val: `${totalCommands}`, sub: "Active & Ready", color: "#ffffff" },
-    { label: "SYSTEM MODULES", val: `${totalCategories}`, sub: "Categorized", color: "#ffffff" },
-    { label: "GATEWAY LATENCY", val: `${latency || 24}ms`, sub: "Global Shards", color: "#2ed573" },
+    { label: "GUILD PREFIX", val: `${prefix}`, sub: "Server Custom" },
+    { label: "ALL COMMANDS", val: `${totalCommands}`, sub: "Active & Ready" },
+    { label: "SYSTEM MODULES", val: `${totalCategories}`, sub: "Organized Suites" },
+    { label: "GATEWAY PING", val: `${latency}ms`, sub: "Global Latency" },
   ];
 
   statsData.forEach((st, idx) => {
     const x = 36 + idx * (statW + statGap);
 
     ctx.fillStyle = "rgba(255, 255, 255, 0.035)";
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.09)";
     ctx.lineWidth = 1;
     drawRoundRect(ctx, x, statY, statW, statH, 12, true, true);
 
-    // Accent bottom line
-    ctx.fillStyle = st.color;
-    ctx.fillRect(x + 14, statY + statH - 3, statW - 28, 2);
+    // Accent top hairline
+    ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
+    ctx.fillRect(x + 14, statY, statW - 28, 1);
 
-    // Glowing indicator circle
-    ctx.beginPath();
-    ctx.arc(x + 18, statY + 18, 3.5, 0, Math.PI * 2);
-    ctx.fillStyle = st.color;
-    ctx.shadowColor = st.color;
-    ctx.shadowBlur = 6;
-    ctx.fill();
-    ctx.shadowBlur = 0;
-
-    ctx.fillStyle = "rgba(164, 176, 190, 0.85)";
+    // Label
+    ctx.fillStyle = "#94a3b8";
     ctx.font = `bold 11px ${FONT_FAMILY}`;
-    ctx.fillText(`// ${st.label}`, x + 28, statY + 22);
+    ctx.fillText(`// ${st.label}`, x + 16, statY + 20);
 
-    ctx.fillStyle = st.color;
+    // Value
+    ctx.fillStyle = "#ffffff";
     ctx.font = `bold 22px ${FONT_FAMILY}`;
-    ctx.fillText(st.val, x + 14, statY + 48);
+    ctx.fillText(st.val, x + 16, statY + 46);
 
-    ctx.fillStyle = "rgba(164, 176, 190, 0.65)";
+    // Subtitle
+    ctx.fillStyle = "#64748b";
     ctx.font = `11px ${FONT_FAMILY}`;
-    ctx.fillText(st.sub, x + 14, statY + 63);
+    ctx.fillText(st.sub, x + 16, statY + 62);
   });
 
-  // ── Featured Core Modules Showcase (8 Modules) ───────────────
-  const featY = 214;
+  // ── Central Feature UI (2 Modern Panels, NO redundant categories) ──
+  const panelY = 192;
+  const panelH = 320;
+  const panelW = (baseW - 72 - 16) / 2; // 456px
+
+  // ── LEFT PANEL: Core System Capabilities ─────────────────────
+  const leftX = 36;
+  ctx.fillStyle = "rgba(14, 18, 26, 0.75)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.09)";
+  ctx.lineWidth = 1;
+  drawRoundRect(ctx, leftX, panelY, panelW, panelH, 14, true, true);
+
+  // Panel Header
+  ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+  drawRoundRect(ctx, leftX + 18, panelY + 18, 3, 16, 2, true, false);
+
   ctx.fillStyle = "#ffffff";
   ctx.font = `bold 14px ${FONT_FAMILY}`;
-  ctx.fillText("CORE SYSTEM MODULES OVERVIEW", 36, featY);
+  ctx.fillText("CORE SYSTEM CAPABILITIES", leftX + 28, panelY + 31);
 
-  ctx.fillStyle = "rgba(255, 42, 85, 0.7)";
-  ctx.fillRect(36, featY + 8, baseW - 72, 1.5);
+  ctx.fillStyle = "rgba(255, 255, 255, 0.06)";
+  ctx.fillRect(leftX + 18, panelY + 44, panelW - 36, 1);
 
-  const featuredModules = [
-    { name: "Anti Nuke", desc: "13 Core Modules" },
-    { name: "Anti Raid", desc: "5 Guard Systems" },
-    { name: "Automod", desc: "11 Auto Rules" },
-    { name: "Moderation", desc: "71 Mod Actions" },
-    { name: "Music 4K", desc: "39 Audio Tools" },
-    { name: "Configuration", desc: "5 Server Setups" },
-    { name: "Custom Roles", desc: "4 Role Managers" },
-    { name: "Utility", desc: "24 Server Utilities" },
+  const capabilities = [
+    {
+      badge: "SEC",
+      title: "Autonomous Security & Antinuke",
+      desc: "Real-time whitelist, anti-bot, anti-ban, channel/role protection.",
+    },
+    {
+      badge: "MOD",
+      title: "Advanced Moderation Engine",
+      desc: "Multi-purge, timed bans, mute, lock, warns and automod filters.",
+    },
+    {
+      badge: "AUD",
+      title: "Lossless 4K Audio Experience",
+      desc: "High-bitrate music playback, custom audio filters & live lyrics.",
+    },
+    {
+      badge: "UTL",
+      title: "Full Automation & Utilities",
+      desc: "Custom welcome cards, tickets, leveling, giveaways & role managers.",
+    },
   ];
 
-  const gridCols = 4;
-  const gridW = (baseW - 72 - 36) / gridCols;
-  const gridH = 50;
-  const startGridY = featY + 22;
+  capabilities.forEach((cap, idx) => {
+    const rowY = panelY + 56 + idx * 64;
 
-  featuredModules.forEach((mod, idx) => {
-    const col = idx % gridCols;
-    const row = Math.floor(idx / gridCols);
-    const x = 36 + col * (gridW + statGap);
-    const y = startGridY + row * (gridH + 10);
-
-    ctx.fillStyle = "rgba(255, 255, 255, 0.03)";
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.065)";
+    // Mini Pill Badge
+    ctx.fillStyle = "rgba(255, 255, 255, 0.06)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
     ctx.lineWidth = 1;
-    drawRoundRect(ctx, x, y, gridW, gridH, 10, true, true);
+    drawRoundRect(ctx, leftX + 18, rowY + 4, 38, 22, 6, true, true);
 
-    // Glowing indicator
-    ctx.fillStyle = "#ff2a55";
-    ctx.beginPath();
-    ctx.arc(x + 14, y + gridH / 2, 3.5, 0, Math.PI * 2);
-    ctx.shadowColor = "#ff2a55";
-    ctx.shadowBlur = 6;
-    ctx.fill();
-    ctx.shadowBlur = 0;
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = `bold 10px monospace, ${FONT_FAMILY}`;
+    ctx.textAlign = "center";
+    ctx.fillText(cap.badge, leftX + 18 + 19, rowY + 19);
+    ctx.textAlign = "left";
 
-    ctx.fillStyle = "#f1f2f6";
+    // Feature Title
+    ctx.fillStyle = "#ffffff";
     ctx.font = `bold 13px ${FONT_FAMILY}`;
-    ctx.fillText(mod.name, x + 26, y + 22);
+    ctx.fillText(cap.title, leftX + 66, rowY + 16);
 
-    ctx.fillStyle = "rgba(164, 176, 190, 0.75)";
-    ctx.font = `11px ${FONT_FAMILY}`;
-    ctx.fillText(mod.desc, x + 26, y + 38);
+    // Feature Desc
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = `11.5px ${FONT_FAMILY}`;
+    ctx.fillText(truncateText(ctx, cap.desc, panelW - 84), leftX + 66, rowY + 32);
+
+    if (idx < capabilities.length - 1) {
+      ctx.fillStyle = "rgba(255, 255, 255, 0.035)";
+      ctx.fillRect(leftX + 24, rowY + 48, panelW - 48, 1);
+    }
   });
 
+  // ── RIGHT PANEL: Navigation & Quick Start Guide ──────────────
+  const rightX = leftX + panelW + 16;
+  ctx.fillStyle = "rgba(14, 18, 26, 0.75)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.09)";
+  ctx.lineWidth = 1;
+  drawRoundRect(ctx, rightX, panelY, panelW, panelH, 14, true, true);
+
+  // Panel Header
+  ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+  drawRoundRect(ctx, rightX + 18, panelY + 18, 3, 16, 2, true, false);
+
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold 14px ${FONT_FAMILY}`;
+  ctx.fillText("QUICK NAVIGATION & SHORTCUTS", rightX + 28, panelY + 31);
+
+  ctx.fillStyle = "rgba(255, 255, 255, 0.06)";
+  ctx.fillRect(rightX + 18, panelY + 44, panelW - 36, 1);
+
+  const steps = [
+    {
+      num: "01",
+      title: "Select A Module Category",
+      desc: "Open the dropdown below to view all commands in any module.",
+    },
+    {
+      num: "02",
+      title: "Inspect Syntax & Examples",
+      desc: "Pick any command to inspect required arguments & usage permissions.",
+    },
+    {
+      num: "03",
+      title: "Prefix & Slash Commands",
+      desc: `Execute directly with prefix (${prefix}command) or slash command (/).`,
+    },
+  ];
+
+  steps.forEach((step, idx) => {
+    const rowY = panelY + 56 + idx * 64;
+
+    // Step Number Badge
+    ctx.fillStyle = "rgba(255, 255, 255, 0.06)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+    ctx.lineWidth = 1;
+    drawRoundRect(ctx, rightX + 18, rowY + 4, 32, 22, 6, true, true);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = `bold 11px monospace, ${FONT_FAMILY}`;
+    ctx.textAlign = "center";
+    ctx.fillText(step.num, rightX + 18 + 16, rowY + 19);
+    ctx.textAlign = "left";
+
+    // Step Title
+    ctx.fillStyle = "#ffffff";
+    ctx.font = `bold 13px ${FONT_FAMILY}`;
+    ctx.fillText(step.title, rightX + 60, rowY + 16);
+
+    // Step Desc
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = `11.5px ${FONT_FAMILY}`;
+    ctx.fillText(truncateText(ctx, step.desc, panelW - 78), rightX + 60, rowY + 32);
+
+    ctx.fillStyle = "rgba(255, 255, 255, 0.035)";
+    ctx.fillRect(rightX + 24, rowY + 48, panelW - 48, 1);
+  });
+
+  // Bottom Tip Card inside right panel
+  const tipY = panelY + 252;
+  ctx.fillStyle = "rgba(255, 255, 255, 0.035)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+  drawRoundRect(ctx, rightX + 18, tipY, panelW - 36, 48, 8, true, true);
+
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold 11px ${FONT_FAMILY}`;
+  ctx.fillText("» QUICK LOOKUP SHORTCUT", rightX + 30, tipY + 19);
+
+  ctx.fillStyle = "#94a3b8";
+  ctx.font = `11px ${FONT_FAMILY}`;
+  ctx.fillText(`Type ${prefix}help <command> in chat for instant documentation.`, rightX + 30, tipY + 35);
+
   // ── Bottom Instruction Bar ──────────────────────────────────
-  const footerY = baseH - 52;
-  ctx.fillStyle = "rgba(255, 255, 255, 0.025)";
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
-  drawRoundRect(ctx, 36, footerY, baseW - 72, 34, 8, true, true);
+  const footerY = baseH - 42;
+  ctx.fillStyle = "rgba(14, 18, 26, 0.78)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+  drawRoundRect(ctx, 36, footerY, baseW - 72, 30, 8, true, true);
 
-  ctx.fillStyle = "#ff4757";
-  ctx.font = `bold 12px ${FONT_FAMILY}`;
-  ctx.fillText("» QUICK INSTRUCTION:", 50, footerY + 22);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold 11px ${FONT_FAMILY}`;
+  ctx.fillText("» QUICK INSTRUCTION:", 48, footerY + 19);
 
-  ctx.fillStyle = "#ced6e0";
-  ctx.font = `12px ${FONT_FAMILY}`;
+  ctx.fillStyle = "#cbd5e1";
+  ctx.font = `11px ${FONT_FAMILY}`;
   ctx.fillText(
-    "Select any module from the dropdown menus below to view the full command list & syntax",
-    195,
-    footerY + 22
+    "Select any module from the dropdown menus below to view all commands & permissions",
+    180,
+    footerY + 19
   );
 
-  ctx.fillStyle = "rgba(164, 176, 190, 0.5)";
+  ctx.fillStyle = "#64748b";
   ctx.font = `11px ${FONT_FAMILY}`;
   ctx.textAlign = "right";
-  ctx.fillText("ASTRIXCODE™ 2026", baseW - 48, footerY + 22);
+  ctx.fillText("ASTRIXCODE™ 2026", baseW - 48, footerY + 19);
   ctx.textAlign = "left";
 
   ctx.restore(); // unclip
@@ -528,46 +615,46 @@ async function generateCategoryCard(
   ctx.clip();
 
   // Backdrop
-  drawCinematicBackdrop(ctx, baseW, baseH, bgImg);
+  drawCinematicBackdrop(ctx, baseW, baseH);
 
   // ── Header Box ──────────────────────────────────────────────
   const headY = 24;
   const headH = 68;
 
-  ctx.fillStyle = "rgba(10, 14, 22, 0.78)";
-  ctx.strokeStyle = "rgba(255, 60, 80, 0.35)";
+  ctx.fillStyle = "rgba(14, 18, 26, 0.78)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
   ctx.lineWidth = 1.2;
   drawRoundRect(ctx, 36, headY, baseW - 72, headH, 14, true, true);
 
-  // Crimson Accent Line under header
+  // Subtle top accent line
   const accentGrad = ctx.createLinearGradient(36, 0, baseW - 36, 0);
-  accentGrad.addColorStop(0, "#ff2a55");
-  accentGrad.addColorStop(0.6, "#e53e3e");
-  accentGrad.addColorStop(1, "rgba(229, 62, 62, 0.1)");
+  accentGrad.addColorStop(0, "rgba(255, 255, 255, 0.6)");
+  accentGrad.addColorStop(0.5, "rgba(255, 255, 255, 0.2)");
+  accentGrad.addColorStop(1, "rgba(255, 255, 255, 0.02)");
   ctx.fillStyle = accentGrad;
-  ctx.fillRect(36, headY + headH - 3, baseW - 72, 3);
+  ctx.fillRect(36, headY + headH - 2, baseW - 72, 2);
 
   // Title & Subtitle with clean tech symbol
   ctx.fillStyle = "#ffffff";
   ctx.font = `bold 25px ${FONT_FAMILY}`;
   ctx.fillText(`»  ${categoryName.toUpperCase()} MODULE`, 54, headY + 33);
 
-  ctx.fillStyle = "rgba(206, 214, 224, 0.85)";
+  ctx.fillStyle = "#94a3b8";
   ctx.font = `13px ${FONT_FAMILY}`;
   ctx.fillText(`Explore all available commands, aliases and syntax options in this category.`, 54, headY + 54);
 
   // Badges on Header Right
   const badgeText = `${commands.length} Commands`;
-  ctx.font = `bold 14px ${FONT_FAMILY}`;
+  ctx.font = `bold 13px ${FONT_FAMILY}`;
   const badgeW = ctx.measureText(badgeText).width + 24;
   const badgeX = baseW - 54 - badgeW;
 
-  ctx.fillStyle = "rgba(229, 62, 62, 0.28)";
-  ctx.strokeStyle = "rgba(255, 60, 80, 0.6)";
-  ctx.lineWidth = 1.2;
+  ctx.fillStyle = "rgba(255, 255, 255, 0.06)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.18)";
+  ctx.lineWidth = 1;
   drawRoundRect(ctx, badgeX, headY + 18, badgeW, 32, 8, true, true);
 
-  ctx.fillStyle = "#ff6b81";
+  ctx.fillStyle = "#ffffff";
   ctx.fillText(badgeText, badgeX + 12, headY + 39);
 
   if (totalPages > 1) {
@@ -575,8 +662,8 @@ async function generateCategoryCard(
     const pageBadgeW = ctx.measureText(pageBadgeText).width + 20;
     const pageBadgeX = badgeX - pageBadgeW - 10;
 
-    ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+    ctx.fillStyle = "rgba(255, 255, 255, 0.06)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.18)";
     ctx.lineWidth = 1;
     drawRoundRect(ctx, pageBadgeX, headY + 18, pageBadgeW, 32, 8, true, true);
 
@@ -604,28 +691,22 @@ async function generateCategoryCard(
 
     const primaryName = cmd.alias?.[0] || cmd.name;
 
-    // Command Item Glass Card Background (High opacity dark glass for crisp readability over anime backdrop)
-    ctx.fillStyle = "rgba(10, 14, 22, 0.84)";
-    ctx.strokeStyle = "rgba(255, 60, 80, 0.28)";
+    // Command Item Glass Card Background
+    ctx.fillStyle = "rgba(14, 18, 26, 0.78)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.09)";
     ctx.lineWidth = 1;
     drawRoundRect(ctx, x, y, cardW, cardH, 10, true, true);
 
     // Subtle top inner gloss
     const cardGloss = ctx.createLinearGradient(x, y, x, y + cardH);
-    cardGloss.addColorStop(0, "rgba(255, 255, 255, 0.08)");
+    cardGloss.addColorStop(0, "rgba(255, 255, 255, 0.06)");
     cardGloss.addColorStop(1, "rgba(255, 255, 255, 0.01)");
     ctx.fillStyle = cardGloss;
     drawRoundRect(ctx, x, y, cardW, cardH, 10, true, false);
 
-    // Left neon accent bar with crimson glow
-    const barGrad = ctx.createLinearGradient(x, y + 10, x, y + cardH - 10);
-    barGrad.addColorStop(0, "#ff3366");
-    barGrad.addColorStop(1, "#e52d27");
-    ctx.fillStyle = barGrad;
-    ctx.shadowColor = "#ff2a55";
-    ctx.shadowBlur = 6;
-    drawRoundRect(ctx, x + 8, y + 12, 3.5, cardH - 24, 2, true, false);
-    ctx.shadowBlur = 0;
+    // Left silver accent bar
+    ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+    drawRoundRect(ctx, x + 8, y + 12, 3, cardH - 24, 1.5, true, false);
 
     // Command Name: Noticeably larger, bold and clear (16px bold)
     ctx.fillStyle = "#ffffff";
@@ -633,29 +714,29 @@ async function generateCategoryCard(
     const nameText = `${prefix}${primaryName}`;
     ctx.fillText(truncateText(ctx, nameText, 250), x + 20, y + 23);
 
-    // Snippet description: Larger, crisp silver tone (13px)
+    // Snippet description: Larger, crisp silver tone (12.5px)
     const rawDesc = cmd.desc || cmd.description || "Command syntax & usage details";
-    ctx.fillStyle = "#cbd5e1";
-    ctx.font = `13px ${FONT_FAMILY}`;
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = `12.5px ${FONT_FAMILY}`;
     const descText = truncateText(ctx, rawDesc, cardW - 32);
     ctx.fillText(descText, x + 20, y + 43);
   });
 
   // ── Footer Bar ──────────────────────────────────────────────
   const footerY = baseH - 42;
-  ctx.fillStyle = "rgba(10, 14, 22, 0.78)";
+  ctx.fillStyle = "rgba(14, 18, 26, 0.78)";
   ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
   drawRoundRect(ctx, 36, footerY, baseW - 72, 30, 8, true, true);
 
-  ctx.fillStyle = "#ff4757";
-  ctx.font = `bold 12px ${FONT_FAMILY}`;
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold 11px ${FONT_FAMILY}`;
   ctx.fillText("» QUICK HINT:", 48, footerY + 19);
 
-  ctx.fillStyle = "#ced6e0";
-  ctx.font = `12px ${FONT_FAMILY}`;
+  ctx.fillStyle = "#cbd5e1";
+  ctx.font = `11px ${FONT_FAMILY}`;
   ctx.fillText(
     "Select any command from the dropdown below to view syntax, permissions & examples",
-    155,
+    140,
     footerY + 19
   );
 
@@ -688,8 +769,6 @@ async function generateCommandDetailCard(cmd, prefix = ".", slashCmd = null) {
   const ctx = canvas.getContext("2d");
   ctx.scale(scale, scale);
 
-  const bgImg = await getBackgroundImage();
-
   // Clip Container
   ctx.save();
   ctx.beginPath();
@@ -697,31 +776,31 @@ async function generateCommandDetailCard(cmd, prefix = ".", slashCmd = null) {
   ctx.clip();
 
   // Backdrop
-  drawCinematicBackdrop(ctx, baseW, baseH, bgImg);
+  drawCinematicBackdrop(ctx, baseW, baseH);
 
   // ── Header Box ──────────────────────────────────────────────
-  const headY = 28;
-  const headH = 72;
+  const headY = 26;
+  const headH = 70;
 
-  ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+  ctx.fillStyle = "rgba(14, 18, 26, 0.78)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
   drawRoundRect(ctx, 36, headY, baseW - 72, headH, 14, true, true);
 
   const accentGrad = ctx.createLinearGradient(36, 0, baseW - 36, 0);
-  accentGrad.addColorStop(0, "#ff2a55");
-  accentGrad.addColorStop(0.6, "#e53e3e");
-  accentGrad.addColorStop(1, "rgba(229, 62, 62, 0.1)");
+  accentGrad.addColorStop(0, "rgba(255, 255, 255, 0.6)");
+  accentGrad.addColorStop(0.5, "rgba(255, 255, 255, 0.2)");
+  accentGrad.addColorStop(1, "rgba(255, 255, 255, 0.02)");
   ctx.fillStyle = accentGrad;
-  ctx.fillRect(36, headY + headH - 3, baseW - 72, 3);
+  ctx.fillRect(36, headY + headH - 2, baseW - 72, 2);
 
   // Command Title
   ctx.fillStyle = "#ffffff";
-  ctx.font = `bold 26px ${FONT_FAMILY}`;
-  ctx.fillText(`»  COMMAND DETAILS ── ${prefix}${primaryName}`, 54, headY + 36);
+  ctx.font = `bold 25px ${FONT_FAMILY}`;
+  ctx.fillText(`»  COMMAND DETAILS ── ${prefix}${primaryName}`, 54, headY + 34);
 
-  ctx.fillStyle = "rgba(206, 214, 224, 0.75)";
+  ctx.fillStyle = "#94a3b8";
   ctx.font = `12px ${FONT_FAMILY}`;
-  ctx.fillText(`Full configuration, syntax execution, and permission documentation.`, 54, headY + 56);
+  ctx.fillText(`Full configuration, syntax execution, and permission documentation.`, 54, headY + 54);
 
   // Category & Cooldown Badges on right
   const category = cmd.category || "General";
@@ -739,17 +818,17 @@ async function generateCommandDetailCard(cmd, prefix = ".", slashCmd = null) {
 
   // Draw Category Badge
   ctx.fillStyle = "rgba(255, 255, 255, 0.06)";
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
-  drawRoundRect(ctx, catX, headY + 20, catW, 32, 8, true, true);
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.18)";
+  drawRoundRect(ctx, catX, headY + 18, catW, 32, 8, true, true);
   ctx.fillStyle = "#ced6e0";
-  ctx.fillText(catBadgeText, catX + 12, headY + 41);
+  ctx.fillText(catBadgeText, catX + 12, headY + 39);
 
   // Draw Cooldown Badge
-  ctx.fillStyle = "rgba(229, 62, 62, 0.2)";
-  ctx.strokeStyle = "rgba(255, 60, 80, 0.5)";
-  drawRoundRect(ctx, cdX, headY + 20, cdW, 32, 8, true, true);
-  ctx.fillStyle = "#ff6b81";
-  ctx.fillText(cdBadgeText, cdX + 12, headY + 41);
+  ctx.fillStyle = "rgba(255, 255, 255, 0.06)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.18)";
+  drawRoundRect(ctx, cdX, headY + 18, cdW, 32, 8, true, true);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText(cdBadgeText, cdX + 12, headY + 39);
 
   // ── Left Column (Main Specs) ─────────────────────────────────
   const leftX = 36;
@@ -760,21 +839,21 @@ async function generateCommandDetailCard(cmd, prefix = ".", slashCmd = null) {
   ctx.font = `14px ${FONT_FAMILY}`;
   const descLines = wrapText(ctx, desc, leftW - 32, 2);
 
-  ctx.fillStyle = "rgba(255, 255, 255, 0.03)";
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.06)";
-  drawRoundRect(ctx, leftX, 120, leftW, 76, 10, true, true);
+  ctx.fillStyle = "rgba(14, 18, 26, 0.78)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+  drawRoundRect(ctx, leftX, 116, leftW, 76, 10, true, true);
 
-  ctx.fillStyle = "#ff4757";
+  ctx.fillStyle = "#ffffff";
   ctx.font = `bold 12px ${FONT_FAMILY}`;
-  ctx.fillText("DESCRIPTION", leftX + 16, 140);
+  ctx.fillText("DESCRIPTION", leftX + 16, 136);
 
-  ctx.fillStyle = "#e4e7eb";
-  ctx.font = `14px ${FONT_FAMILY}`;
+  ctx.fillStyle = "#cbd5e1";
+  ctx.font = `13.5px ${FONT_FAMILY}`;
   if (descLines.length === 1) {
-    ctx.fillText(descLines[0], leftX + 16, 166);
+    ctx.fillText(descLines[0], leftX + 16, 162);
   } else {
-    ctx.fillText(descLines[0] || "", leftX + 16, 162);
-    ctx.fillText(descLines[1] || "", leftX + 16, 182);
+    ctx.fillText(descLines[0] || "", leftX + 16, 158);
+    ctx.fillText(descLines[1] || "", leftX + 16, 178);
   }
 
   // 2. Syntax / Usage Box
@@ -788,16 +867,17 @@ async function generateCommandDetailCard(cmd, prefix = ".", slashCmd = null) {
     }
   }
 
-  ctx.fillStyle = "rgba(255, 255, 255, 0.03)";
-  drawRoundRect(ctx, leftX, 210, leftW, 70, 10, true, true);
+  ctx.fillStyle = "rgba(14, 18, 26, 0.78)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+  drawRoundRect(ctx, leftX, 206, leftW, 70, 10, true, true);
 
-  ctx.fillStyle = "#ff4757";
+  ctx.fillStyle = "#ffffff";
   ctx.font = `bold 12px ${FONT_FAMILY}`;
-  ctx.fillText("USAGE SYNTAX", leftX + 16, 232);
+  ctx.fillText("USAGE SYNTAX", leftX + 16, 228);
 
-  ctx.fillStyle = "#2ed573";
+  ctx.fillStyle = "#10b981";
   ctx.font = `bold 15px monospace, ${FONT_FAMILY}`;
-  ctx.fillText(`${prefix}${usage}`, leftX + 16, 258);
+  ctx.fillText(`${prefix}${usage}`, leftX + 16, 254);
 
   // 3. Aliases Box
   const aliases =
@@ -805,46 +885,48 @@ async function generateCommandDetailCard(cmd, prefix = ".", slashCmd = null) {
       ? cmd.alias.filter((a) => a.toLowerCase() !== primaryName.toLowerCase()).map((a) => `${prefix}${a}`).join(", ")
       : "None";
 
-  ctx.fillStyle = "rgba(255, 255, 255, 0.03)";
-  drawRoundRect(ctx, leftX, 294, leftW, 62, 10, true, true);
+  ctx.fillStyle = "rgba(14, 18, 26, 0.78)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+  drawRoundRect(ctx, leftX, 290, leftW, 62, 10, true, true);
 
-  ctx.fillStyle = "#ff4757";
+  ctx.fillStyle = "#ffffff";
   ctx.font = `bold 12px ${FONT_FAMILY}`;
-  ctx.fillText("COMMAND ALIASES", leftX + 16, 314);
+  ctx.fillText("COMMAND ALIASES", leftX + 16, 310);
 
-  ctx.fillStyle = "#ced6e0";
+  ctx.fillStyle = "#cbd5e1";
   ctx.font = `13px monospace, ${FONT_FAMILY}`;
-  ctx.fillText(truncateText(ctx, aliases, leftW - 32), leftX + 16, 337);
+  ctx.fillText(truncateText(ctx, aliases, leftW - 32), leftX + 16, 333);
 
   // 4. Permissions Box
   const botPerms = cmd.botPermissions?.length > 0 ? cmd.botPermissions.join(", ") : "SendMessages";
   const userPerms = cmd.userPermissions?.length > 0 ? cmd.userPermissions.join(", ") : "None";
 
-  ctx.fillStyle = "rgba(255, 255, 255, 0.03)";
-  drawRoundRect(ctx, leftX, 370, leftW, 64, 10, true, true);
+  ctx.fillStyle = "rgba(14, 18, 26, 0.78)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+  drawRoundRect(ctx, leftX, 366, leftW, 64, 10, true, true);
 
-  ctx.fillStyle = "#ff4757";
+  ctx.fillStyle = "#ffffff";
   ctx.font = `bold 12px ${FONT_FAMILY}`;
-  ctx.fillText("REQUIRED PERMISSIONS", leftX + 16, 392);
+  ctx.fillText("REQUIRED PERMISSIONS", leftX + 16, 388);
 
-  ctx.fillStyle = "#a4b0be";
+  ctx.fillStyle = "#94a3b8";
   ctx.font = `12px ${FONT_FAMILY}`;
-  ctx.fillText(`Bot: ${botPerms}   •   User: ${userPerms}`, leftX + 16, 415);
+  ctx.fillText(`Bot: ${botPerms}   •   User: ${userPerms}`, leftX + 16, 411);
 
   // ── Right Column (Examples & Live Execution) ─────────────────
   const rightX = leftX + leftW + 18;
   const rightW = baseW - rightX - 36;
 
-  ctx.fillStyle = "rgba(255, 255, 255, 0.03)";
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.06)";
-  drawRoundRect(ctx, rightX, 120, rightW, 314, 12, true, true);
+  ctx.fillStyle = "rgba(14, 18, 26, 0.78)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+  drawRoundRect(ctx, rightX, 116, rightW, 314, 12, true, true);
 
-  ctx.fillStyle = "#ff4757";
+  ctx.fillStyle = "#ffffff";
   ctx.font = `bold 13px ${FONT_FAMILY}`;
-  ctx.fillText("EXAMPLES & EXECUTION", rightX + 18, 146);
+  ctx.fillText("EXAMPLES & EXECUTION", rightX + 18, 142);
 
   ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
-  ctx.fillRect(rightX + 18, 158, rightW - 36, 1);
+  ctx.fillRect(rightX + 18, 154, rightW - 36, 1);
 
   let examples = [];
   if (cmd.examples && Array.isArray(cmd.examples) && cmd.examples.length > 0) {
@@ -859,12 +941,13 @@ async function generateCommandDetailCard(cmd, prefix = ".", slashCmd = null) {
     }
   }
 
-  let currY = 192;
+  let currY = 188;
   examples.slice(0, 5).forEach((ex, idx) => {
-    ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
-    drawRoundRect(ctx, rightX + 18, currY - 18, rightW - 36, 36, 6, true, false);
+    ctx.fillStyle = "rgba(255, 255, 255, 0.035)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.06)";
+    drawRoundRect(ctx, rightX + 18, currY - 18, rightW - 36, 36, 6, true, true);
 
-    ctx.fillStyle = "#ff2a55";
+    ctx.fillStyle = "#94a3b8";
     ctx.font = `bold 12px monospace`;
     ctx.fillText(`0${idx + 1}`, rightX + 28, currY + 5);
 
@@ -877,15 +960,20 @@ async function generateCommandDetailCard(cmd, prefix = ".", slashCmd = null) {
   });
 
   // ── Footer Bar ──────────────────────────────────────────────
-  const footerY = baseH - 46;
-  ctx.fillStyle = "rgba(255, 255, 255, 0.02)";
-  drawRoundRect(ctx, 36, footerY, baseW - 72, 30, 6, true, false);
+  const footerY = baseH - 42;
+  ctx.fillStyle = "rgba(14, 18, 26, 0.78)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+  drawRoundRect(ctx, 36, footerY, baseW - 72, 30, 8, true, true);
 
-  ctx.fillStyle = "rgba(164, 176, 190, 0.75)";
-  ctx.font = `12px ${FONT_FAMILY}`;
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold 11px ${FONT_FAMILY}`;
+  ctx.fillText("» INFORMATION:", 48, footerY + 19);
+
+  ctx.fillStyle = "#cbd5e1";
+  ctx.font = `11px ${FONT_FAMILY}`;
   ctx.fillText(
-    `» Astrix Multi-Purpose Engine • Use action buttons below to return to the category list or view slash info`,
-    48,
+    "Astrix Multi-Purpose Engine • Use action buttons below to return to the category list or view slash info",
+    150,
     footerY + 19
   );
 
