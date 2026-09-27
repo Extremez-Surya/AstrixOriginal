@@ -266,7 +266,7 @@ async function generateMainHelpCard({
 
   const baseW = 1000;
   const baseH = 540;
-  const scale = 2; // 2x Ultra-HD
+  const scale = 1.5; // High-DPI optimized (fast rendering & compact upload)
   const width = baseW * scale;
   const height = baseH * scale;
 
@@ -509,7 +509,7 @@ async function generateCategoryCard(
 
   const baseW = 1000;
   const baseH = 560;
-  const scale = 2; // 2x Ultra-HD
+  const scale = 1.5; // High-DPI optimized
   const width = baseW * scale;
   const height = baseH * scale;
 
@@ -663,7 +663,7 @@ async function generateCommandDetailCard(cmd, prefix = ".", slashCmd = null) {
 
   const baseW = 1000;
   const baseH = 540;
-  const scale = 2; // 2x Ultra-HD
+  const scale = 1.5; // High-DPI optimized
   const width = baseW * scale;
   const height = baseH * scale;
 

@@ -407,12 +407,50 @@ function setupHelpCollector({ client, messageOrInteraction, initialContainer, us
     if (i.user.id !== userId) {
       return i.reply({
         content: "❌ You cannot interact with this menu.",
-        ephemeral: true,
-      });
+        flags: MessageFlags.Ephemeral,
+      }).catch(() => null);
     }
 
     try {
       const customId = i.customId;
+
+      // Handle Slash Info button with immediate ephemeral deferReply
+      if (customId.startsWith("help_btn_slash_")) {
+        await i.deferReply({ flags: MessageFlags.Ephemeral }).catch(() => null);
+        const cmdName = customId.replace("help_btn_slash_", "");
+        const slashCmd = client.slashCommands.get(cmdName);
+
+        let infoText = "";
+        if (slashCmd) {
+          infoText =
+            `### ℹ️ Slash Command: \`/${slashCmd.name}\`\n` +
+            `> - **Description:** ${slashCmd.description || "N/A"}\n` +
+            `> - **Options:** ${slashCmd.options?.length ? slashCmd.options.map((o) => `\`${o.name}\``).join(", ") : "None"}\n` +
+            `> - **Permissions:** \`${slashCmd.userPermissions?.join(", ") || "None"}\`\n` +
+            `> - **DM Permission:** \`${slashCmd.dmPermission ? "Yes" : "No"}\``;
+        } else {
+          infoText =
+            `### ℹ️ Slash Command: \`/${cmdName}\`\n` +
+            `> - *This command is primarily optimized as a prefix message command.* \n` +
+            `> - **Usage:** \`.${cmdName}\``;
+        }
+
+        return await i.editReply({ content: infoText }).catch(() => null);
+      }
+
+      // Handle Close button immediately
+      if (customId === "help_btn_close") {
+        collector.stop("user_closed");
+        return await i.message.delete().catch(() => {
+          i.update({
+            content: "🔒 Help menu closed.",
+            components: [],
+          }).catch(() => null);
+        });
+      }
+
+      // 🛡️ CRITICAL: Defer update immediately within 15ms so interaction NEVER expires (prevents DiscordAPIError 10062)
+      await i.deferUpdate().catch(() => null);
 
       // 1. Category Select Menus (from Main Container)
       if (
@@ -423,11 +461,10 @@ function setupHelpCollector({ client, messageOrInteraction, initialContainer, us
 
         if (val === "home") {
           const { container, attachment } = await buildMainContainerPayload(client, guild, userId);
-          return await i.update({
+          return await i.editReply({
             components: [container],
             files: [attachment],
-            flags: MessageFlags.IsComponentsV2,
-          });
+          }).catch(() => null);
         }
 
         const categoryName = val.replace("cat_", "");
@@ -439,11 +476,10 @@ function setupHelpCollector({ client, messageOrInteraction, initialContainer, us
           0
         );
 
-        return await i.update({
+        return await i.editReply({
           components: [container],
           files: [attachment],
-          flags: MessageFlags.IsComponentsV2,
-        });
+        }).catch(() => null);
       }
 
       // 2. Command Select Menu (from Category Container)
@@ -458,11 +494,10 @@ function setupHelpCollector({ client, messageOrInteraction, initialContainer, us
             userId,
             guild
           );
-          return await i.update({
+          return await i.editReply({
             components: [container],
             files: attachment ? [attachment] : [],
-            flags: MessageFlags.IsComponentsV2,
-          });
+          }).catch(() => null);
         }
       }
 
@@ -471,22 +506,10 @@ function setupHelpCollector({ client, messageOrInteraction, initialContainer, us
         // [🏠 Home]
         if (customId === "help_btn_home") {
           const { container, attachment } = await buildMainContainerPayload(client, guild, userId);
-          return await i.update({
+          return await i.editReply({
             components: [container],
             files: [attachment],
-            flags: MessageFlags.IsComponentsV2,
-          });
-        }
-
-        // [❌ Close]
-        if (customId === "help_btn_close") {
-          collector.stop("user_closed");
-          return await i.message.delete().catch(() => {
-            i.update({
-              content: "🔒 Help menu closed.",
-              components: [],
-            }).catch(() => null);
-          });
+          }).catch(() => null);
         }
 
         // [⬅ Prev / Next Page]
@@ -501,11 +524,10 @@ function setupHelpCollector({ client, messageOrInteraction, initialContainer, us
             guild,
             pageNum
           );
-          return await i.update({
+          return await i.editReply({
             components: [container],
             files: [attachment],
-            flags: MessageFlags.IsComponentsV2,
-          });
+          }).catch(() => null);
         }
 
         // [⬅ Back] -> returns to Category Container
@@ -518,37 +540,10 @@ function setupHelpCollector({ client, messageOrInteraction, initialContainer, us
             guild,
             0
           );
-          return await i.update({
+          return await i.editReply({
             components: [container],
             files: [attachment],
-            flags: MessageFlags.IsComponentsV2,
-          });
-        }
-
-        // [ℹ Slash Info]
-        if (customId.startsWith("help_btn_slash_")) {
-          const cmdName = customId.replace("help_btn_slash_", "");
-          const slashCmd = client.slashCommands.get(cmdName);
-
-          let infoText = "";
-          if (slashCmd) {
-            infoText =
-              `### ℹ️ Slash Command: \`/${slashCmd.name}\`\n` +
-              `> - **Description:** ${slashCmd.description || "N/A"}\n` +
-              `> - **Options:** ${slashCmd.options?.length ? slashCmd.options.map((o) => `\`${o.name}\``).join(", ") : "None"}\n` +
-              `> - **Permissions:** \`${slashCmd.userPermissions?.join(", ") || "None"}\`\n` +
-              `> - **DM Permission:** \`${slashCmd.dmPermission ? "Yes" : "No"}\``;
-          } else {
-            infoText =
-              `### ℹ️ Slash Command: \`/${cmdName}\`\n` +
-              `> - *This command is primarily optimized as a prefix message command.* \n` +
-              `> - **Usage:** \`.${cmdName}\``;
-          }
-
-          return await i.reply({
-            content: infoText,
-            ephemeral: true,
-          });
+          }).catch(() => null);
         }
       }
     } catch (err) {
