@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const mongoBackup = require("./mongoBackup");
 
 const LIB_DIR = path.resolve(__dirname);
 const ROOT_DIR = path.resolve(__dirname, "../..");
@@ -7,18 +8,21 @@ const BACKUP_DIR = path.join(ROOT_DIR, "backups");
 const SNAPSHOT_DIR = path.join(BACKUP_DIR, "snapshots");
 const VAULT_FILE = path.join(BACKUP_DIR, "master_vault.json");
 
+/**
+ * Complete list of all core system configuration, data & state files
+ */
 const TRACKED_FILES = [
   "antinukeConfig.json",
+  "nukeConfig.json",
   "antiraidConfig.json",
   "automodConfig.json",
   "welcomeConfig.json",
   "goodbyeConfig.json",
+  "configManagerConfig.json", // Autoresponder phrases, triggers, reaction roles, server setups!
   "noprefixConfig.json",
-  "nukeConfig.json",
   "customRolesConfig.json",
   "customRolesData.json",
   "serverConfig.json",
-  "configManagerConfig.json",
   "giveaways.json",
   "guildPrefixes.json",
   "guildPresets.json",
@@ -26,6 +30,7 @@ const TRACKED_FILES = [
   "levelingConfig.json",
   "levelingData.json",
   "loggingConfig.json",
+  "loggingData.json",
   "pollData.json",
   "starboardConfig.json",
   "suggestionData.json",
@@ -38,7 +43,29 @@ const TRACKED_FILES = [
   "statsData.json",
   "feedbackData.json",
   "embedData.json",
+  "config.json",
 ];
+
+/**
+ * Dynamically resolves all active JSON configuration & data files in src/lib
+ */
+function getAllTrackedFiles() {
+  const set = new Set(TRACKED_FILES);
+  try {
+    const files = fs.readdirSync(LIB_DIR);
+    for (const file of files) {
+      if (
+        file.endsWith(".json") &&
+        file !== "emojis.json" &&
+        file !== "categories.json" &&
+        !file.endsWith(".tmp")
+      ) {
+        set.add(file);
+      }
+    }
+  } catch (_) {}
+  return Array.from(set);
+}
 
 // Ensure essential backup directories exist
 function ensureDirs() {
@@ -128,8 +155,9 @@ function createSnapshot(label = "Manual Backup") {
 
   let totalRecords = 0;
   let fileCount = 0;
+  const activeFiles = getAllTrackedFiles();
 
-  for (const filename of TRACKED_FILES) {
+  for (const filename of activeFiles) {
     const fullPath = path.join(LIB_DIR, filename);
     const data = readJsonSafe(fullPath);
     if (data !== null) {
@@ -156,7 +184,26 @@ function createSnapshot(label = "Manual Backup") {
   // 3. Keep latest 15 snapshots, prune older
   pruneOldSnapshots(15);
 
+  // 4. Asynchronously push to MongoDB Cloud (non-blocking for high speed)
+  mongoBackup.uploadSnapshot(bundle).catch((err) => {
+    console.error("[BackupManager] Non-blocking Mongo upload error:", err.message);
+  });
+
   return bundle;
+}
+
+/**
+ * Creates snapshot and explicitly waits for MongoDB Cloud confirmation
+ */
+async function createSnapshotAsync(label = "Manual Backup") {
+  const bundle = createSnapshot(label);
+  let cloudSuccess = false;
+  try {
+    cloudSuccess = await mongoBackup.uploadSnapshot(bundle);
+  } catch (err) {
+    console.error("[BackupManager] Cloud sync error:", err.message);
+  }
+  return { snapshot: bundle, cloudSuccess };
 }
 
 /**
@@ -300,7 +347,8 @@ function getRealtimeStats() {
   let activeFiles = 0;
   let totalDiskBytes = 0;
 
-  for (const f of TRACKED_FILES) {
+  const allTracked = getAllTrackedFiles();
+  for (const f of allTracked) {
     const fullPath = path.join(LIB_DIR, f);
     const data = readJsonSafe(fullPath);
     if (data) {
@@ -320,7 +368,7 @@ function getRealtimeStats() {
     vaultCreatedAt: vault?.createdAt || null,
     vaultLabel: vault?.label || "None",
     vaultRecords: vault?.stats?.totalRecords || 0,
-    trackedFilesCount: TRACKED_FILES.length,
+    trackedFilesCount: allTracked.length,
     activeFilesOnDisk: activeFiles,
     totalDiskRecords,
     totalDiskBytes,
@@ -328,20 +376,44 @@ function getRealtimeStats() {
     latestSnapshot: snapshots[0] || null,
     processUptimeSec: Math.floor(process.uptime()),
     ramUsageMb: (mem.rss / 1024 / 1024).toFixed(1),
+    mongo: mongoBackup.getStatus(),
   };
 }
 
 /**
  * AUTO-HEAL ON STARTUP:
- * Compares files on disk vs master vault.
- * If any file on disk was wiped or replaced with blank/empty values by a code update or git pull,
- * it restores the full data immediately from the vault!
+ * 1. Checks local files on disk vs master vault.
+ * 2. If master vault is empty or missing on disk, attempts to pull the latest snapshot from MongoDB Atlas.
+ * 3. Restores any missing, blank, or wiped configuration files automatically!
  */
-function verifyAndAutoHeal() {
+async function verifyAndAutoHeal() {
   ensureDirs();
-  const vault = readJsonSafe(VAULT_FILE);
+  let vault = readJsonSafe(VAULT_FILE);
 
-  if (!vault || !vault.files) {
+  // If local vault doesn't exist or is empty, try to fetch from MongoDB Atlas
+  if (!vault || !vault.files || Object.keys(vault.files).length === 0) {
+    console.log("[BackupManager] 🔍 No local Master Vault found. Checking MongoDB Atlas for cloud backup...");
+    try {
+      const cloudSnapshot = await mongoBackup.fetchLatestSnapshot();
+      if (cloudSnapshot && cloudSnapshot.files && Object.keys(cloudSnapshot.files).length > 0) {
+        vault = {
+          version: "1.0.0",
+          createdAt: cloudSnapshot.createdAt || new Date().toISOString(),
+          timestamp: cloudSnapshot.timestamp || Date.now(),
+          label: cloudSnapshot.label || "Cloud Restored Baseline",
+          stats: cloudSnapshot.stats || {},
+          files: cloudSnapshot.files,
+        };
+        writeJsonSafe(VAULT_FILE, vault);
+        console.log(`[BackupManager] ☁️ Restored Master Vault from MongoDB Atlas (${cloudSnapshot.stats?.totalFiles || Object.keys(vault.files).length} files)!`);
+      }
+    } catch (err) {
+      console.error("[BackupManager] Could not load cloud backup from Mongo on boot:", err.message);
+    }
+  }
+
+  // If still no vault, initialize from whatever is currently on disk
+  if (!vault || !vault.files || Object.keys(vault.files).length === 0) {
     createSnapshot("Initial Master Vault Baseline");
     console.log("[BackupManager] 📦 Initialized Master Vault baseline from current files.");
     return { healed: 0, totalFiles: 0 };
@@ -349,8 +421,9 @@ function verifyAndAutoHeal() {
 
   let healedCount = 0;
   let vaultUpdated = false;
+  const allTracked = getAllTrackedFiles();
 
-  for (const filename of TRACKED_FILES) {
+  for (const filename of allTracked) {
     const fullPath = path.join(LIB_DIR, filename);
     const diskData = readJsonSafe(fullPath);
     const vaultData = vault.files[filename];
@@ -414,11 +487,9 @@ function restoreFromSnapshot(snapshotPathOrData = null) {
   let restoredCount = 0;
 
   for (const [filename, fileData] of Object.entries(bundle.files)) {
-    if (TRACKED_FILES.includes(filename)) {
-      const fullPath = path.join(LIB_DIR, filename);
-      writeJsonSafe(fullPath, fileData);
-      restoredCount++;
-    }
+    const fullPath = path.join(LIB_DIR, filename);
+    writeJsonSafe(fullPath, fileData);
+    restoredCount++;
   }
 
   // Update master vault and take a post-restore safeguard snapshot
@@ -430,6 +501,43 @@ function restoreFromSnapshot(snapshotPathOrData = null) {
     label: bundle.label,
     createdAt: bundle.createdAt,
   };
+}
+
+/**
+ * Restores all bot data directly from MongoDB Atlas
+ */
+async function restoreFromMongo(snapshotId = null) {
+  let cloudBundle = null;
+  if (snapshotId) {
+    const list = await mongoBackup.fetchSnapshotList(50);
+    const found = list.find((s) => s.snapshotId === snapshotId || s.snapshotId === `snapshot-${snapshotId}`);
+    if (found) {
+      cloudBundle = await mongoBackup.SnapshotModel.findOne({ snapshotId: found.snapshotId }).lean();
+    }
+  }
+
+  if (!cloudBundle) {
+    cloudBundle = await mongoBackup.fetchLatestSnapshot();
+  }
+
+  if (!cloudBundle || !cloudBundle.files || Object.keys(cloudBundle.files).length === 0) {
+    // Fallback: try fetching all granular configs from astrix_configs collection
+    const allConfigs = await mongoBackup.fetchAllConfigs();
+    if (Object.keys(allConfigs).length > 0) {
+      cloudBundle = {
+        label: "Granular Cloud Modules",
+        timestamp: Date.now(),
+        createdAt: new Date().toISOString(),
+        files: allConfigs,
+      };
+    }
+  }
+
+  if (!cloudBundle || !cloudBundle.files) {
+    throw new Error("No valid backup found in MongoDB Atlas to restore.");
+  }
+
+  return restoreFromSnapshot(cloudBundle);
 }
 
 let isShuttingDown = false;
@@ -473,13 +581,17 @@ module.exports = {
   handleShutdown,
   verifyAndAutoHeal,
   createSnapshot,
+  createSnapshotAsync,
   editSnapshot,
   deleteSnapshot,
   clearAllSnapshots,
   restoreFromSnapshot,
+  restoreFromMongo,
   listSnapshots,
   getRealtimeStats,
   getVaultStats: getRealtimeStats,
+  mongoBackup,
+  getAllTrackedFiles,
   VAULT_FILE,
   SNAPSHOT_DIR,
   TRACKED_FILES,

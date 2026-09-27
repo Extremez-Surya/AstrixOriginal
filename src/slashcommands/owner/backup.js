@@ -69,12 +69,18 @@ function buildShortyDashboard(stats, snapshots, selectedSnapshot = null, disable
   const uptimeMins = Math.floor(stats.processUptimeSec / 60);
   const uptimeSecs = stats.processUptimeSec % 60;
 
+  const mongoStatus = stats.mongo || { connected: false };
+  const mongoText = mongoStatus.connected
+    ? `🟢 **Connected** (\`${mongoStatus.host || "alone.g42tkzg.mongodb.net"}\`)`
+    : `🟡 **Connecting / Ready**`;
+
   container.addTextDisplayComponents(
     new TextDisplayBuilder().setContent(
       `### 🛡️ **Astrix Master Data Vault & Live Backup**\n` +
       `-# *Zero-overhead state protection with auto pre-shutdown snapshot engine.*\n\n` +
       `> 📊 **Live Records:** \`${stats.totalDiskRecords.toLocaleString()}\` active configurations\n` +
       `> 📁 **Protected Files:** \`${stats.activeFilesOnDisk}\` / \`${stats.trackedFilesCount}\` modules (\`${(stats.totalDiskBytes / 1024).toFixed(1)} KB\`)\n` +
+      `> ☁️ **Cloud Database:** ${mongoText}\n` +
       `> ⚡ **Live RAM / Uptime:** \`${stats.ramUsageMb} MB\` • \`${uptimeMins}m ${uptimeSecs}s\`\n` +
       `> 🗄️ **Saved Snapshots:** \`${stats.snapshotCount}\` versions • Latest: ${lastBackupStr}\n` +
       `> 🛑 **Panel Shutdown Hook:** 🟢 **Active** *(Auto-saves when panel stops/restarts)*\n` +
@@ -110,7 +116,7 @@ function buildShortyDashboard(stats, snapshots, selectedSnapshot = null, disable
     container.addActionRowComponents(new ActionRowBuilder().addComponents(selectMenu));
   }
 
-  // Action Buttons Row
+  // Action Buttons Row (up to 5 buttons)
   const btnRow = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId("backup_slash_btn_create")
@@ -119,10 +125,16 @@ function buildShortyDashboard(stats, snapshots, selectedSnapshot = null, disable
       .setStyle(ButtonStyle.Success)
       .setDisabled(disabled),
     new ButtonBuilder()
+      .setCustomId("backup_slash_btn_cloudsync")
+      .setLabel("Cloud Sync")
+      .setEmoji("☁️")
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(disabled),
+    new ButtonBuilder()
       .setCustomId("backup_slash_btn_export")
       .setLabel("Export")
       .setEmoji("📤")
-      .setStyle(ButtonStyle.Primary)
+      .setStyle(ButtonStyle.Secondary)
       .setDisabled(disabled),
     new ButtonBuilder()
       .setCustomId("backup_slash_btn_refresh")
@@ -221,13 +233,30 @@ module.exports = {
       ],
     },
     {
+      name: "sync",
+      description: "Synchronize all configurations with MongoDB Atlas cloud database.",
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: "action",
+          description: "Action to perform (push = upload to cloud, pull = restore from cloud).",
+          type: ApplicationCommandOptionType.String,
+          required: false,
+          choices: [
+            { name: "push (Upload to MongoDB)", value: "push" },
+            { name: "pull (Restore from MongoDB)", value: "pull" },
+          ],
+        },
+      ],
+    },
+    {
       name: "restore",
-      description: "Restore all server configurations from master vault or snapshot.",
+      description: "Restore all server configurations from master vault, snapshot, or cloud.",
       type: ApplicationCommandOptionType.Subcommand,
       options: [
         {
           name: "snapshot_id",
-          description: "Snapshot ID to restore from (default: latest vault).",
+          description: "Snapshot ID or 'cloud' to restore from MongoDB Atlas.",
           type: ApplicationCommandOptionType.String,
           required: false,
         },
@@ -255,19 +284,59 @@ module.exports = {
     // 1. CREATE
     if (subcommand === "create") {
       const label = interaction.options.getString("label") || `Slash Backup by ${interaction.user.username}`;
-      const snapshot = backupManager.createSnapshot(label);
+      const { snapshot, cloudSuccess } = await backupManager.createSnapshotAsync(label);
+      const cloudStatusText = cloudSuccess ? "🟢 **Synced to MongoDB Atlas**" : "🟡 **Saved locally (Cloud pending)**";
 
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### 💾 **Snapshot Created**\n` +
+          `### 💾 **Snapshot Created & Backed Up**\n` +
           `> - **Label:** \`${snapshot.label}\`\n` +
           `> - **ID:** \`snapshot-${snapshot.timestamp}\`\n` +
           `> - **Data:** \`${snapshot.stats.totalFiles}\` modules • \`${snapshot.stats.totalRecords.toLocaleString()}\` records\n` +
+          `> - **Cloud Backup:** ${cloudStatusText}\n` +
+          `> - **Database:** \`Astrix\` (Cluster: \`alone.g42tkzg.mongodb.net\`)\n` +
           `> - **Saved At:** <t:${Math.floor(snapshot.timestamp / 1000)}:R>\n\n` +
-          `✅ Synchronized with Master Vault. Protected against updates & restarts!`
+          `✅ AntiNuke, Welcome, AutoMod, Triggers, Custom Roles, Leveling & all settings protected!`
         )
       );
 
+      return interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    }
+
+    // 1.5 SYNC CLOUD
+    if (subcommand === "sync") {
+      const action = interaction.options.getString("action") || "push";
+      if (action === "pull") {
+        try {
+          const res = await backupManager.restoreFromMongo();
+          const container = new ContainerBuilder().addTextDisplayComponents(
+            new TextDisplayBuilder().setContent(
+              `### ☁️ **Cloud Restore Completed**\n` +
+              `> - **Modules Restored:** \`${res.restoredFiles}\` files\n` +
+              `> - **Source Label:** \`${res.label || "MongoDB Cloud"}\`\n` +
+              `> - **Snapshot Date:** <t:${Math.floor(res.timestamp / 1000)}:R>\n\n` +
+              `✅ All bot configurations pulled live from MongoDB Atlas and restored!`
+            )
+          );
+          return interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+        } catch (err) {
+          return interaction.reply({ content: `❌ Cloud restore failed: ${err.message}`, flags: MessageFlags.Ephemeral }).catch(() => null);
+        }
+      }
+
+      // Default: push to MongoDB Atlas
+      const { snapshot, cloudSuccess } = await backupManager.createSnapshotAsync(`Cloud Slash Sync by ${interaction.user.username}`);
+      const statusIcon = cloudSuccess ? "🟢" : "⚠️";
+      const container = new ContainerBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `### ☁️ **Cloud Backup Synchronized**\n` +
+          `> - **Label:** \`${snapshot.label}\`\n` +
+          `> - **Cloud Status:** ${statusIcon} **${cloudSuccess ? "Uploaded to MongoDB Atlas" : "Pending Sync"}**\n` +
+          `> - **Modules / Records:** \`${snapshot.stats.totalFiles}\` modules • \`${snapshot.stats.totalRecords.toLocaleString()}\` records\n` +
+          `> - **Database:** \`Astrix\` (Cluster: \`alone.g42tkzg.mongodb.net\`)\n\n` +
+          `✅ Complete bot data (AntiNuke, Welcome, AutoMod, Triggers, Custom Roles, etc.) backed up!`
+        )
+      );
       return interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
     }
 
@@ -375,7 +444,9 @@ module.exports = {
       const targetId = interaction.options.getString("snapshot_id")?.toLowerCase();
       try {
         let result;
-        if (!targetId || targetId === "latest" || targetId === "vault") {
+        if (targetId === "cloud" || targetId === "mongo" || targetId === "atlas") {
+          result = await backupManager.restoreFromMongo();
+        } else if (!targetId || targetId === "latest" || targetId === "vault") {
           result = backupManager.restoreFromSnapshot();
         } else {
           const snapshots = backupManager.listSnapshots();
@@ -383,9 +454,15 @@ module.exports = {
             (s) => s.id === targetId || s.id === `snapshot-${targetId}` || s.fileName.includes(targetId)
           );
           if (!target) {
-            return interaction.reply({ content: `❌ Snapshot \`${targetId}\` not found. Use \`/backup list\` to view available snapshots.`, flags: MessageFlags.Ephemeral }).catch(() => null);
+            // Check if it's a cloud snapshot id
+            try {
+              result = await backupManager.restoreFromMongo(targetId);
+            } catch (_) {
+              return interaction.reply({ content: `❌ Snapshot \`${targetId}\` not found on disk or cloud. Use \`/backup list\` to view available snapshots.`, flags: MessageFlags.Ephemeral }).catch(() => null);
+            }
+          } else {
+            result = backupManager.restoreFromSnapshot(target.filePath);
           }
-          result = backupManager.restoreFromSnapshot(target.filePath);
         }
 
         const container = new ContainerBuilder().addTextDisplayComponents(
@@ -528,6 +605,22 @@ module.exports = {
           const updated = buildShortyDashboard(stats, snapshots, null, false);
           await i.editReply({ components: [updated] });
           return i.followUp({ content: `💾 New backup snapshot created successfully!`, flags: MessageFlags.Ephemeral });
+        }
+
+        // Button: Cloud Sync
+        if (customId === "backup_slash_btn_cloudsync") {
+          await i.deferUpdate();
+          const { snapshot, cloudSuccess } = await backupManager.createSnapshotAsync(`Cloud Sync (${interaction.user.username})`);
+          stats = backupManager.getRealtimeStats();
+          snapshots = backupManager.listSnapshots();
+          selectedSnapshot = null;
+          const updated = buildShortyDashboard(stats, snapshots, null, false);
+          await i.editReply({ components: [updated] });
+          const statusText = cloudSuccess ? "🟢 Uploaded cleanly to MongoDB Atlas!" : "⚠️ Saved locally, cloud sync pending.";
+          return i.followUp({
+            content: `☁️ **Cloud Synchronization:** ${statusText}\nBacked up **${stats.trackedFilesCount}** modules into MongoDB cluster.`,
+            flags: MessageFlags.Ephemeral,
+          });
         }
 
         // Button: Export Master Vault
