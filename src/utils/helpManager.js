@@ -231,7 +231,7 @@ async function buildCategoryContainerPayload(client, categoryQuery, userId, guil
   const categoryEmoji = CATEGORY_EMOJIS[categoryName] || "📁";
   const cmds = categoryMap.get(categoryName) || [];
 
-  const pageSize = 28;
+  const pageSize = 18;
   const totalPages = Math.ceil(cmds.length / pageSize) || 1;
   const currentPage = Math.max(0, Math.min(page, totalPages - 1));
 

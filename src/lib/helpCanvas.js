@@ -120,6 +120,8 @@ let cachedBgImg = null;
 async function getBackgroundImage() {
   if (cachedBgImg) return cachedBgImg;
   const paths = [
+    path.join(__dirname, "../assets/help_anime.jpg"),
+    path.join(__dirname, "../assets/help_bg.png"),
     path.join(__dirname, "../assets/helpmenu.png"),
     path.join(__dirname, "../assets/mention_bg.png"),
     path.join(__dirname, "../assets/developer_bg.png"),
@@ -154,12 +156,12 @@ function drawCinematicBackdrop(ctx, baseW, baseH, bgImg) {
 
     ctx.drawImage(bgImg, sx, sy, sw, sh, 0, 0, baseW, baseH);
 
-    // Deep Dark Crimson & Obsidian Overlay (optimized for maximum readability)
+    // Deep Dark Crimson & Obsidian Overlay (balanced to showcase anime theme while ensuring contrast)
     const overlayGrad = ctx.createLinearGradient(0, 0, baseW, baseH);
-    overlayGrad.addColorStop(0, "rgba(8, 10, 15, 0.90)");
-    overlayGrad.addColorStop(0.35, "rgba(12, 14, 20, 0.86)");
-    overlayGrad.addColorStop(0.7, "rgba(18, 16, 24, 0.84)");
-    overlayGrad.addColorStop(1, "rgba(6, 8, 12, 0.90)");
+    overlayGrad.addColorStop(0, "rgba(8, 10, 15, 0.78)");
+    overlayGrad.addColorStop(0.35, "rgba(10, 12, 18, 0.72)");
+    overlayGrad.addColorStop(0.7, "rgba(14, 12, 20, 0.70)");
+    overlayGrad.addColorStop(1, "rgba(6, 8, 12, 0.82)");
     ctx.fillStyle = overlayGrad;
     ctx.fillRect(0, 0, baseW, baseH);
   } else {
@@ -508,8 +510,8 @@ async function generateCategoryCard(
   }
 
   const baseW = 1000;
-  const baseH = 560;
-  const scale = 1.5; // High-DPI optimized
+  const baseH = 580;
+  const scale = 1.5; // High-DPI optimized (1500 x 870)
   const width = baseW * scale;
   const height = baseH * scale;
 
@@ -529,11 +531,12 @@ async function generateCategoryCard(
   drawCinematicBackdrop(ctx, baseW, baseH, bgImg);
 
   // ── Header Box ──────────────────────────────────────────────
-  const headY = 28;
-  const headH = 72;
+  const headY = 24;
+  const headH = 68;
 
-  ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+  ctx.fillStyle = "rgba(10, 14, 22, 0.78)";
+  ctx.strokeStyle = "rgba(255, 60, 80, 0.35)";
+  ctx.lineWidth = 1.2;
   drawRoundRect(ctx, 36, headY, baseW - 72, headH, 14, true, true);
 
   // Crimson Accent Line under header
@@ -546,49 +549,50 @@ async function generateCategoryCard(
 
   // Title & Subtitle with clean tech symbol
   ctx.fillStyle = "#ffffff";
-  ctx.font = `bold 26px ${FONT_FAMILY}`;
-  ctx.fillText(`»  ${categoryName.toUpperCase()} MODULE`, 54, headY + 36);
+  ctx.font = `bold 25px ${FONT_FAMILY}`;
+  ctx.fillText(`»  ${categoryName.toUpperCase()} MODULE`, 54, headY + 33);
 
-  ctx.fillStyle = "rgba(206, 214, 224, 0.75)";
-  ctx.font = `12px ${FONT_FAMILY}`;
-  ctx.fillText(`Explore all available commands, aliases and syntax options in this category.`, 54, headY + 56);
+  ctx.fillStyle = "rgba(206, 214, 224, 0.85)";
+  ctx.font = `13px ${FONT_FAMILY}`;
+  ctx.fillText(`Explore all available commands, aliases and syntax options in this category.`, 54, headY + 54);
 
   // Badges on Header Right
   const badgeText = `${commands.length} Commands`;
-  ctx.font = `bold 13px ${FONT_FAMILY}`;
+  ctx.font = `bold 14px ${FONT_FAMILY}`;
   const badgeW = ctx.measureText(badgeText).width + 24;
   const badgeX = baseW - 54 - badgeW;
 
-  ctx.fillStyle = "rgba(229, 62, 62, 0.22)";
-  ctx.strokeStyle = "rgba(255, 60, 80, 0.5)";
-  ctx.lineWidth = 1;
-  drawRoundRect(ctx, badgeX, headY + 20, badgeW, 32, 8, true, true);
+  ctx.fillStyle = "rgba(229, 62, 62, 0.28)";
+  ctx.strokeStyle = "rgba(255, 60, 80, 0.6)";
+  ctx.lineWidth = 1.2;
+  drawRoundRect(ctx, badgeX, headY + 18, badgeW, 32, 8, true, true);
 
   ctx.fillStyle = "#ff6b81";
-  ctx.fillText(badgeText, badgeX + 12, headY + 41);
+  ctx.fillText(badgeText, badgeX + 12, headY + 39);
 
   if (totalPages > 1) {
     const pageBadgeText = `Page ${page + 1}/${totalPages}`;
     const pageBadgeW = ctx.measureText(pageBadgeText).width + 20;
     const pageBadgeX = badgeX - pageBadgeW - 10;
 
-    ctx.fillStyle = "rgba(255, 255, 255, 0.06)";
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
-    drawRoundRect(ctx, pageBadgeX, headY + 20, pageBadgeW, 32, 8, true, true);
+    ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+    ctx.lineWidth = 1;
+    drawRoundRect(ctx, pageBadgeX, headY + 18, pageBadgeW, 32, 8, true, true);
 
     ctx.fillStyle = "#ced6e0";
-    ctx.fillText(pageBadgeText, pageBadgeX + 10, headY + 41);
+    ctx.fillText(pageBadgeText, pageBadgeX + 10, headY + 39);
   }
 
-  // ── High-Capacity Command Grid (4 Columns × 7 Rows = 28 per page) ──
-  const cols = 4;
+  // ── High-Legibility Command Grid (3 Columns × 6 Rows = 18 per page) ──
+  const cols = 3;
   const startX = 36;
-  const startY = headY + headH + 18;
-  const gapX = 12;
-  const gapY = 10;
-  const cardW = (baseW - 72 - gapX * (cols - 1)) / cols; // ~223px
-  const cardH = 40;
-  const pageSize = 28;
+  const startY = headY + headH + 16;
+  const gapX = 14;
+  const gapY = 12;
+  const cardW = (baseW - 72 - gapX * (cols - 1)) / cols; // (1000 - 72 - 28) / 3 = 300px
+  const cardH = 54;
+  const pageSize = 18;
 
   const pageCmds = commands.slice(page * pageSize, (page + 1) * pageSize);
 
@@ -600,45 +604,58 @@ async function generateCategoryCard(
 
     const primaryName = cmd.alias?.[0] || cmd.name;
 
-    // Command Item Background
-    ctx.fillStyle = "rgba(255, 255, 255, 0.035)";
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.07)";
+    // Command Item Glass Card Background (High opacity dark glass for crisp readability over anime backdrop)
+    ctx.fillStyle = "rgba(10, 14, 22, 0.84)";
+    ctx.strokeStyle = "rgba(255, 60, 80, 0.28)";
     ctx.lineWidth = 1;
-    drawRoundRect(ctx, x, y, cardW, cardH, 8, true, true);
+    drawRoundRect(ctx, x, y, cardW, cardH, 10, true, true);
 
-    // Left glowing indicator dot
-    ctx.fillStyle = "#ff2a55";
-    ctx.beginPath();
-    ctx.arc(x + 12, y + cardH / 2, 3, 0, Math.PI * 2);
+    // Subtle top inner gloss
+    const cardGloss = ctx.createLinearGradient(x, y, x, y + cardH);
+    cardGloss.addColorStop(0, "rgba(255, 255, 255, 0.08)");
+    cardGloss.addColorStop(1, "rgba(255, 255, 255, 0.01)");
+    ctx.fillStyle = cardGloss;
+    drawRoundRect(ctx, x, y, cardW, cardH, 10, true, false);
+
+    // Left neon accent bar with crimson glow
+    const barGrad = ctx.createLinearGradient(x, y + 10, x, y + cardH - 10);
+    barGrad.addColorStop(0, "#ff3366");
+    barGrad.addColorStop(1, "#e52d27");
+    ctx.fillStyle = barGrad;
     ctx.shadowColor = "#ff2a55";
-    ctx.shadowBlur = 4;
-    ctx.fill();
+    ctx.shadowBlur = 6;
+    drawRoundRect(ctx, x + 8, y + 12, 3.5, cardH - 24, 2, true, false);
     ctx.shadowBlur = 0;
 
-    // Command Name
-    ctx.fillStyle = "#f1f2f6";
-    ctx.font = `bold 13px ${FONT_FAMILY}`;
+    // Command Name: Noticeably larger, bold and clear (16px bold)
+    ctx.fillStyle = "#ffffff";
+    ctx.font = `bold 16px ${FONT_FAMILY}`;
     const nameText = `${prefix}${primaryName}`;
-    ctx.fillText(truncateText(ctx, nameText, 100), x + 22, y + 19);
+    ctx.fillText(truncateText(ctx, nameText, 250), x + 20, y + 23);
 
-    // Snippet description
-    const rawDesc = cmd.desc || cmd.description || "Command";
-    ctx.fillStyle = "rgba(164, 176, 190, 0.7)";
-    ctx.font = `11px ${FONT_FAMILY}`;
+    // Snippet description: Larger, crisp silver tone (13px)
+    const rawDesc = cmd.desc || cmd.description || "Command syntax & usage details";
+    ctx.fillStyle = "#cbd5e1";
+    ctx.font = `13px ${FONT_FAMILY}`;
     const descText = truncateText(ctx, rawDesc, cardW - 32);
-    ctx.fillText(descText, x + 22, y + 33);
+    ctx.fillText(descText, x + 20, y + 43);
   });
 
   // ── Footer Bar ──────────────────────────────────────────────
-  const footerY = baseH - 46;
-  ctx.fillStyle = "rgba(255, 255, 255, 0.02)";
-  drawRoundRect(ctx, 36, footerY, baseW - 72, 30, 6, true, false);
+  const footerY = baseH - 42;
+  ctx.fillStyle = "rgba(10, 14, 22, 0.78)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+  drawRoundRect(ctx, 36, footerY, baseW - 72, 30, 8, true, true);
 
-  ctx.fillStyle = "rgba(164, 176, 190, 0.75)";
+  ctx.fillStyle = "#ff4757";
+  ctx.font = `bold 12px ${FONT_FAMILY}`;
+  ctx.fillText("» QUICK HINT:", 48, footerY + 19);
+
+  ctx.fillStyle = "#ced6e0";
   ctx.font = `12px ${FONT_FAMILY}`;
   ctx.fillText(
-    `» Select any command from the dropdown menu below to view detailed syntax, permissions & examples`,
-    48,
+    "Select any command from the dropdown below to view syntax, permissions & examples",
+    155,
     footerY + 19
   );
 
