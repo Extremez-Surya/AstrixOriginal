@@ -3,14 +3,144 @@ const {
   ApplicationCommandOptionType,
   ContainerBuilder,
   TextDisplayBuilder,
-  SeparatorBuilder,
-  SeparatorSpacingSize,
   MessageFlags,
   AttachmentBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
 } = require("discord.js");
 const fs = require("fs");
 const noprefixManager = require("../../lib/noprefixManager");
 const backupManager = require("../../lib/backupManager");
+
+function buildShortyDashboard(stats, snapshots, selectedSnapshot = null, disabled = false) {
+  const container = new ContainerBuilder();
+
+  if (selectedSnapshot) {
+    const sizeKb = (selectedSnapshot.sizeBytes / 1024).toFixed(1);
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        `### 🗄️ **Snapshot Details: \`${selectedSnapshot.id}\`**\n` +
+        `> - **Note / Label:** \`${selectedSnapshot.label}\`\n` +
+        `> - **Recorded:** <t:${Math.floor(selectedSnapshot.timestamp / 1000)}:F> (<t:${Math.floor(selectedSnapshot.timestamp / 1000)}:R>)\n` +
+        `> - **Modules / Entries:** \`${selectedSnapshot.totalFiles}\` files • \`${selectedSnapshot.totalRecords.toLocaleString()}\` records\n` +
+        `> - **File Size:** \`${sizeKb} KB\`\n\n` +
+        `*Select an action below to restore, export, or remove this snapshot.*`
+      )
+    );
+
+    const snapshotActions = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId(`backup_slash_act_restore_${selectedSnapshot.id}`)
+        .setLabel("Restore")
+        .setEmoji("🔄")
+        .setStyle(ButtonStyle.Success)
+        .setDisabled(disabled),
+      new ButtonBuilder()
+        .setCustomId(`backup_slash_act_export_${selectedSnapshot.id}`)
+        .setLabel("Export")
+        .setEmoji("📤")
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(disabled),
+      new ButtonBuilder()
+        .setCustomId(`backup_slash_act_delete_${selectedSnapshot.id}`)
+        .setLabel("Delete")
+        .setEmoji("🗑️")
+        .setStyle(ButtonStyle.Danger)
+        .setDisabled(disabled),
+      new ButtonBuilder()
+        .setCustomId("backup_slash_act_back")
+        .setLabel("Back")
+        .setEmoji("⬅️")
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(disabled)
+    );
+
+    container.addActionRowComponents(snapshotActions);
+    return container;
+  }
+
+  const lastBackupStr = stats.latestSnapshot
+    ? `<t:${Math.floor(stats.latestSnapshot.timestamp / 1000)}:R>`
+    : "`None`";
+
+  const uptimeMins = Math.floor(stats.processUptimeSec / 60);
+  const uptimeSecs = stats.processUptimeSec % 60;
+
+  container.addTextDisplayComponents(
+    new TextDisplayBuilder().setContent(
+      `### 🛡️ **Astrix Master Data Vault & Live Backup**\n` +
+      `-# *Zero-overhead state protection with auto pre-shutdown snapshot engine.*\n\n` +
+      `> 📊 **Live Records:** \`${stats.totalDiskRecords.toLocaleString()}\` active configurations\n` +
+      `> 📁 **Protected Files:** \`${stats.activeFilesOnDisk}\` / \`${stats.trackedFilesCount}\` modules (\`${(stats.totalDiskBytes / 1024).toFixed(1)} KB\`)\n` +
+      `> ⚡ **Live RAM / Uptime:** \`${stats.ramUsageMb} MB\` • \`${uptimeMins}m ${uptimeSecs}s\`\n` +
+      `> 🗄️ **Saved Snapshots:** \`${stats.snapshotCount}\` versions • Latest: ${lastBackupStr}\n` +
+      `> 🛑 **Panel Shutdown Hook:** 🟢 **Active** *(Auto-saves when panel stops/restarts)*\n` +
+      `> 🛡️ **Auto-Heal Engine:** 🟢 **Active** *(Auto-restores data if files wiped)*`
+    )
+  );
+
+  // Dropdown for selecting snapshot (if snapshots exist)
+  if (snapshots.length > 0) {
+    const selectMenu = new StringSelectMenuBuilder()
+      .setCustomId("backup_slash_select_snapshot")
+      .setPlaceholder("Select a snapshot to inspect / restore / delete...")
+      .setDisabled(disabled);
+
+    const displaySnapshots = snapshots.slice(0, 25);
+    for (const snap of displaySnapshots) {
+      const snapLabel = (snap.label || "Snapshot").slice(0, 50);
+      const dateStr = new Date(snap.timestamp).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      selectMenu.addOptions(
+        new StringSelectMenuOptionBuilder()
+          .setLabel(snapLabel)
+          .setDescription(`${snap.id} • ${dateStr} • ${(snap.sizeBytes / 1024).toFixed(1)} KB`)
+          .setValue(snap.id)
+          .setEmoji("💾")
+      );
+    }
+
+    container.addActionRowComponents(new ActionRowBuilder().addComponents(selectMenu));
+  }
+
+  // Action Buttons Row
+  const btnRow = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId("backup_slash_btn_create")
+      .setLabel("Create")
+      .setEmoji("💾")
+      .setStyle(ButtonStyle.Success)
+      .setDisabled(disabled),
+    new ButtonBuilder()
+      .setCustomId("backup_slash_btn_export")
+      .setLabel("Export")
+      .setEmoji("📤")
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(disabled),
+    new ButtonBuilder()
+      .setCustomId("backup_slash_btn_refresh")
+      .setLabel("Refresh")
+      .setEmoji("🔄")
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(disabled),
+    new ButtonBuilder()
+      .setCustomId("backup_slash_btn_clear")
+      .setLabel("Clear All")
+      .setEmoji("🗑️")
+      .setStyle(ButtonStyle.Danger)
+      .setDisabled(disabled || snapshots.length === 0)
+  );
+
+  container.addActionRowComponents(btnRow);
+  return container;
+}
 
 module.exports = {
   name: "backup",
@@ -24,7 +154,7 @@ module.exports = {
   options: [
     {
       name: "status",
-      description: "View Master Vault health and backup status.",
+      description: "View real-time vault health, disk records, and interactive dashboard.",
       type: ApplicationCommandOptionType.Subcommand,
     },
     {
@@ -41,9 +171,54 @@ module.exports = {
       ],
     },
     {
+      name: "edit",
+      description: "Edit the label or note of an existing snapshot.",
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: "snapshot_id",
+          description: "Snapshot ID (e.g. snapshot-1727400000000).",
+          type: ApplicationCommandOptionType.String,
+          required: true,
+        },
+        {
+          name: "new_label",
+          description: "New label or description for this snapshot.",
+          type: ApplicationCommandOptionType.String,
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "delete",
+      description: "Delete a specific backup snapshot file.",
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: "snapshot_id",
+          description: "Snapshot ID to delete.",
+          type: ApplicationCommandOptionType.String,
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "clear",
+      description: "Clear all saved historical snapshots from disk.",
+      type: ApplicationCommandOptionType.Subcommand,
+    },
+    {
       name: "export",
       description: "Download the complete backup JSON file to your device.",
       type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: "snapshot_id",
+          description: "Optional specific snapshot ID to export.",
+          type: ApplicationCommandOptionType.String,
+          required: false,
+        },
+      ],
     },
     {
       name: "restore",
@@ -82,50 +257,111 @@ module.exports = {
       const label = interaction.options.getString("label") || `Slash Backup by ${interaction.user.username}`;
       const snapshot = backupManager.createSnapshot(label);
 
-      const container = new ContainerBuilder()
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### 💾 **Master Backup Snapshot Created**\n` +
-            `-# *Timestamp: <t:${Math.floor(snapshot.timestamp / 1000)}:F>*\n\n` +
-            `> - **Label:** \`${snapshot.label}\`\n` +
-            `> - **Protected Files:** \`${snapshot.stats.totalFiles}\` / ${backupManager.TRACKED_FILES.length} modules\n` +
-            `> - **Total Data Records:** \`${snapshot.stats.totalRecords.toLocaleString()}\` settings/entries\n` +
-            `> - **Snapshot ID:** \`snapshot-${snapshot.timestamp}\`\n\n` +
-            `✅ Master vault synchronized. This data is protected against updates and restarts!`
-          )
+      const container = new ContainerBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `### 💾 **Snapshot Created**\n` +
+          `> - **Label:** \`${snapshot.label}\`\n` +
+          `> - **ID:** \`snapshot-${snapshot.timestamp}\`\n` +
+          `> - **Data:** \`${snapshot.stats.totalFiles}\` modules • \`${snapshot.stats.totalRecords.toLocaleString()}\` records\n` +
+          `> - **Saved At:** <t:${Math.floor(snapshot.timestamp / 1000)}:R>\n\n` +
+          `✅ Synchronized with Master Vault. Protected against updates & restarts!`
         )
-        .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(`-# Tip: Use \`/backup export\` to download the backup file to your device.`)
-        );
+      );
 
       return interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
     }
 
-    // 2. EXPORT / DOWNLOAD
-    if (subcommand === "export") {
-      const snapshot = backupManager.createSnapshot("Pre-Export Fresh Snapshot");
-      if (!fs.existsSync(backupManager.VAULT_FILE)) {
-        return interaction.reply({ content: "❌ No vault file found on disk.", flags: MessageFlags.Ephemeral }).catch(() => null);
-      }
+    // 2. EDIT
+    if (subcommand === "edit") {
+      const targetId = interaction.options.getString("snapshot_id");
+      const newLabel = interaction.options.getString("new_label");
 
-      const fileBuffer = fs.readFileSync(backupManager.VAULT_FILE);
-      const attachment = new AttachmentBuilder(fileBuffer, {
-        name: `astrix_backup_${Date.now()}.json`,
-        description: "Astrix Master Data Vault Backup",
-      });
-
-      const container = new ContainerBuilder()
-        .addTextDisplayComponents(
+      try {
+        const edited = backupManager.editSnapshot(targetId, newLabel);
+        const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### 📤 **Astrix System Backup Export**\n` +
-            `-# *Full consolidated backup of all 30 configuration modules.*\n\n` +
-            `> - **Total Modules:** \`${snapshot.stats.totalFiles}\`\n` +
-            `> - **Total Records:** \`${snapshot.stats.totalRecords.toLocaleString()}\` configurations\n` +
-            `> - **File Size:** \`${(fileBuffer.length / 1024).toFixed(2)} KB\`\n\n` +
-            `🛡️ *Save this JSON file on your PC or phone. If you ever switch servers, use \`.backup import\` to restore everything!*`
+            `### ✏️ **Snapshot Label Updated**\n` +
+            `> - **ID:** \`${edited.id}\`\n` +
+            `> - **New Label:** \`${edited.label}\`\n\n` +
+            `✅ Successfully updated snapshot metadata.`
           )
         );
+        return interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      } catch (err) {
+        return interaction.reply({ content: `❌ Failed to edit snapshot: ${err.message}`, flags: MessageFlags.Ephemeral }).catch(() => null);
+      }
+    }
+
+    // 3. DELETE
+    if (subcommand === "delete") {
+      const targetId = interaction.options.getString("snapshot_id");
+      try {
+        const deleted = backupManager.deleteSnapshot(targetId);
+        const container = new ContainerBuilder().addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `### 🗑️ **Snapshot Deleted**\n` +
+            `> - **ID:** \`${deleted.id}\`\n` +
+            `> - **Label:** \`${deleted.label}\`\n\n` +
+            `✅ Snapshot file permanently removed from disk.`
+          )
+        );
+        return interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      } catch (err) {
+        return interaction.reply({ content: `❌ Failed to delete snapshot: ${err.message}`, flags: MessageFlags.Ephemeral }).catch(() => null);
+      }
+    }
+
+    // 4. CLEAR ALL
+    if (subcommand === "clear") {
+      const result = backupManager.clearAllSnapshots();
+      const container = new ContainerBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `### 🧹 **All Snapshots Cleared**\n` +
+          `> - **Deleted Snapshots:** \`${result.deletedCount}\` files\n\n` +
+          `✅ Historical snapshots cleaned. Master Vault remains intact for auto-heal!`
+        )
+      );
+      return interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    }
+
+    // 5. EXPORT
+    if (subcommand === "export") {
+      const targetId = interaction.options.getString("snapshot_id");
+      let filePath = backupManager.VAULT_FILE;
+      let exportLabel = "Master Vault";
+
+      if (targetId) {
+        const snapshots = backupManager.listSnapshots();
+        const target = snapshots.find(
+          (s) => s.id === targetId || s.id === `snapshot-${targetId}` || s.fileName.includes(targetId)
+        );
+        if (!target) {
+          return interaction.reply({ content: `❌ Snapshot \`${targetId}\` not found.`, flags: MessageFlags.Ephemeral }).catch(() => null);
+        }
+        filePath = target.filePath;
+        exportLabel = target.label;
+      } else {
+        backupManager.createSnapshot("Pre-Export Fresh Snapshot");
+      }
+
+      if (!fs.existsSync(filePath)) {
+        return interaction.reply({ content: "❌ No backup file found on disk.", flags: MessageFlags.Ephemeral }).catch(() => null);
+      }
+
+      const fileBuffer = fs.readFileSync(filePath);
+      const attachment = new AttachmentBuilder(fileBuffer, {
+        name: `astrix_backup_${Date.now()}.json`,
+        description: "Astrix Data Vault Backup",
+      });
+
+      const container = new ContainerBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `### 📤 **Astrix Backup Export**\n` +
+          `> - **Source:** \`${exportLabel}\`\n` +
+          `> - **File Size:** \`${(fileBuffer.length / 1024).toFixed(2)} KB\`\n\n` +
+          `🛡️ *Save this JSON file safely on your device.*`
+        )
+      );
 
       return interaction.reply({
         components: [container],
@@ -134,7 +370,7 @@ module.exports = {
       }).catch(() => null);
     }
 
-    // 3. RESTORE
+    // 6. RESTORE
     if (subcommand === "restore") {
       const targetId = interaction.options.getString("snapshot_id")?.toLowerCase();
       try {
@@ -152,17 +388,15 @@ module.exports = {
           result = backupManager.restoreFromSnapshot(target.filePath);
         }
 
-        const container = new ContainerBuilder()
-          .addTextDisplayComponents(
-            new TextDisplayBuilder().setContent(
-              `### 🔄 **Backup Restored Successfully**\n` +
-              `-# *All server settings & bot states have been restored.*\n\n` +
-              `> - **Files Restored:** \`${result.restoredFiles}\` modules\n` +
-              `> - **Origin Snapshot:** \`${result.label || "Master Vault"}\`\n` +
-              `> - **Snapshot Date:** <t:${Math.floor(result.timestamp / 1000)}:R>\n\n` +
-              `✅ Anti-Nuke, Anti-Raid, AutoMod, Welcome, JoinDM, No-Prefix, Roles and all configurations are now active!`
-            )
-          );
+        const container = new ContainerBuilder().addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `### 🔄 **Backup Restored Successfully**\n` +
+            `> - **Modules Restored:** \`${result.restoredFiles}\` files\n` +
+            `> - **Source Label:** \`${result.label || "Master Vault"}\`\n` +
+            `> - **Snapshot Date:** <t:${Math.floor(result.timestamp / 1000)}:R>\n\n` +
+            `✅ All server configurations, anti-nuke, automod, roles and settings are active!`
+          )
+        );
 
         return interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
       } catch (err) {
@@ -170,7 +404,7 @@ module.exports = {
       }
     }
 
-    // 4. LIST
+    // 7. LIST
     if (subcommand === "list") {
       const snapshots = backupManager.listSnapshots();
       if (snapshots.length === 0) {
@@ -178,58 +412,170 @@ module.exports = {
       }
 
       let listText = snapshots
-        .slice(0, 8)
+        .slice(0, 10)
         .map((s, idx) => {
           const sizeKb = (s.sizeBytes / 1024).toFixed(1);
-          return `> \`${idx + 1}.\` **${s.id}**\n> -# Label: *${s.label}* • Files: \`${s.totalFiles}\` • Date: <t:${Math.floor(s.timestamp / 1000)}:R> (\`${sizeKb} KB\`)`;
+          return `> \`${idx + 1}.\` **${s.id}** — *${s.label}*\n> -# <t:${Math.floor(s.timestamp / 1000)}:R> • \`${s.totalFiles}\` files • \`${s.totalRecords}\` records • \`${sizeKb} KB\``;
         })
         .join("\n\n");
 
-      const container = new ContainerBuilder()
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `### 🗄️ **Saved Backup Snapshots**\n` +
-            `-# *Showing ${Math.min(8, snapshots.length)} of ${snapshots.length} total stored snapshots.*\n\n` +
-            listText +
-            `\n\n> **To restore a specific snapshot:** \`/backup restore snapshot_id:<id>\``
-          )
-        );
+      const container = new ContainerBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `### 🗄️ **Saved Backup Snapshots (${snapshots.length})**\n\n` +
+          listText +
+          `\n\n-# Quick Actions: \`/backup restore snapshot_id:<id>\` • \`/backup delete snapshot_id:<id>\``
+        )
+      );
 
       return interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
     }
 
-    // 5. STATUS
-    const stats = backupManager.getVaultStats();
-    const lastBackupText = stats.vaultTimestamp
-      ? `<t:${Math.floor(stats.vaultTimestamp / 1000)}:F> (<t:${Math.floor(stats.vaultTimestamp / 1000)}:R>)`
-      : "`Never`";
+    // 8. STATUS / DEFAULT DASHBOARD (Interactive)
+    let stats = backupManager.getRealtimeStats();
+    let snapshots = backupManager.listSnapshots();
+    let selectedSnapshot = null;
 
-    const container = new ContainerBuilder()
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `### 🛡️ **Astrix Master Data Vault & Backup System**\n` +
-          `-# *Continuous anti-wipe protection & state persistence engine.*\n\n` +
-          `### 📊 **Vault Health & Coverage**\n` +
-          `> - **Master Vault:** ${stats.vaultExists ? "🟢 **HEALTHY & SYNCHRONIZED**" : "🟡 Not initialized"}\n` +
-          `> - **Auto-Heal Engine:** 🛡️ **ACTIVE** *(Automatically recovers data if an update wipes files)*\n` +
-          `> - **Protected Modules:** \`${stats.activeFilesOnDisk}\` / \`${stats.trackedFilesCount}\` configurations\n` +
-          `> - **Total Live Records:** \`${stats.totalDiskRecords.toLocaleString()}\` server entries\n` +
-          `> - **Saved Snapshots:** \`${stats.snapshotCount}\` historical versions\n` +
-          `> - **Last Backup:** ${lastBackupText}\n\n` +
-          `### ⚙️ **Available Commands**\n` +
-          `> - \`/backup create [label]\` — Take an instant atomic backup snapshot\n` +
-          `> - \`/backup restore [snapshot_id]\` — Restore all server configurations\n` +
-          `> - \`/backup export\` — Download full \`master_vault.json\` file directly in Discord\n` +
-          `> - \`/backup list\` — View all stored historical snapshots`
-        )
-      )
-      .addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true))
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `-# Auto-Sync runs every 10 mins and before container shutdown. Your data is permanently safe!`
-        )
-      );
+    const initialContainer = buildShortyDashboard(stats, snapshots, selectedSnapshot, false);
 
-    return interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    const replyMsg = await interaction.reply({
+      components: [initialContainer],
+      flags: MessageFlags.IsComponentsV2,
+      fetchReply: true,
+    });
+
+    const collector = replyMsg.createMessageComponentCollector({
+      filter: (i) => i.user.id === interaction.user.id,
+      time: 120000,
+    });
+
+    collector.on("collect", async (i) => {
+      try {
+        const customId = i.customId;
+
+        // Dropdown selection
+        if (customId === "backup_slash_select_snapshot") {
+          await i.deferUpdate();
+          const targetId = i.values[0];
+          snapshots = backupManager.listSnapshots();
+          selectedSnapshot = snapshots.find((s) => s.id === targetId) || null;
+          const updated = buildShortyDashboard(stats, snapshots, selectedSnapshot, false);
+          return i.editReply({ components: [updated] });
+        }
+
+        // Back to main overview
+        if (customId === "backup_slash_act_back") {
+          await i.deferUpdate();
+          selectedSnapshot = null;
+          stats = backupManager.getRealtimeStats();
+          snapshots = backupManager.listSnapshots();
+          const updated = buildShortyDashboard(stats, snapshots, null, false);
+          return i.editReply({ components: [updated] });
+        }
+
+        // Action: Restore selected snapshot
+        if (customId.startsWith("backup_slash_act_restore_")) {
+          await i.deferUpdate();
+          const targetId = customId.replace("backup_slash_act_restore_", "");
+          const target = snapshots.find((s) => s.id === targetId);
+          if (target) {
+            backupManager.restoreFromSnapshot(target.filePath);
+          }
+          selectedSnapshot = null;
+          stats = backupManager.getRealtimeStats();
+          snapshots = backupManager.listSnapshots();
+          const updated = buildShortyDashboard(stats, snapshots, null, false);
+          return i.followUp({ content: `✅ Snapshot \`${targetId}\` restored successfully!`, flags: MessageFlags.Ephemeral });
+        }
+
+        // Action: Export selected snapshot
+        if (customId.startsWith("backup_slash_act_export_")) {
+          const targetId = customId.replace("backup_slash_act_export_", "");
+          const target = snapshots.find((s) => s.id === targetId);
+          if (target && fs.existsSync(target.filePath)) {
+            const buf = fs.readFileSync(target.filePath);
+            const att = new AttachmentBuilder(buf, { name: `${target.id}.json` });
+            return i.reply({
+              content: `📤 Here is the exported file for \`${target.id}\`:`,
+              files: [att],
+              flags: MessageFlags.Ephemeral,
+            });
+          }
+          return i.reply({ content: "❌ Target snapshot file missing.", flags: MessageFlags.Ephemeral });
+        }
+
+        // Action: Delete selected snapshot
+        if (customId.startsWith("backup_slash_act_delete_")) {
+          await i.deferUpdate();
+          const targetId = customId.replace("backup_slash_act_delete_", "");
+          try {
+            backupManager.deleteSnapshot(targetId);
+          } catch (_) {}
+          selectedSnapshot = null;
+          stats = backupManager.getRealtimeStats();
+          snapshots = backupManager.listSnapshots();
+          const updated = buildShortyDashboard(stats, snapshots, null, false);
+          await i.editReply({ components: [updated] });
+          return i.followUp({ content: `🗑️ Snapshot \`${targetId}\` deleted.`, flags: MessageFlags.Ephemeral });
+        }
+
+        // Button: Create snapshot
+        if (customId === "backup_slash_btn_create") {
+          await i.deferUpdate();
+          backupManager.createSnapshot(`Manual Snapshot (${interaction.user.username})`);
+          stats = backupManager.getRealtimeStats();
+          snapshots = backupManager.listSnapshots();
+          selectedSnapshot = null;
+          const updated = buildShortyDashboard(stats, snapshots, null, false);
+          await i.editReply({ components: [updated] });
+          return i.followUp({ content: `💾 New backup snapshot created successfully!`, flags: MessageFlags.Ephemeral });
+        }
+
+        // Button: Export Master Vault
+        if (customId === "backup_slash_btn_export") {
+          backupManager.createSnapshot("Pre-Export Fresh Snapshot");
+          if (!fs.existsSync(backupManager.VAULT_FILE)) {
+            return i.reply({ content: "❌ No vault file found on disk.", flags: MessageFlags.Ephemeral });
+          }
+          const buf = fs.readFileSync(backupManager.VAULT_FILE);
+          const att = new AttachmentBuilder(buf, { name: `astrix_backup_${Date.now()}.json` });
+          return i.reply({
+            content: `📤 **Master Data Vault Export:**`,
+            files: [att],
+            flags: MessageFlags.Ephemeral,
+          });
+        }
+
+        // Button: Refresh stats
+        if (customId === "backup_slash_btn_refresh") {
+          await i.deferUpdate();
+          stats = backupManager.getRealtimeStats();
+          snapshots = backupManager.listSnapshots();
+          selectedSnapshot = null;
+          const updated = buildShortyDashboard(stats, snapshots, null, false);
+          return i.editReply({ components: [updated] });
+        }
+
+        // Button: Clear All snapshots
+        if (customId === "backup_slash_btn_clear") {
+          await i.deferUpdate();
+          const res = backupManager.clearAllSnapshots();
+          stats = backupManager.getRealtimeStats();
+          snapshots = backupManager.listSnapshots();
+          selectedSnapshot = null;
+          const updated = buildShortyDashboard(stats, snapshots, null, false);
+          await i.editReply({ components: [updated] });
+          return i.followUp({ content: `🧹 Cleared \`${res.deletedCount}\` historical snapshots!`, flags: MessageFlags.Ephemeral });
+        }
+      } catch (err) {
+        console.error("[BackupSlashCommand] Interaction error:", err);
+      }
+    });
+
+    collector.on("end", async () => {
+      try {
+        const finalContainer = buildShortyDashboard(stats, snapshots, selectedSnapshot, true);
+        await replyMsg.edit({ components: [finalContainer] }).catch(() => null);
+      } catch (_) {}
+    });
   },
 };

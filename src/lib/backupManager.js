@@ -57,7 +57,6 @@ function countRecords(data) {
   if (!data) return 0;
   if (Array.isArray(data)) return data.length;
   if (typeof data === "object") {
-    // If it has standard collections like noprefix
     if (data.users || data.servers || data.owners) {
       return (
         (data.users?.length || 0) +
@@ -99,7 +98,6 @@ function writeJsonSafe(filePath, data) {
     fs.renameSync(tempPath, filePath);
     return true;
   } catch (err) {
-    console.error(`[BackupManager] Failed writing ${filePath}:`, err.message);
     try {
       fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf8");
       return true;
@@ -112,7 +110,7 @@ function writeJsonSafe(filePath, data) {
 /**
  * Creates an atomic consolidated snapshot of all bot configurations
  */
-function createSnapshot(label = "Auto Backup") {
+function createSnapshot(label = "Manual Backup") {
   ensureDirs();
   const timestamp = Date.now();
   const bundle = {
@@ -155,8 +153,8 @@ function createSnapshot(label = "Auto Backup") {
   const snapshotFile = path.join(SNAPSHOT_DIR, `snapshot-${timestamp}.json`);
   writeJsonSafe(snapshotFile, bundle);
 
-  // 3. Keep latest 10 snapshots, prune older
-  pruneOldSnapshots(10);
+  // 3. Keep latest 15 snapshots, prune older
+  pruneOldSnapshots(15);
 
   return bundle;
 }
@@ -164,7 +162,7 @@ function createSnapshot(label = "Auto Backup") {
 /**
  * Deletes older snapshots exceeding maxKeep count
  */
-function pruneOldSnapshots(maxKeep = 10) {
+function pruneOldSnapshots(maxKeep = 15) {
   try {
     if (!fs.existsSync(SNAPSHOT_DIR)) return;
     const files = fs
@@ -187,6 +185,153 @@ function pruneOldSnapshots(maxKeep = 10) {
 }
 
 /**
+ * Edits the label of an existing snapshot
+ */
+function editSnapshot(snapshotId, newLabel) {
+  ensureDirs();
+  const snapshots = listSnapshots();
+  const target = snapshots.find(
+    (s) => s.id === snapshotId || s.id === `snapshot-${snapshotId}` || s.fileName.includes(snapshotId)
+  );
+
+  if (!target) {
+    throw new Error(`Snapshot \`${snapshotId}\` was not found on disk.`);
+  }
+
+  const data = readJsonSafe(target.filePath);
+  if (!data) {
+    throw new Error("Unable to read target snapshot content.");
+  }
+
+  data.label = newLabel;
+  data.updatedAt = new Date().toISOString();
+  writeJsonSafe(target.filePath, data);
+
+  // If this target is also the latest vault, update vault label
+  const vault = readJsonSafe(VAULT_FILE);
+  if (vault && vault.timestamp === data.timestamp) {
+    vault.label = newLabel;
+    writeJsonSafe(VAULT_FILE, vault);
+  }
+
+  return { id: target.id, label: newLabel, timestamp: data.timestamp };
+}
+
+/**
+ * Deletes a single snapshot by ID
+ */
+function deleteSnapshot(snapshotId) {
+  ensureDirs();
+  const snapshots = listSnapshots();
+  const target = snapshots.find(
+    (s) => s.id === snapshotId || s.id === `snapshot-${snapshotId}` || s.fileName.includes(snapshotId)
+  );
+
+  if (!target) {
+    throw new Error(`Snapshot \`${snapshotId}\` was not found.`);
+  }
+
+  fs.unlinkSync(target.filePath);
+  return { id: target.id, label: target.label };
+}
+
+/**
+ * Clears all stored historical snapshots
+ */
+function clearAllSnapshots() {
+  ensureDirs();
+  if (!fs.existsSync(SNAPSHOT_DIR)) return { deletedCount: 0 };
+
+  const files = fs
+    .readdirSync(SNAPSHOT_DIR)
+    .filter((f) => f.startsWith("snapshot-") && f.endsWith(".json"));
+
+  let deletedCount = 0;
+  for (const f of files) {
+    try {
+      fs.unlinkSync(path.join(SNAPSHOT_DIR, f));
+      deletedCount++;
+    } catch (_) {}
+  }
+
+  return { deletedCount };
+}
+
+/**
+ * Lists all available snapshots on disk
+ */
+function listSnapshots() {
+  ensureDirs();
+  if (!fs.existsSync(SNAPSHOT_DIR)) return [];
+
+  const files = fs
+    .readdirSync(SNAPSHOT_DIR)
+    .filter((f) => f.startsWith("snapshot-") && f.endsWith(".json"))
+    .map((f) => {
+      const filePath = path.join(SNAPSHOT_DIR, f);
+      const stat = fs.statSync(filePath);
+      const data = readJsonSafe(filePath);
+      return {
+        id: f.replace(".json", ""),
+        fileName: f,
+        filePath,
+        timestamp: data?.timestamp || stat.mtimeMs,
+        createdAt: data?.createdAt || new Date(stat.mtimeMs).toISOString(),
+        label: data?.label || "Snapshot",
+        totalFiles: data?.stats?.totalFiles || 0,
+        totalRecords: data?.stats?.totalRecords || 0,
+        sizeBytes: stat.size,
+      };
+    })
+    .sort((a, b) => b.timestamp - a.timestamp);
+
+  return files;
+}
+
+/**
+ * Returns real-time live statistics across all modules and memory
+ */
+function getRealtimeStats() {
+  ensureDirs();
+  const vault = readJsonSafe(VAULT_FILE);
+  const snapshots = listSnapshots();
+
+  let totalDiskRecords = 0;
+  let activeFiles = 0;
+  let totalDiskBytes = 0;
+
+  for (const f of TRACKED_FILES) {
+    const fullPath = path.join(LIB_DIR, f);
+    const data = readJsonSafe(fullPath);
+    if (data) {
+      activeFiles++;
+      totalDiskRecords += countRecords(data);
+      try {
+        totalDiskBytes += fs.statSync(fullPath).size;
+      } catch (_) {}
+    }
+  }
+
+  const mem = process.memoryUsage();
+
+  return {
+    vaultExists: Boolean(vault),
+    vaultTimestamp: vault?.timestamp || null,
+    vaultCreatedAt: vault?.createdAt || null,
+    vaultLabel: vault?.label || "None",
+    vaultRecords: vault?.stats?.totalRecords || 0,
+    trackedFilesCount: TRACKED_FILES.length,
+    activeFilesOnDisk: activeFiles,
+    totalDiskRecords,
+    totalDiskBytes,
+    snapshotCount: snapshots.length,
+    latestSnapshot: snapshots[0] || null,
+    processUptimeSec: Math.floor(process.uptime()),
+    ramUsageMb: (mem.rss / 1024 / 1024).toFixed(1),
+  };
+}
+
+/**
  * AUTO-HEAL ON STARTUP:
  * Compares files on disk vs master vault.
  * If any file on disk was wiped or replaced with blank/empty values by a code update or git pull,
@@ -197,10 +342,9 @@ function verifyAndAutoHeal() {
   const vault = readJsonSafe(VAULT_FILE);
 
   if (!vault || !vault.files) {
-    // No prior vault found on disk; create the initial snapshot right now
     createSnapshot("Initial Master Vault Baseline");
     console.log("[BackupManager] 📦 Initialized Master Vault baseline from current files.");
-    return { healed: 0, preserved: 0 };
+    return { healed: 0, totalFiles: 0 };
   }
 
   let healedCount = 0;
@@ -215,11 +359,16 @@ function verifyAndAutoHeal() {
     const vaultRecords = countRecords(vaultData);
 
     // Case 1: Disk file was wiped out or truncated to empty ({}) while vault has real data!
-    if (vaultData && (!diskData || (diskRecords === 0 && vaultRecords > 0) || (diskRecords < vaultRecords && diskRecords <= 1 && vaultRecords >= 2))) {
+    if (
+      vaultData &&
+      (!diskData ||
+        (diskRecords === 0 && vaultRecords > 0) ||
+        (diskRecords < vaultRecords && diskRecords <= 1 && vaultRecords >= 2))
+    ) {
       writeJsonSafe(fullPath, vaultData);
       healedCount++;
       console.log(
-        `[BackupManager] 🛡️ AUTO-HEAL RESTORE: "${filename}" was recovered from vault (${vaultRecords} records restored after update)!`
+        `[BackupManager] 🛡️ AUTO-HEAL: Restored "${filename}" from vault (${vaultRecords} records restored after update)!`
       );
     }
     // Case 2: Disk file has new/updated configurations -> update vault
@@ -283,112 +432,55 @@ function restoreFromSnapshot(snapshotPathOrData = null) {
   };
 }
 
-/**
- * Lists all available snapshots on disk
- */
-function listSnapshots() {
-  ensureDirs();
-  if (!fs.existsSync(SNAPSHOT_DIR)) return [];
-
-  const files = fs
-    .readdirSync(SNAPSHOT_DIR)
-    .filter((f) => f.startsWith("snapshot-") && f.endsWith(".json"))
-    .map((f) => {
-      const filePath = path.join(SNAPSHOT_DIR, f);
-      const stat = fs.statSync(filePath);
-      const data = readJsonSafe(filePath);
-      return {
-        id: f.replace(".json", ""),
-        fileName: f,
-        filePath,
-        timestamp: data?.timestamp || stat.mtimeMs,
-        createdAt: data?.createdAt || new Date(stat.mtimeMs).toISOString(),
-        label: data?.label || "Snapshot",
-        totalFiles: data?.stats?.totalFiles || 0,
-        totalRecords: data?.stats?.totalRecords || 0,
-        sizeBytes: stat.size,
-      };
-    })
-    .sort((a, b) => b.timestamp - a.timestamp);
-
-  return files;
-}
+let isShuttingDown = false;
 
 /**
- * Returns latest vault statistics
+ * Synchronous pre-shutdown handler:
+ * Triggered when bot stops or restarts from the panel (SIGINT, SIGTERM, SIGHUP, beforeExit)
  */
-function getVaultStats() {
-  ensureDirs();
-  const vault = readJsonSafe(VAULT_FILE);
-  const snapshots = listSnapshots();
-
-  let totalDiskRecords = 0;
-  let activeFiles = 0;
-
-  for (const f of TRACKED_FILES) {
-    const fullPath = path.join(LIB_DIR, f);
-    const data = readJsonSafe(fullPath);
-    if (data) {
-      activeFiles++;
-      totalDiskRecords += countRecords(data);
-    }
+function handleShutdown(signal = "SIGNAL") {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+  try {
+    console.log(`[BackupManager] 🛑 Panel ${signal} received. Saving emergency pre-shutdown backup...`);
+    createSnapshot(`Panel Stop/Restart (${signal})`);
+    console.log(`[BackupManager] ✅ Pre-shutdown backup saved successfully.`);
+  } catch (err) {
+    console.error(`[BackupManager] Failed saving pre-shutdown backup:`, err.message);
   }
-
-  return {
-    vaultExists: Boolean(vault),
-    vaultTimestamp: vault?.timestamp || null,
-    vaultCreatedAt: vault?.createdAt || null,
-    vaultRecords: vault?.stats?.totalRecords || 0,
-    trackedFilesCount: TRACKED_FILES.length,
-    activeFilesOnDisk: activeFiles,
-    totalDiskRecords,
-    snapshotCount: snapshots.length,
-    latestSnapshot: snapshots[0] || null,
-  };
 }
 
-let syncInterval = null;
-
 /**
- * Initializes auto-heal, shutdown hooks, and periodic 10-minute snapshot sync
+ * Initializes backup system:
+ * - Runs auto-heal on boot
+ * - Hooks panel restart/shutdown signals (NO background interval, zero idle CPU load!)
  */
 function init() {
   ensureDirs();
 
-  // 1. Run auto-heal immediately before bot shards boot up
+  // 1. Auto-heal on startup
   verifyAndAutoHeal();
 
-  // 2. Schedule periodic auto-sync every 10 minutes
-  if (!syncInterval) {
-    syncInterval = setInterval(() => {
-      try {
-        createSnapshot("Auto Periodic 10-Min Sync");
-      } catch (e) {
-        console.error("[BackupManager] Periodic sync failed:", e.message);
-      }
-    }, 10 * 60 * 1000);
-
-    if (syncInterval.unref) syncInterval.unref();
-  }
-
-  // 3. Graceful shutdown handler to persist last state
-  const handleExit = () => {
-    try {
-      createSnapshot("Process Shutdown Safeguard");
-    } catch (_) {}
-  };
-
-  process.once("SIGINT", handleExit);
-  process.once("SIGTERM", handleExit);
+  // 2. Pre-shutdown hooks for panel stops and restarts
+  process.once("SIGINT", () => handleShutdown("SIGINT"));
+  process.once("SIGTERM", () => handleShutdown("SIGTERM"));
+  process.once("SIGHUP", () => handleShutdown("SIGHUP"));
+  process.once("beforeExit", () => handleShutdown("beforeExit"));
 }
 
 module.exports = {
   init,
+  handleShutdown,
   verifyAndAutoHeal,
   createSnapshot,
+  editSnapshot,
+  deleteSnapshot,
+  clearAllSnapshots,
   restoreFromSnapshot,
   listSnapshots,
-  getVaultStats,
+  getRealtimeStats,
+  getVaultStats: getRealtimeStats,
   VAULT_FILE,
+  SNAPSHOT_DIR,
   TRACKED_FILES,
 };
