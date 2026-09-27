@@ -1,6 +1,5 @@
 const {
   ContainerBuilder,
-  TextDisplayBuilder,
   SeparatorBuilder,
   SeparatorSpacingSize,
   MessageFlags,
@@ -13,22 +12,16 @@ const {
   MediaGalleryBuilder,
   MediaGalleryItemBuilder,
 } = require("discord.js");
-const path = require("path");
 const allCategories = require("../lib/categories.json");
 const prefixManager = require("../lib/prefixManager");
 const {
+  generateMainHelpCard,
   generateCategoryCard,
   generateCommandDetailCard,
   CATEGORY_EMOJIS,
 } = require("../lib/helpCanvas");
 
-// Main Banner Attachment Setup
-const logoPath = path.join(__dirname, "../assets/helpmenu.png");
-function createBannerAttachment() {
-  return new AttachmentBuilder(logoPath, { name: "helpmenu.png" });
-}
-
-function createMediaGallery(attachmentName = "helpmenu.png") {
+function createMediaGallery(attachmentName) {
   const mediaItem = new MediaGalleryItemBuilder().setURL(`attachment://${attachmentName}`);
   return new MediaGalleryBuilder().addItems(mediaItem);
 }
@@ -142,7 +135,7 @@ function buildCategoryActionRows(client, userId, disabled = false) {
         new StringSelectMenuOptionBuilder()
           .setLabel("Home Overview")
           .setValue("home")
-          .setDescription("Return to the main category overview.")
+          .setDescription("Return to the main directory overview.")
           .setEmoji("🏠"),
         ...group.categories.slice(0, 24).map((cat) => {
           const cmds = categoryMap.get(cat) || [];
@@ -192,44 +185,42 @@ function buildLinkButtonsRow(client) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 1. MAIN CONTAINER (Clean Canvas Banner Image UI + Dropdowns & Buttons)
+// 1. MAIN CONTAINER (Pure Canvas Image UI + Dropdowns & Buttons, Zero Text)
 // ─────────────────────────────────────────────────────────────────────────────
-function buildMainContainer(client, guildId, userId, disabled = false) {
+async function buildMainContainerPayload(client, guild, userId, disabled = false) {
   const { sortedCategories } = getCategoryData(client, userId);
   const totalCommands = client.messageCommands.size;
-  const prefix = guildId ? prefixManager.getPrefix(guildId) : ".";
+  const prefix = guild ? prefixManager.getPrefix(guild.id) : ".";
 
+  const cardBuffer = await generateMainHelpCard({
+    client,
+    guild,
+    prefix,
+    totalCommands,
+    totalCategories: sortedCategories.length,
+    latency: client.ws?.ping || 24,
+  });
+
+  const attachment = new AttachmentBuilder(cardBuffer, { name: "help_home.png" });
   const categoryRows = buildCategoryActionRows(client, userId, disabled);
   const linkRow = buildLinkButtonsRow(client);
 
   const container = new ContainerBuilder()
-    .addMediaGalleryComponents(createMediaGallery("helpmenu.png"))
+    .addMediaGalleryComponents(createMediaGallery("help_home.png"))
     .addSeparatorComponents(
-      new SeparatorBuilder()
-        .setSpacing(SeparatorSpacingSize.Small)
-        .setDivider(true)
-    )
-    .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        `> **Prefix:** \`${prefix}\` • **Commands:** \`${totalCommands}\` • **Categories:** \`${sortedCategories.length}\``
-      )
-    )
-    .addSeparatorComponents(
-      new SeparatorBuilder()
-        .setSpacing(SeparatorSpacingSize.Small)
-        .setDivider(true)
+      new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
     )
     .addActionRowComponents(...categoryRows, linkRow);
 
-  return container;
+  return { container, attachment };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 2. CATEGORY CANVAS CONTAINER (Dynamic Visual Card + Command Dropdown)
+// 2. CATEGORY CANVAS CONTAINER (Pure Canvas Image UI + Command Dropdown & Buttons)
 // ─────────────────────────────────────────────────────────────────────────────
-async function buildCategoryContainerPayload(client, categoryQuery, userId, guildId, page = 0) {
+async function buildCategoryContainerPayload(client, categoryQuery, userId, guild, page = 0) {
   const { categoryMap, sortedCategories } = getCategoryData(client, userId);
-  const prefix = guildId ? prefixManager.getPrefix(guildId) : ".";
+  const prefix = guild ? prefixManager.getPrefix(guild.id) : ".";
 
   // Match category name case-insensitively
   const categoryName =
@@ -240,87 +231,82 @@ async function buildCategoryContainerPayload(client, categoryQuery, userId, guil
   const categoryEmoji = CATEGORY_EMOJIS[categoryName] || "📁";
   const cmds = categoryMap.get(categoryName) || [];
 
-  // Generate crisp 2x High-DPI Category Canvas Card
+  const pageSize = 28;
+  const totalPages = Math.ceil(cmds.length / pageSize) || 1;
+  const currentPage = Math.max(0, Math.min(page, totalPages - 1));
+
+  // Generate crisp 2x High-DPI Category Canvas Card with full command grid
   const categoryBuffer = await generateCategoryCard(
     categoryName,
     cmds,
     prefix,
-    sortedCategories.length
+    sortedCategories.length,
+    currentPage,
+    totalPages
   );
   const attachment = new AttachmentBuilder(categoryBuffer, {
     name: "category_card.png",
   });
 
-  // Build paginated command select menu options
-  const pageSize = 23;
-  const totalPages = Math.ceil(cmds.length / pageSize) || 1;
-  const currentPage = Math.max(0, Math.min(page, totalPages - 1));
+  // Build paginated command select menu options (up to 25 Discord dropdown limit)
+  const dropdownPageSize = 25;
+  const dropdownCmds = cmds.slice(0, dropdownPageSize);
 
-  const startIdx = currentPage * pageSize;
-  const endIdx = startIdx + pageSize;
-  const currentCmds = cmds.slice(startIdx, endIdx);
-
-  const options = [];
-
-  if (currentPage > 0) {
-    options.push(
-      new StringSelectMenuOptionBuilder()
-        .setLabel(`Previous Page (${currentPage}/${totalPages})`)
-        .setValue(`page_${categoryName.toLowerCase()}_${currentPage - 1}`)
-        .setDescription(`Browse previous commands in ${categoryName}`)
-        .setEmoji("⬅️")
-    );
-  }
-
-  currentCmds.forEach((cmd) => {
+  const options = dropdownCmds.map((cmd) => {
     const primaryName = cmd.alias?.[0] || cmd.name;
     const desc = cmd.desc || cmd.description || `Command details for ${primaryName}`;
     const truncatedDesc = desc.length > 70 ? desc.slice(0, 67) + "..." : desc;
 
-    options.push(
-      new StringSelectMenuOptionBuilder()
-        .setLabel(`${prefix}${primaryName}`)
-        .setValue(`cmd_${primaryName}`)
-        .setDescription(truncatedDesc)
-        .setEmoji(categoryEmoji)
-    );
+    return new StringSelectMenuOptionBuilder()
+      .setLabel(`${prefix}${primaryName}`)
+      .setValue(`cmd_${primaryName}`)
+      .setDescription(truncatedDesc)
+      .setEmoji(categoryEmoji);
   });
-
-  if (currentPage < totalPages - 1) {
-    options.push(
-      new StringSelectMenuOptionBuilder()
-        .setLabel(`Next Page (${currentPage + 2}/${totalPages})`)
-        .setValue(`page_${categoryName.toLowerCase()}_${currentPage + 1}`)
-        .setDescription(`Browse more commands in ${categoryName}`)
-        .setEmoji("➡️")
-    );
-  }
 
   const container = new ContainerBuilder()
     .addMediaGalleryComponents(createMediaGallery("category_card.png"))
     .addSeparatorComponents(
-      new SeparatorBuilder()
-        .setSpacing(SeparatorSpacingSize.Small)
-        .setDivider(true)
+      new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
     );
 
   // Command select menu row
   if (options.length > 0) {
     const commandSelectMenu = new StringSelectMenuBuilder()
       .setCustomId("help_command_select")
-      .setPlaceholder(`🔍 Select a ${categoryName} command...`)
+      .setPlaceholder(`🔍 Select a ${categoryName} command for syntax & details...`)
       .addOptions(options);
 
-    const commandSelectRow = new ActionRowBuilder().addComponents(commandSelectMenu);
-    container.addActionRowComponents(commandSelectRow);
+    container.addActionRowComponents(new ActionRowBuilder().addComponents(commandSelectMenu));
   }
 
-  // Action buttons: [📁 Home] [❌ Close]
+  // Button Rows
+  const buttonComponents = [];
+
+  // Multi-page navigation if category has > 28 commands (e.g. Moderation, Music)
+  if (totalPages > 1) {
+    const prevBtn = new ButtonBuilder()
+      .setCustomId(`help_btn_page_${categoryName.toLowerCase()}_${currentPage - 1}`)
+      .setLabel("Prev Page")
+      .setEmoji("⬅️")
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(currentPage === 0);
+
+    const nextBtn = new ButtonBuilder()
+      .setCustomId(`help_btn_page_${categoryName.toLowerCase()}_${currentPage + 1}`)
+      .setLabel("Next Page")
+      .setEmoji("➡️")
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(currentPage >= totalPages - 1);
+
+    buttonComponents.push(prevBtn, nextBtn);
+  }
+
   const homeBtn = new ButtonBuilder()
     .setCustomId("help_btn_home")
     .setLabel("Home")
-    .setEmoji("📁")
-    .setStyle(ButtonStyle.Secondary);
+    .setEmoji("🏠")
+    .setStyle(ButtonStyle.Primary);
 
   const closeBtn = new ButtonBuilder()
     .setCustomId("help_btn_close")
@@ -328,36 +314,34 @@ async function buildCategoryContainerPayload(client, categoryQuery, userId, guil
     .setEmoji("❌")
     .setStyle(ButtonStyle.Danger);
 
-  const buttonRow = new ActionRowBuilder().addComponents(homeBtn, closeBtn);
+  buttonComponents.push(homeBtn, closeBtn);
+
+  if (totalPages === 1) {
+    const inviteUrl = `https://discord.com/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot%20applications.commands`;
+    const inviteBtn = new ButtonBuilder()
+      .setEmoji("🔗")
+      .setLabel("Invite")
+      .setStyle(ButtonStyle.Link)
+      .setURL(inviteUrl);
+    buttonComponents.push(inviteBtn);
+  }
+
+  const buttonRow = new ActionRowBuilder().addComponents(buttonComponents);
   container.addActionRowComponents(buttonRow);
 
   return { container, attachment };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 3. COMMAND DETAIL CANVAS CONTAINER (Dynamic Visual Card + Navigation Buttons)
+// 3. COMMAND DETAIL CANVAS CONTAINER (Pure Canvas Image UI + Action Buttons)
 // ─────────────────────────────────────────────────────────────────────────────
-async function buildCommandContainerPayload(client, commandQuery, userId, guildId) {
-  const prefix = guildId ? prefixManager.getPrefix(guildId) : ".";
+async function buildCommandContainerPayload(client, commandQuery, userId, guild) {
+  const prefix = guild ? prefixManager.getPrefix(guild.id) : ".";
   const exactCmd = findCommand(client, commandQuery);
 
   if (!exactCmd) {
-    const notFoundContainer = new ContainerBuilder().addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        `### ⭐ Command Not Found\n` +
-          `-# *No command or alias matching \`${commandQuery}\` was found in the database.*\n\n` +
-          `> - **Tip:** Type \`.help\` without arguments to explore all categories.`
-      )
-    );
-
-    const homeBtn = new ButtonBuilder()
-      .setCustomId("help_btn_home")
-      .setLabel("Home")
-      .setEmoji("📁")
-      .setStyle(ButtonStyle.Primary);
-
-    notFoundContainer.addActionRowComponents(new ActionRowBuilder().addComponents(homeBtn));
-    return { container: notFoundContainer, attachment: null };
+    const { container, attachment } = await buildMainContainerPayload(client, guild, userId);
+    return { container, attachment };
   }
 
   const primaryName = exactCmd.alias ? exactCmd.alias[0] : (exactCmd.name || commandQuery);
@@ -370,17 +354,17 @@ async function buildCommandContainerPayload(client, commandQuery, userId, guildI
     name: "command_card.png",
   });
 
-  // Buttons inside container: [⬅ Back] [📁 Home] [ℹ Slash Info]
+  // Buttons inside container: [⬅ Back to Category] [🏠 Home] [ℹ Slash Info] [❌ Close]
   const backBtn = new ButtonBuilder()
     .setCustomId(`help_btn_back_${categoryName.toLowerCase()}`)
-    .setLabel("Back")
+    .setLabel(`Back to ${categoryName}`)
     .setEmoji("⬅️")
     .setStyle(ButtonStyle.Secondary);
 
   const homeBtn = new ButtonBuilder()
     .setCustomId("help_btn_home")
     .setLabel("Home")
-    .setEmoji("📁")
+    .setEmoji("🏠")
     .setStyle(ButtonStyle.Primary);
 
   const slashBtn = new ButtonBuilder()
@@ -389,14 +373,18 @@ async function buildCommandContainerPayload(client, commandQuery, userId, guildI
     .setEmoji("ℹ️")
     .setStyle(ButtonStyle.Success);
 
-  const buttonRow = new ActionRowBuilder().addComponents(backBtn, homeBtn, slashBtn);
+  const closeBtn = new ButtonBuilder()
+    .setCustomId("help_btn_close")
+    .setLabel("Close")
+    .setEmoji("❌")
+    .setStyle(ButtonStyle.Danger);
+
+  const buttonRow = new ActionRowBuilder().addComponents(backBtn, homeBtn, slashBtn, closeBtn);
 
   const container = new ContainerBuilder()
     .addMediaGalleryComponents(createMediaGallery("command_card.png"))
     .addSeparatorComponents(
-      new SeparatorBuilder()
-        .setSpacing(SeparatorSpacingSize.Small)
-        .setDivider(true)
+      new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true)
     )
     .addActionRowComponents(buttonRow);
 
@@ -406,7 +394,7 @@ async function buildCommandContainerPayload(client, commandQuery, userId, guildI
 // ─────────────────────────────────────────────────────────────────────────────
 // 4. INTERACTIVE COLLECTOR CONTROLLER
 // ─────────────────────────────────────────────────────────────────────────────
-function setupHelpCollector({ client, messageOrInteraction, initialContainer, userId, guildId }) {
+function setupHelpCollector({ client, messageOrInteraction, initialContainer, userId, guild }) {
   const filter = () => true;
 
   const collector = messageOrInteraction.createMessageComponentCollector({
@@ -434,11 +422,10 @@ function setupHelpCollector({ client, messageOrInteraction, initialContainer, us
         const val = i.values[0];
 
         if (val === "home") {
-          const bannerAttachment = createBannerAttachment();
-          const mainContainer = buildMainContainer(client, guildId, userId);
+          const { container, attachment } = await buildMainContainerPayload(client, guild, userId);
           return await i.update({
-            components: [mainContainer],
-            files: [bannerAttachment],
+            components: [container],
+            files: [attachment],
             flags: MessageFlags.IsComponentsV2,
           });
         }
@@ -448,7 +435,7 @@ function setupHelpCollector({ client, messageOrInteraction, initialContainer, us
           client,
           categoryName,
           userId,
-          guildId,
+          guild,
           0
         );
 
@@ -463,33 +450,13 @@ function setupHelpCollector({ client, messageOrInteraction, initialContainer, us
       if (i.isStringSelectMenu() && customId === "help_command_select") {
         const selectedVal = i.values[0];
 
-        // Pagination inside category
-        if (selectedVal.startsWith("page_")) {
-          const parts = selectedVal.split("_");
-          const catName = parts[1];
-          const pageNum = parseInt(parts[2], 10);
-          const { container, attachment } = await buildCategoryContainerPayload(
-            client,
-            catName,
-            userId,
-            guildId,
-            pageNum
-          );
-          return await i.update({
-            components: [container],
-            files: [attachment],
-            flags: MessageFlags.IsComponentsV2,
-          });
-        }
-
-        // Command details selected
         if (selectedVal.startsWith("cmd_")) {
           const cmdName = selectedVal.replace("cmd_", "");
           const { container, attachment } = await buildCommandContainerPayload(
             client,
             cmdName,
             userId,
-            guildId
+            guild
           );
           return await i.update({
             components: [container],
@@ -501,13 +468,12 @@ function setupHelpCollector({ client, messageOrInteraction, initialContainer, us
 
       // 3. Buttons inside Container
       if (i.isButton()) {
-        // [📁 Home]
+        // [🏠 Home]
         if (customId === "help_btn_home") {
-          const bannerAttachment = createBannerAttachment();
-          const mainContainer = buildMainContainer(client, guildId, userId);
+          const { container, attachment } = await buildMainContainerPayload(client, guild, userId);
           return await i.update({
-            components: [mainContainer],
-            files: [bannerAttachment],
+            components: [container],
+            files: [attachment],
             flags: MessageFlags.IsComponentsV2,
           });
         }
@@ -523,6 +489,25 @@ function setupHelpCollector({ client, messageOrInteraction, initialContainer, us
           });
         }
 
+        // [⬅ Prev / Next Page]
+        if (customId.startsWith("help_btn_page_")) {
+          const parts = customId.replace("help_btn_page_", "").split("_");
+          const catName = parts[0];
+          const pageNum = parseInt(parts[1], 10);
+          const { container, attachment } = await buildCategoryContainerPayload(
+            client,
+            catName,
+            userId,
+            guild,
+            pageNum
+          );
+          return await i.update({
+            components: [container],
+            files: [attachment],
+            flags: MessageFlags.IsComponentsV2,
+          });
+        }
+
         // [⬅ Back] -> returns to Category Container
         if (customId.startsWith("help_btn_back_")) {
           const catName = customId.replace("help_btn_back_", "");
@@ -530,7 +515,7 @@ function setupHelpCollector({ client, messageOrInteraction, initialContainer, us
             client,
             catName,
             userId,
-            guildId,
+            guild,
             0
           );
           return await i.update({
@@ -575,10 +560,10 @@ function setupHelpCollector({ client, messageOrInteraction, initialContainer, us
     if (reason === "user_closed") return;
 
     try {
-      const disabledContainer = buildMainContainer(client, guildId, userId, true);
+      const { container } = await buildMainContainerPayload(client, guild, userId, true);
       await messageOrInteraction
         .edit({
-          components: [disabledContainer],
+          components: [container],
           flags: MessageFlags.IsComponentsV2,
         })
         .catch(() => null);
@@ -592,7 +577,7 @@ function setupHelpCollector({ client, messageOrInteraction, initialContainer, us
 // 5. EXPORTED ENTRY POINTS
 // ─────────────────────────────────────────────────────────────────────────────
 async function handlePrefixHelp(client, message, args) {
-  const guildId = message.guild?.id;
+  const guild = message.guild;
   const userId = message.author.id;
 
   // Direct lookup: .help <commandOrCategory>
@@ -606,7 +591,7 @@ async function handlePrefixHelp(client, message, args) {
         client,
         matchedCategory,
         userId,
-        guildId,
+        guild,
         0
       );
       const sentMsg = await message.reply({
@@ -620,7 +605,7 @@ async function handlePrefixHelp(client, message, args) {
         messageOrInteraction: sentMsg,
         initialContainer: container,
         userId,
-        guildId,
+        guild,
       });
       return;
     }
@@ -629,7 +614,7 @@ async function handlePrefixHelp(client, message, args) {
       client,
       query,
       userId,
-      guildId
+      guild
     );
     const sentMsg = await message.reply({
       components: [container],
@@ -642,18 +627,17 @@ async function handlePrefixHelp(client, message, args) {
       messageOrInteraction: sentMsg,
       initialContainer: container,
       userId,
-      guildId,
+      guild,
     });
     return;
   }
 
   // Main Dashboard View in Container
-  const bannerAttachment = createBannerAttachment();
-  const mainContainer = buildMainContainer(client, guildId, userId);
+  const { container, attachment } = await buildMainContainerPayload(client, guild, userId);
 
   const sentMsg = await message.reply({
-    components: [mainContainer],
-    files: [bannerAttachment],
+    components: [container],
+    files: [attachment],
     flags: MessageFlags.IsComponentsV2,
     allowedMentions: { parse: [], repliedUser: false },
   });
@@ -661,14 +645,14 @@ async function handlePrefixHelp(client, message, args) {
   setupHelpCollector({
     client,
     messageOrInteraction: sentMsg,
-    initialContainer: mainContainer,
+    initialContainer: container,
     userId,
-    guildId,
+    guild,
   });
 }
 
 async function handleSlashHelp(client, interaction) {
-  const guildId = interaction.guild?.id;
+  const guild = interaction.guild;
   const userId = interaction.user.id;
   const commandQuery = interaction.options.getString("command")?.toLowerCase()?.trim();
 
@@ -682,7 +666,7 @@ async function handleSlashHelp(client, interaction) {
         client,
         matchedCategory,
         userId,
-        guildId,
+        guild,
         0
       );
       const replyMsg = await interaction.editReply({
@@ -695,7 +679,7 @@ async function handleSlashHelp(client, interaction) {
         messageOrInteraction: replyMsg,
         initialContainer: container,
         userId,
-        guildId,
+        guild,
       });
       return;
     }
@@ -704,7 +688,7 @@ async function handleSlashHelp(client, interaction) {
       client,
       commandQuery,
       userId,
-      guildId
+      guild
     );
     const replyMsg = await interaction.editReply({
       components: [container],
@@ -716,32 +700,31 @@ async function handleSlashHelp(client, interaction) {
       messageOrInteraction: replyMsg,
       initialContainer: container,
       userId,
-      guildId,
+      guild,
     });
     return;
   }
 
   // Main Dashboard View in Container
-  const bannerAttachment = createBannerAttachment();
-  const mainContainer = buildMainContainer(client, guildId, userId);
+  const { container, attachment } = await buildMainContainerPayload(client, guild, userId);
 
   const replyMsg = await interaction.editReply({
-    components: [mainContainer],
-    files: [bannerAttachment],
+    components: [container],
+    files: [attachment],
     flags: MessageFlags.IsComponentsV2,
   });
 
   setupHelpCollector({
     client,
     messageOrInteraction: replyMsg,
-    initialContainer: mainContainer,
+    initialContainer: container,
     userId,
-    guildId,
+    guild,
   });
 }
 
 module.exports = {
-  buildMainContainer,
+  buildMainContainerPayload,
   buildCategoryContainerPayload,
   buildCommandContainerPayload,
   handlePrefixHelp,
