@@ -53,28 +53,31 @@ async function uploadEmojis() {
 
   const files = fs
     .readdirSync(EMOJI_DIR)
-    .filter((f) => f.startsWith('astrix_') && f.endsWith('.png'));
+    .filter((f) => f.startsWith('astrix_') && (f.endsWith('.png') || f.endsWith('.gif')));
 
-  console.log(`📦 Found ${files.length} custom Astrix emojis ready for upload.\n`);
+  console.log(`📦 Found ${files.length} custom Astrix emojis (Static & Animated) ready for upload.\n`);
 
   const uploadedEmojiMap = {};
 
   for (const file of files) {
-    const emojiName = file.replace('.png', '');
+    const isAnimated = file.endsWith('.gif');
+    const ext = isAnimated ? '.gif' : '.png';
+    const mime = isAnimated ? 'image/gif' : 'image/png';
+    const emojiName = file.replace(ext, '');
     const filePath = path.join(EMOJI_DIR, file);
     const fileBuf = fs.readFileSync(filePath);
-    const base64Data = `data:image/png;base64,${fileBuf.toString('base64')}`;
+    const base64Data = `data:${mime};base64,${fileBuf.toString('base64')}`;
 
     if (existingMap.has(emojiName)) {
       const existingId = existingMap.get(emojiName);
-      const formatted = `<:${emojiName}:${existingId}>`;
+      const formatted = `<${isAnimated ? 'a' : ''}:${emojiName}:${existingId}>`;
       uploadedEmojiMap[emojiName] = formatted;
       console.log(`⏩ [Skipped/Already Exists]: ${emojiName} -> ${formatted}`);
       continue;
     }
 
     try {
-      console.log(`⏳ Uploading "${emojiName}"...`);
+      console.log(`⏳ Uploading ${isAnimated ? 'Animated' : 'Static'} "${emojiName}"...`);
       const created = await rest.post(Routes.applicationEmojis(appId), {
         body: {
           name: emojiName,
@@ -82,12 +85,12 @@ async function uploadEmojis() {
         },
       });
 
-      const formatted = `<:${created.name}:${created.id}>`;
+      const formatted = `<${created.animated || isAnimated ? 'a' : ''}:${created.name}:${created.id}>`;
       uploadedEmojiMap[created.name] = formatted;
       console.log(`✨ [Uploaded]: ${created.name} -> ${formatted}`);
 
       // Small delay to be polite to Discord rate limits
-      await new Promise((r) => setTimeout(r, 600));
+      await new Promise((r) => setTimeout(r, 650));
     } catch (err) {
       console.error(`❌ Failed to upload ${emojiName}:`, err.message);
     }

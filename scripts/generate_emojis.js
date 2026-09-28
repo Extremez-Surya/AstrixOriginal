@@ -803,6 +803,289 @@ const GLYPHS = {
     ctx.lineTo(94, 94);
     ctx.stroke();
   },
+
+  home: (ctx) => {
+    drawBadgeBase(ctx);
+    applyGlyphStyle(ctx);
+    ctx.fillStyle = '#ffffff';
+    // Roof triangle
+    ctx.beginPath();
+    ctx.moveTo(64, 38);
+    ctx.lineTo(90, 60);
+    ctx.lineTo(38, 60);
+    ctx.closePath();
+    ctx.fill();
+    // House body
+    ctx.fillRect(44, 60, 40, 26);
+    // Door cutout
+    ctx.fillStyle = '#141518';
+    ctx.fillRect(58, 68, 12, 18);
+  },
+
+  server: (ctx) => {
+    drawBadgeBase(ctx);
+    applyGlyphStyle(ctx);
+    ctx.fillStyle = '#ffffff';
+    // 3 Server rack units
+    [40, 56, 72].forEach((y) => {
+      ctx.beginPath();
+      ctx.roundRect(40, y, 48, 12, 3);
+      ctx.fill();
+    });
+    // Server led dots
+    ctx.fillStyle = '#141518';
+    [40, 56, 72].forEach((y) => {
+      ctx.fillRect(78, y + 4, 4, 4);
+      ctx.fillRect(72, y + 4, 4, 4);
+    });
+  },
+
+  members: (ctx) => {
+    drawBadgeBase(ctx);
+    applyGlyphStyle(ctx);
+    ctx.fillStyle = '#ffffff';
+    // Front user
+    ctx.beginPath();
+    ctx.arc(56, 52, 11, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(56, 88, 20, Math.PI, 0);
+    ctx.fill();
+
+    // Back user
+    ctx.fillStyle = '#a6abb4';
+    ctx.beginPath();
+    ctx.arc(76, 48, 9, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(76, 84, 16, Math.PI, 0);
+    ctx.fill();
+  },
+
+  channel: (ctx) => {
+    applyGlyphStyle(ctx, true);
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 8;
+    ctx.lineCap = 'round';
+    // Hashtag #
+    ctx.beginPath();
+    ctx.moveTo(52, 32);
+    ctx.lineTo(44, 96);
+    ctx.moveTo(76, 32);
+    ctx.lineTo(68, 96);
+    ctx.moveTo(34, 52);
+    ctx.lineTo(94, 52);
+    ctx.moveTo(30, 76);
+    ctx.lineTo(90, 76);
+    ctx.stroke();
+  },
+
+  mic: (ctx) => {
+    applyGlyphStyle(ctx, true);
+    ctx.fillStyle = '#ffffff';
+    // Mic capsule
+    ctx.beginPath();
+    ctx.roundRect(54, 34, 20, 36, 10);
+    ctx.fill();
+
+    // Stand cradle
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 6;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.arc(64, 56, 18, 0, Math.PI);
+    ctx.stroke();
+
+    // Stand base
+    ctx.beginPath();
+    ctx.moveTo(64, 74);
+    ctx.lineTo(64, 90);
+    ctx.moveTo(48, 90);
+    ctx.lineTo(80, 90);
+    ctx.stroke();
+  },
+
+  trophy: (ctx) => {
+    drawBadgeBase(ctx);
+    applyGlyphStyle(ctx);
+    ctx.fillStyle = '#ffffff';
+    // Cup
+    ctx.beginPath();
+    ctx.moveTo(42, 40);
+    ctx.lineTo(86, 40);
+    ctx.lineTo(80, 64);
+    ctx.quadraticCurveTo(64, 74, 48, 64);
+    ctx.closePath();
+    ctx.fill();
+
+    // Handles
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(40, 48, 8, Math.PI * 0.5, Math.PI * 1.5);
+    ctx.arc(88, 48, 8, Math.PI * 1.5, Math.PI * 0.5);
+    ctx.stroke();
+
+    // Stem and base
+    ctx.fillRect(61, 70, 6, 12);
+    ctx.fillRect(48, 82, 32, 6);
+  },
+
+  boost: (ctx) => {
+    applyGlyphStyle(ctx, true);
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.moveTo(64, 32);
+    ctx.lineTo(96, 56);
+    ctx.lineTo(64, 96);
+    ctx.lineTo(32, 56);
+    ctx.closePath();
+    ctx.fill();
+
+    // Facet lines
+    ctx.strokeStyle = '#2b2d31';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(32, 56);
+    ctx.lineTo(96, 56);
+    ctx.moveTo(64, 32);
+    ctx.lineTo(64, 96);
+    ctx.stroke();
+  },
+
+  globe: (ctx) => {
+    drawBadgeBase(ctx);
+    applyGlyphStyle(ctx);
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.arc(64, 64, 25, 0, Math.PI * 2);
+    ctx.stroke();
+    // Longitude & latitude
+    ctx.beginPath();
+    ctx.ellipse(64, 64, 12, 25, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(40, 64);
+    ctx.lineTo(88, 64);
+    ctx.stroke();
+  },
+
+  coins: (ctx) => {
+    drawBadgeBase(ctx);
+    applyGlyphStyle(ctx);
+    ctx.fillStyle = '#ffffff';
+    // Back coin
+    ctx.beginPath();
+    ctx.ellipse(54, 58, 16, 16, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#141518';
+    ctx.beginPath();
+    ctx.ellipse(54, 58, 12, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Front coin
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.ellipse(74, 70, 16, 16, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#141518';
+    ctx.beginPath();
+    ctx.ellipse(74, 70, 12, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+  },
+
+  chat: (ctx) => {
+    applyGlyphStyle(ctx, true);
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.roundRect(34, 40, 60, 42, 12);
+    ctx.fill();
+    // Tail
+    ctx.beginPath();
+    ctx.moveTo(46, 80);
+    ctx.lineTo(38, 94);
+    ctx.lineTo(60, 80);
+    ctx.fill();
+    // Dots inside
+    ctx.fillStyle = '#232428';
+    ctx.beginPath();
+    ctx.arc(52, 61, 4, 0, Math.PI * 2);
+    ctx.arc(64, 61, 4, 0, Math.PI * 2);
+    ctx.arc(76, 61, 4, 0, Math.PI * 2);
+    ctx.fill();
+  },
+
+  calendar: (ctx) => {
+    drawBadgeBase(ctx);
+    applyGlyphStyle(ctx);
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.roundRect(40, 44, 48, 42, 6);
+    ctx.fill();
+    // Header strip cutout
+    ctx.fillStyle = '#141518';
+    ctx.fillRect(40, 56, 48, 4);
+    // Rings
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(48, 38, 6, 8);
+    ctx.fillRect(74, 38, 6, 8);
+    // Grid dots
+    ctx.fillStyle = '#141518';
+    for (let r = 0; r < 2; r++) {
+      for (let c = 0; c < 3; c++) {
+        ctx.fillRect(48 + c * 12, 66 + r * 10, 4, 4);
+      }
+    }
+  },
+
+  online: (ctx) => {
+    applyGlyphStyle(ctx, true);
+    ctx.fillStyle = '#23a55a'; // Discord Online Green
+    ctx.beginPath();
+    ctx.arc(64, 64, 28, 0, Math.PI * 2);
+    ctx.fill();
+    // White highlight
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(56, 56, 9, 0, Math.PI * 2);
+    ctx.fill();
+  },
+
+  idle: (ctx) => {
+    applyGlyphStyle(ctx, true);
+    ctx.fillStyle = '#f0b232'; // Discord Idle Orange
+    ctx.beginPath();
+    ctx.arc(64, 64, 28, 0, Math.PI * 2);
+    ctx.fill();
+    // Moon cutout
+    ctx.fillStyle = '#1e1f22';
+    ctx.beginPath();
+    ctx.arc(54, 54, 18, 0, Math.PI * 2);
+    ctx.fill();
+  },
+
+  dnd: (ctx) => {
+    applyGlyphStyle(ctx, true);
+    ctx.fillStyle = '#f23f43'; // Discord DND Red
+    ctx.beginPath();
+    ctx.arc(64, 64, 28, 0, Math.PI * 2);
+    ctx.fill();
+    // Minus line
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.roundRect(46, 59, 36, 10, 5);
+    ctx.fill();
+  },
+
+  offline: (ctx) => {
+    applyGlyphStyle(ctx, true);
+    ctx.strokeStyle = '#80848e'; // Discord Offline Grey Ring
+    ctx.lineWidth = 10;
+    ctx.beginPath();
+    ctx.arc(64, 64, 23, 0, Math.PI * 2);
+    ctx.stroke();
+  },
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -810,8 +1093,8 @@ const GLYPHS = {
 // ─────────────────────────────────────────────────────────────
 
 async function generateAll() {
-  console.log('🚀 Generating Astrix Custom Hybrid Emoji Pack (35 Icons)...');
   const entries = Object.entries(GLYPHS);
+  console.log(`🚀 Generating Astrix Custom Hybrid Emoji Pack (${entries.length} Icons)...`);
 
   // 1. Generate individual 128x128 PNGs
   for (const [name, drawFn] of entries) {
@@ -824,17 +1107,17 @@ async function generateAll() {
   console.log(`✅ Saved ${entries.length} individual 128x128 PNGs to: ${OUTPUT_DIR}`);
 
   // 2. Generate a Complete Showcase Board (Preview image for User)
-  const cols = 7;
+  const cols = 10;
   const rows = Math.ceil(entries.length / cols);
-  const cellWidth = 140;
-  const cellHeight = 150;
+  const cellWidth = 130;
+  const cellHeight = 145;
   const sheetWidth = cols * cellWidth + 60;
   const sheetHeight = rows * cellHeight + 160;
 
   const showcase = createCanvas(sheetWidth, sheetHeight);
   const sCtx = showcase.getContext('2d');
 
-  // Discord Dark Theme Background (#313338 with subtle vignette)
+  // Discord Dark Theme Background (#1e1f22)
   sCtx.fillStyle = '#1e1f22';
   sCtx.fillRect(0, 0, sheetWidth, sheetHeight);
 
@@ -847,11 +1130,11 @@ async function generateAll() {
   // Header Title
   sCtx.fillStyle = '#ffffff';
   sCtx.font = 'bold 32px sans-serif';
-  sCtx.fillText('Astrix Bot — Custom Hybrid Emojis Pack', 50, 75);
+  sCtx.fillText(`Astrix Bot — Ultimate ${entries.length} Custom Emojis Pack`, 50, 75);
 
   sCtx.fillStyle = '#949ba4';
   sCtx.font = '16px sans-serif';
-  sCtx.fillText('Hybrid Design: 3D Glossy Obsidian Badges (Modules) + Transparent Minimalist Glyphs (Inline/Controls)', 50, 105);
+  sCtx.fillText('Full A-to-Z Coverage: 3D Glossy Badges + Minimalist Glyphs + Discord Status Indicators', 50, 105);
 
   // Render each emoji on the grid
   for (let i = 0; i < entries.length; i++) {
@@ -865,20 +1148,20 @@ async function generateAll() {
     // Small slot background
     sCtx.fillStyle = '#1e1f22';
     sCtx.beginPath();
-    sCtx.roundRect(x + 10, y + 10, 100, 100, 12);
+    sCtx.roundRect(x + 10, y + 10, 95, 95, 12);
     sCtx.fill();
 
     // Render glyph on slot
     const { canvas: iconCanvas, ctx: iconCtx } = createBaseCanvas();
     drawFn(iconCtx);
 
-    sCtx.drawImage(iconCanvas, x + 16, y + 16, 88, 88);
+    sCtx.drawImage(iconCanvas, x + 15, y + 15, 85, 85);
 
     // Label under slot
     sCtx.fillStyle = '#dbdee1';
-    sCtx.font = 'bold 12px monospace';
+    sCtx.font = 'bold 11px monospace';
     sCtx.textAlign = 'center';
-    sCtx.fillText(name, x + 60, y + 128);
+    sCtx.fillText(name, x + 57, y + 124);
     sCtx.textAlign = 'left';
   }
 
@@ -886,12 +1169,11 @@ async function generateAll() {
   const showcasePath = path.join(OUTPUT_DIR, 'preview_showcase.png');
   fs.writeFileSync(showcasePath, showcaseBuf);
 
-  // Also copy to artifacts directory so user can view directly
   const artifactPath = path.join('C:\\Users\\VINAY KUMAR\\.gemini\\antigravity-ide\\brain\\35944cbf-dc86-45ba-9bb2-4c127c3e5d1c', 'emoji_showcase.png');
   fs.writeFileSync(artifactPath, showcaseBuf);
 
-  console.log(`🎉 Showcase preview created at: ${showcasePath}`);
-  console.log(`🖼️ Artifact copied to: ${artifactPath}`);
+  console.log(`🎉 Showcase preview created with ${entries.length} icons!`);
 }
 
 generateAll();
+

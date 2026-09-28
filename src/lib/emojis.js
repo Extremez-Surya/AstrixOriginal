@@ -129,24 +129,133 @@ try {
   }
 } catch (_) {}
 
+// Smart alias mapping from common bot property names to the new Astrix Application Emojis
+const ALIAS_MAP = {
+  // Status & Actions
+  tick: "astrix_check",
+  check: "astrix_check",
+  ticky_red: "astrix_check",
+  cross: "astrix_cross",
+  error: "astrix_cross",
+  warn: "astrix_warn",
+  warn_red: "astrix_warn",
+  alert: "astrix_warn",
+  caution: "astrix_warn",
+  info: "astrix_info",
+  loading: "astrix_loading_anim",
+  Loading: "astrix_loading_anim",
+
+  // Modules & Security
+  antinuke: "astrix_shield",
+  shield: "astrix_shield",
+  rshield: "astrix_shield",
+  automod: "astrix_hammer",
+  hammer: "astrix_hammer",
+  music: "astrix_music",
+  crown: "astrix_crown",
+  owner: "astrix_crown",
+  owner3: "astrix_crown",
+  gift: "astrix_gift",
+  giveaway: "astrix_gift",
+  tada: "astrix_gift",
+  tada2: "astrix_gift",
+  red_yellow_gift: "astrix_gift",
+  star: "astrix_star",
+  red_star: "astrix_star",
+  sparkle: "astrix_sparkle_anim",
+  astrix: "astrix_sparkle_anim",
+  ticket: "astrix_ticket",
+  gear: "astrix_gear",
+  redgear: "astrix_gear",
+  settings: "astrix_gear",
+  lock: "astrix_lock",
+  trash: "astrix_trash",
+  bin: "astrix_trash",
+  stats: "astrix_stats",
+  chart: "astrix_stats",
+  trophy: "astrix_trophy",
+  Trophy: "astrix_trophy",
+  clock: "astrix_clock",
+  time: "astrix_clock",
+  bell: "astrix_bell_anim",
+  heart: "astrix_heart_anim",
+  Red_heart: "astrix_heart_anim",
+  fire: "astrix_fire_anim",
+  boost: "astrix_boost",
+  red_boost: "astrix_boost",
+
+  // Inline / Navigation / Tech
+  arrow: "astrix_arrow",
+  arrow_right: "astrix_arrow",
+  arrow_left: "astrix_arrow",
+  arrow_double: "astrix_arrow_double",
+  dot: "astrix_dot",
+  home: "astrix_home",
+  server: "astrix_server",
+  servers: "astrix_server",
+  members: "astrix_members",
+  member: "astrix_members",
+  channel: "astrix_channel",
+  mic: "astrix_mic",
+  rmicrophone: "astrix_mic",
+  volume: "astrix_volume",
+  rspeaker: "astrix_volume",
+  link: "astrix_link",
+  linkRed: "astrix_link",
+  invite: "astrix_link",
+  ping: "astrix_ping_anim",
+  signal: "astrix_ping_anim",
+  wifi: "astrix_ping_anim",
+  code: "astrix_code",
+  terminal: "astrix_terminal",
+  play: "astrix_play",
+  pause: "astrix_pause",
+  skip: "astrix_skip",
+  previous: "astrix_previous",
+  disc: "astrix_disc_anim",
+  equalizer: "astrix_equalizer_anim",
+  chat: "astrix_chat",
+  discord: "astrix_chat",
+  website: "astrix_globe",
+  globe: "astrix_globe",
+  coins: "astrix_coins",
+  money: "astrix_coins",
+  wallet: "astrix_coins",
+  calendar: "astrix_calendar",
+  calender: "astrix_calendar",
+  online: "astrix_online",
+  idle: "astrix_idle",
+  dnd: "astrix_dnd",
+  DoNotDisturb: "astrix_dnd",
+  offline: "astrix_offline",
+};
+
 /**
  * Resolve an emoji by name or key
  */
 function resolveEmoji(prop) {
   if (typeof prop !== "string") return "✨";
 
-  // 1. Direct match in dynamic cache
+  // 1. Check if there's a mapped Astrix emoji alias
+  const alias = ALIAS_MAP[prop] || ALIAS_MAP[prop.toLowerCase()];
+  if (alias) {
+    if (dynamicCache.has(alias)) return dynamicCache.get(alias);
+    const normAlias = normalizeKey(alias);
+    if (dynamicCache.has(normAlias)) return dynamicCache.get(normAlias);
+  }
+
+  // 2. Direct match in dynamic cache
   if (dynamicCache.has(prop)) {
     return dynamicCache.get(prop);
   }
 
-  // 2. Normalized match in dynamic cache
+  // 3. Normalized match in dynamic cache
   const norm = normalizeKey(prop);
   if (dynamicCache.has(norm)) {
     return dynamicCache.get(norm);
   }
 
-  // 3. Match in default fallbacks
+  // 4. Match in default fallbacks
   if (FALLBACKS[prop]) {
     return FALLBACKS[prop];
   }

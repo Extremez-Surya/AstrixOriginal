@@ -35,25 +35,25 @@ function buildShortyDashboard(stats, snapshots, selectedSnapshot = null, disable
       new ButtonBuilder()
         .setCustomId(`backup_slash_act_restore_${selectedSnapshot.id}`)
         .setLabel("Restore")
-        .setEmoji("🔄")
+        .setEmoji("<a:astrix_loading_anim:1554036083530928148>")
         .setStyle(ButtonStyle.Success)
         .setDisabled(disabled),
       new ButtonBuilder()
         .setCustomId(`backup_slash_act_export_${selectedSnapshot.id}`)
         .setLabel("Export")
-        .setEmoji("📤")
+        .setEmoji("<:astrix_arrow:1554035930992607253>")
         .setStyle(ButtonStyle.Secondary)
         .setDisabled(disabled),
       new ButtonBuilder()
         .setCustomId(`backup_slash_act_delete_${selectedSnapshot.id}`)
         .setLabel("Delete")
-        .setEmoji("🗑️")
+        .setEmoji("<:astrix_trash:1554036206147338321>")
         .setStyle(ButtonStyle.Danger)
         .setDisabled(disabled),
       new ButtonBuilder()
         .setCustomId("backup_slash_act_back")
         .setLabel("Back")
-        .setEmoji("⬅️")
+        .setEmoji("<:astrix_arrow_double:1554035941163802639>")
         .setStyle(ButtonStyle.Secondary)
         .setDisabled(disabled)
     );
@@ -76,15 +76,15 @@ function buildShortyDashboard(stats, snapshots, selectedSnapshot = null, disable
 
   container.addTextDisplayComponents(
     new TextDisplayBuilder().setContent(
-      `### 🛡️ **Astrix Master Data Vault & Live Backup**\n` +
+      `### <:astrix_shield:1554036155001995406> **Astrix Master Data Vault & Live Backup**\n` +
       `-# *Zero-overhead state protection with auto pre-shutdown snapshot engine.*\n\n` +
-      `> 📊 **Live Records:** \`${stats.totalDiskRecords.toLocaleString()}\` active configurations\n` +
-      `> 📁 **Protected Files:** \`${stats.activeFilesOnDisk}\` / \`${stats.trackedFilesCount}\` modules (\`${(stats.totalDiskBytes / 1024).toFixed(1)} KB\`)\n` +
-      `> ☁️ **Cloud Database:** ${mongoText}\n` +
-      `> ⚡ **Live RAM / Uptime:** \`${stats.ramUsageMb} MB\` • \`${uptimeMins}m ${uptimeSecs}s\`\n` +
-      `> 🗄️ **Saved Snapshots:** \`${stats.snapshotCount}\` versions • Latest: ${lastBackupStr}\n` +
-      `> 🛑 **Panel Shutdown Hook:** 🟢 **Active** *(Auto-saves when panel stops/restarts)*\n` +
-      `> 🛡️ **Auto-Heal Engine:** 🟢 **Active** *(Auto-restores data if files wiped)*`
+      `> <:astrix_stats:1554036191597428787> **Live Records:** \`${stats.totalDiskRecords.toLocaleString()}\` active configurations\n` +
+      `> <:astrix_gear:1554036035111886888> **Protected Files:** \`${stats.activeFilesOnDisk}\` / \`${stats.trackedFilesCount}\` modules (\`${(stats.totalDiskBytes / 1024).toFixed(1)} KB\`)\n` +
+      `> <:astrix_globe:1554036044368711703> **Cloud Database:** ${mongoText}\n` +
+      `> <a:astrix_ping_anim:1554036131308511292> **Live RAM / Uptime:** \`${stats.ramUsageMb} MB\` • \`${uptimeMins}m ${uptimeSecs}s\`\n` +
+      `> <:astrix_clock:1554035984809590816> **Saved Snapshots:** \`${stats.snapshotCount}\` versions • Latest: ${lastBackupStr}\n` +
+      `> <:astrix_lock:1554036087905849376> **Panel Shutdown Hook:** 🟢 **Active** *(Auto-saves when panel stops/restarts)*\n` +
+      `> <:astrix_check:1554035980342661120> **Auto-Heal Engine:** 🟢 **Active** *(Auto-restores data if files wiped)*`
     )
   );
 
@@ -109,7 +109,7 @@ function buildShortyDashboard(stats, snapshots, selectedSnapshot = null, disable
           .setLabel(snapLabel)
           .setDescription(`${snap.id} • ${dateStr} • ${(snap.sizeBytes / 1024).toFixed(1)} KB`)
           .setValue(snap.id)
-          .setEmoji("💾")
+          .setEmoji("<:astrix_clock:1554035984809590816>")
       );
     }
 
@@ -121,31 +121,31 @@ function buildShortyDashboard(stats, snapshots, selectedSnapshot = null, disable
     new ButtonBuilder()
       .setCustomId("backup_slash_btn_create")
       .setLabel("Create")
-      .setEmoji("💾")
+      .setEmoji("<:astrix_check:1554035980342661120>")
       .setStyle(ButtonStyle.Success)
       .setDisabled(disabled),
     new ButtonBuilder()
       .setCustomId("backup_slash_btn_cloudsync")
       .setLabel("Cloud Sync")
-      .setEmoji("☁️")
+      .setEmoji("<a:astrix_sparkle_anim:1554036181463998534>")
       .setStyle(ButtonStyle.Primary)
       .setDisabled(disabled),
     new ButtonBuilder()
       .setCustomId("backup_slash_btn_export")
       .setLabel("Export")
-      .setEmoji("📤")
+      .setEmoji("<:astrix_arrow:1554035930992607253>")
       .setStyle(ButtonStyle.Secondary)
       .setDisabled(disabled),
     new ButtonBuilder()
       .setCustomId("backup_slash_btn_refresh")
       .setLabel("Refresh")
-      .setEmoji("🔄")
+      .setEmoji("<a:astrix_loading_anim:1554036083530928148>")
       .setStyle(ButtonStyle.Secondary)
       .setDisabled(disabled),
     new ButtonBuilder()
       .setCustomId("backup_slash_btn_clear")
       .setLabel("Clear All")
-      .setEmoji("🗑️")
+      .setEmoji("<:astrix_trash:1554036206147338321>")
       .setStyle(ButtonStyle.Danger)
       .setDisabled(disabled || snapshots.length === 0)
   );

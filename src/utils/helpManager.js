@@ -128,6 +128,30 @@ function buildCategoryActionRows(client, userId, disabled = false) {
     },
   ];
 
+  const CUSTOM_CATEGORY_EMOJIS = {
+    "Anti Nuke": "<:astrix_shield:1554036155001995406>",
+    "Anti Raid": "<:astrix_lock:1554036087905849376>",
+    Automod: "<:astrix_hammer:1554036048940503112>",
+    Security: "<:astrix_shield:1554036155001995406>",
+    Moderation: "<:astrix_hammer:1554036048940503112>",
+    Music: "<:astrix_music:1554036107979653150>",
+    Filters: "<:astrix_music:1554036107979653150>",
+    Logging: "<:astrix_terminal:1554036196714348584>",
+    Server: "<:astrix_server:1554036150325481474>",
+    Configuration: "<:astrix_gear:1554036035111886888>",
+    Utility: "<:astrix_gear:1554036035111886888>",
+    "Custom Roles": "<:astrix_sparkle:1554036176258732102>",
+    Information: "<:astrix_info:1554036070411280515>",
+    General: "<:astrix_chat:1554035975615807558>",
+    Owner: "<:astrix_crown:1554036003751067650>",
+    Giveaway: "<:astrix_gift:1554036039855898654>",
+    Leveling: "<:astrix_star:1554036186652221573>",
+    Ticket: "<:astrix_ticket:1554036201432813618>",
+    Booster: "<:astrix_boost:1554035956107976735>",
+    "Join To Create": "<:astrix_mic:1554036103147823124>",
+    Voice: "<:astrix_mic:1554036103147823124>",
+  };
+
   return categoryGroups
     .filter((group) => group.categories.length > 0)
     .map((group) => {
@@ -136,14 +160,15 @@ function buildCategoryActionRows(client, userId, disabled = false) {
           .setLabel("Home Overview")
           .setValue("home")
           .setDescription("Return to the main directory overview.")
-          .setEmoji("🏠"),
+          .setEmoji("<:astrix_home:1554036059937968190>"),
         ...group.categories.slice(0, 24).map((cat) => {
           const cmds = categoryMap.get(cat) || [];
+          const emojiToUse = CUSTOM_CATEGORY_EMOJIS[cat] || CATEGORY_EMOJIS[cat] || allCategories[cat]?.emoji || "📁";
           return new StringSelectMenuOptionBuilder()
             .setLabel(cat)
             .setValue(`cat_${cat.toLowerCase()}`)
             .setDescription(`${cmds.length} command(s)`)
-            .setEmoji(CATEGORY_EMOJIS[cat] || allCategories[cat]?.emoji || "📁");
+            .setEmoji(emojiToUse);
         }),
       ];
 
@@ -158,25 +183,25 @@ function buildCategoryActionRows(client, userId, disabled = false) {
 }
 
 /**
- * Build external link buttons row with clean Unicode emojis
+ * Build external link buttons row with clean custom Astrix emojis
  */
 function buildLinkButtonsRow(client) {
   const inviteUrl = `https://discord.com/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot%20applications.commands`;
 
   const inviteBtn = new ButtonBuilder()
-    .setEmoji("🔗")
+    .setEmoji("<:astrix_link:1554036077801766972>")
     .setLabel("Invite")
     .setStyle(ButtonStyle.Link)
     .setURL(inviteUrl);
 
   const supportBtn = new ButtonBuilder()
-    .setEmoji("💬")
+    .setEmoji("<:astrix_chat:1554035975615807558>")
     .setLabel("Support Server")
     .setStyle(ButtonStyle.Link)
     .setURL("https://discord.gg/FR9pXG2Mwb");
 
   const hostingBtn = new ButtonBuilder()
-    .setEmoji("🌐")
+    .setEmoji("<:astrix_globe:1554036044368711703>")
     .setLabel("Website")
     .setStyle(ButtonStyle.Link)
     .setURL("https://extremez.vercel.app/");
