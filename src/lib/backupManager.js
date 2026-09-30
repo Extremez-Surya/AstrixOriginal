@@ -7,6 +7,7 @@ const ROOT_DIR = path.resolve(__dirname, "../..");
 const BACKUP_DIR = path.join(ROOT_DIR, "backups");
 const SNAPSHOT_DIR = path.join(BACKUP_DIR, "snapshots");
 const VAULT_FILE = path.join(BACKUP_DIR, "master_vault.json");
+const CONFIG_DIR = path.join(ROOT_DIR, "src/config");
 
 /**
  * Complete list of all core system configuration, data & state files
@@ -16,12 +17,13 @@ const TRACKED_FILES = [
   "nukeConfig.json",
   "antiraidConfig.json",
   "automodConfig.json",
-  "welcomeConfig.json",
+  "welcomeConfig.json", // Contains welcome setups AND joinDm (joinDmEnabled, joinDmText, joinDmType, joinDmCustomData)
   "goodbyeConfig.json",
   "configManagerConfig.json", // Autoresponder phrases, triggers, reaction roles, server setups!
   "noprefixConfig.json",
   "customRolesConfig.json",
   "customRolesData.json",
+  "categories.json", // Full categories configuration
   "serverConfig.json",
   "giveaways.json",
   "guildPrefixes.json",
@@ -44,10 +46,25 @@ const TRACKED_FILES = [
   "feedbackData.json",
   "embedData.json",
   "config.json",
+  "rpc.json",
 ];
 
 /**
- * Dynamically resolves all active JSON configuration & data files in src/lib
+ * Resolves full path for a tracked file, checking src/lib and src/config
+ */
+function resolveFilePath(filename) {
+  const libPath = path.join(LIB_DIR, filename);
+  if (fs.existsSync(libPath)) return libPath;
+  if (filename === "rpc.json") {
+    const rpcPath = path.join(CONFIG_DIR, "rpc.json");
+    if (fs.existsSync(rpcPath)) return rpcPath;
+  }
+  return libPath;
+}
+
+/**
+ * Dynamically resolves all active JSON configuration & data files in src/lib and config
+ * Excludes only static assets or temporary files that don't store created or edited data
  */
 function getAllTrackedFiles() {
   const set = new Set(TRACKED_FILES);
@@ -56,14 +73,20 @@ function getAllTrackedFiles() {
     for (const file of files) {
       if (
         file.endsWith(".json") &&
-        file !== "emojis.json" &&
-        file !== "categories.json" &&
-        !file.endsWith(".tmp")
+        file !== "emojis.json" && // Static emojis file that is not modified by commands
+        !file.endsWith(".tmp") &&
+        !file.endsWith(".bak")
       ) {
         set.add(file);
       }
     }
   } catch (_) {}
+
+  // Include rpc.json if present in src/config
+  if (fs.existsSync(path.join(CONFIG_DIR, "rpc.json"))) {
+    set.add("rpc.json");
+  }
+
   return Array.from(set);
 }
 
@@ -84,7 +107,7 @@ function countRecords(data) {
   if (!data) return 0;
   if (Array.isArray(data)) return data.length;
   if (typeof data === "object") {
-    if (data.users || data.servers || data.owners) {
+    if (data.users || data.servers || data.owners || data.roles) {
       return (
         (data.users?.length || 0) +
         (data.servers?.length || 0) +
@@ -135,7 +158,7 @@ function writeJsonSafe(filePath, data) {
 }
 
 /**
- * Creates an atomic consolidated snapshot of all bot configurations
+ * Creates an atomic consolidated snapshot of all bot configurations and data
  */
 function createSnapshot(label = "Manual Backup") {
   ensureDirs();
@@ -158,7 +181,7 @@ function createSnapshot(label = "Manual Backup") {
   const activeFiles = getAllTrackedFiles();
 
   for (const filename of activeFiles) {
-    const fullPath = path.join(LIB_DIR, filename);
+    const fullPath = resolveFilePath(filename);
     const data = readJsonSafe(fullPath);
     if (data !== null) {
       bundle.files[filename] = data;
@@ -181,10 +204,10 @@ function createSnapshot(label = "Manual Backup") {
   const snapshotFile = path.join(SNAPSHOT_DIR, `snapshot-${timestamp}.json`);
   writeJsonSafe(snapshotFile, bundle);
 
-  // 3. Keep latest 15 snapshots, prune older
-  pruneOldSnapshots(15);
+  // 3. Keep latest 25 snapshots, prune older
+  pruneOldSnapshots(25);
 
-  // 4. Asynchronously push to MongoDB Cloud (non-blocking for high speed)
+  // 4. Asynchronously push to MongoDB Cloud (non-blocking for ultra-high speed)
   mongoBackup.uploadSnapshot(bundle).catch((err) => {
     console.error("[BackupManager] Non-blocking Mongo upload error:", err.message);
   });
@@ -209,7 +232,7 @@ async function createSnapshotAsync(label = "Manual Backup") {
 /**
  * Deletes older snapshots exceeding maxKeep count
  */
-function pruneOldSnapshots(maxKeep = 15) {
+function pruneOldSnapshots(maxKeep = 25) {
   try {
     if (!fs.existsSync(SNAPSHOT_DIR)) return;
     const files = fs
@@ -335,6 +358,62 @@ function listSnapshots() {
   return files;
 }
 
+// ── Real-time Auto-Backup & Reactive Watcher Engine ────────────────
+let autoBackupDebounceTimer = null;
+let watcherInstance = null;
+let autoBackupEnabled = true;
+let lastAutoBackupTime = null;
+
+function initAutoBackupWatcher() {
+  if (watcherInstance) return;
+  try {
+    watcherInstance = fs.watch(LIB_DIR, (eventType, filename) => {
+      if (!autoBackupEnabled) return;
+      if (!filename || !filename.endsWith(".json")) return;
+      if (filename === "emojis.json" || filename.endsWith(".tmp") || filename.endsWith(".bak")) return;
+
+      const tracked = getAllTrackedFiles();
+      if (!tracked.includes(filename)) return;
+
+      // Debounce: when a command edits data files, wait 4 seconds after the last write
+      // to capture the consolidated update atomically without disk thrashing
+      if (autoBackupDebounceTimer) clearTimeout(autoBackupDebounceTimer);
+      autoBackupDebounceTimer = setTimeout(async () => {
+        try {
+          const snapLabel = `Auto-Backup: Update to ${filename}`;
+          const { snapshot, cloudSuccess } = await createSnapshotAsync(snapLabel);
+          lastAutoBackupTime = snapshot.timestamp;
+          console.log(
+            `[BackupManager] ⚡ Auto-backup triggered on update to "${filename}" (Cloud: ${
+              cloudSuccess ? "Synced" : "Local"
+            }, ${snapshot.stats.totalFiles} modules, ${snapshot.stats.totalRecords} records)`
+          );
+        } catch (err) {
+          console.error(`[BackupManager] ⚠️ Auto-backup failed:`, err.message);
+        }
+      }, 4000);
+    });
+    console.log("[BackupManager] 👁️ Real-time reactive data watcher active for all updates.");
+  } catch (err) {
+    console.error("[BackupManager] ⚠️ Could not initialize reactive data watcher:", err.message);
+  }
+}
+
+function enableAutoBackup() {
+  autoBackupEnabled = true;
+  return true;
+}
+
+function disableAutoBackup() {
+  autoBackupEnabled = false;
+  if (autoBackupDebounceTimer) clearTimeout(autoBackupDebounceTimer);
+  return false;
+}
+
+function isAutoBackupEnabled() {
+  return autoBackupEnabled;
+}
+
 /**
  * Returns real-time live statistics across all modules and memory
  */
@@ -349,7 +428,7 @@ function getRealtimeStats() {
 
   const allTracked = getAllTrackedFiles();
   for (const f of allTracked) {
-    const fullPath = path.join(LIB_DIR, f);
+    const fullPath = resolveFilePath(f);
     const data = readJsonSafe(fullPath);
     if (data) {
       activeFiles++;
@@ -377,6 +456,11 @@ function getRealtimeStats() {
     processUptimeSec: Math.floor(process.uptime()),
     ramUsageMb: (mem.rss / 1024 / 1024).toFixed(1),
     mongo: mongoBackup.getStatus(),
+    autoBackup: {
+      enabled: autoBackupEnabled,
+      watcherActive: Boolean(watcherInstance),
+      lastBackup: lastAutoBackupTime,
+    },
   };
 }
 
@@ -424,7 +508,7 @@ async function verifyAndAutoHeal() {
   const allTracked = getAllTrackedFiles();
 
   for (const filename of allTracked) {
-    const fullPath = path.join(LIB_DIR, filename);
+    const fullPath = resolveFilePath(filename);
     const diskData = readJsonSafe(fullPath);
     const vaultData = vault.files[filename];
 
@@ -487,7 +571,7 @@ function restoreFromSnapshot(snapshotPathOrData = null) {
   let restoredCount = 0;
 
   for (const [filename, fileData] of Object.entries(bundle.files)) {
-    const fullPath = path.join(LIB_DIR, filename);
+    const fullPath = resolveFilePath(filename);
     writeJsonSafe(fullPath, fileData);
     restoredCount++;
   }
@@ -561,6 +645,7 @@ function handleShutdown(signal = "SIGNAL") {
 /**
  * Initializes backup system:
  * - Runs auto-heal on boot
+ * - Starts reactive debounced data watcher for all updates
  * - Hooks panel restart/shutdown signals (NO background interval, zero idle CPU load!)
  */
 function init() {
@@ -569,7 +654,10 @@ function init() {
   // 1. Auto-heal on startup
   verifyAndAutoHeal();
 
-  // 2. Pre-shutdown hooks for panel stops and restarts
+  // 2. Real-time reactive auto-backup watcher for all data updates
+  initAutoBackupWatcher();
+
+  // 3. Pre-shutdown hooks for panel stops and restarts
   process.once("SIGINT", () => handleShutdown("SIGINT"));
   process.once("SIGTERM", () => handleShutdown("SIGTERM"));
   process.once("SIGHUP", () => handleShutdown("SIGHUP"));
@@ -592,6 +680,10 @@ module.exports = {
   getVaultStats: getRealtimeStats,
   mongoBackup,
   getAllTrackedFiles,
+  enableAutoBackup,
+  disableAutoBackup,
+  isAutoBackupEnabled,
+  initAutoBackupWatcher,
   VAULT_FILE,
   SNAPSHOT_DIR,
   TRACKED_FILES,

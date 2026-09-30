@@ -1,6 +1,7 @@
 const {
   ApplicationCommandType,
   ContainerBuilder,
+  TextDisplayBuilder,
   MessageFlags,
   ActionRowBuilder,
   ButtonBuilder,
@@ -11,15 +12,19 @@ const {
 } = require("discord.js");
 const { loadImage } = require("@napi-rs/canvas");
 const config = require("../../lib/config.json");
-const { generateDeveloperBoard, getBestDisplayName } = require("../../lib/developerCanvas");
+const {
+  generateDeveloperBoard,
+  generateDeveloperDetailsBoard,
+  getBestDisplayName,
+} = require("../../lib/developerCanvas");
 
 module.exports = {
   name: "developer",
   category: "Information",
-  description: "View the official developer team directory and credentials.",
+  description: "View the official Astrix developer team directory and credentials.",
   type: ApplicationCommandType.ChatInput,
 
-  botPermissions: ["SendMessages"],
+  botPermissions: ["SendMessages", "AttachFiles"],
   userPermissions: ["SendMessages"],
   devOnly: false,
 
@@ -56,7 +61,17 @@ module.exports = {
           role: memberInfo.role,
           status,
           avatarImg,
-          bio: memberInfo.bio || (memberInfo.role.includes("Owner") ? "Lead architect & security engineer of Astrix." : "No bio set."),
+          bio:
+            memberInfo.bio ||
+            (memberInfo.role.toLowerCase().includes("owner")
+              ? "Lead architect & security engineer of Astrix."
+              : memberInfo.role.toLowerCase().includes("lead")
+              ? "Core developer & systems architect of Astrix."
+              : memberInfo.role.toLowerCase().includes("og")
+              ? "Original foundational developer & core contributor."
+              : memberInfo.role.toLowerCase().includes("designer")
+              ? "UI/UX & brand visual aesthetic architect."
+              : "Astrix core development team member."),
         });
       } catch (e) {
         console.error(`Failed to fetch dev team member with ID ${memberInfo.id}:`, e);
@@ -96,44 +111,78 @@ module.exports = {
     const pageSize = 5;
     const totalPages = Math.max(1, Math.ceil(fetchedTeam.length / pageSize));
     let currentPage = 0;
+    let currentView = "overview"; // "overview" | "details"
 
-    const buildBoardPayload = async (pageIdx, disableControls = false) => {
-      const buffer = await generateDeveloperBoard(fetchedTeam, { page: pageIdx });
-      const attachment = new AttachmentBuilder(buffer, {
-        name: `astrix_team_p${pageIdx}.png`,
-      });
+    const buildBoardPayload = async (view, pageIdx, disableControls = false) => {
+      let buffer;
+      let fileName;
 
-      const mediaItem = new MediaGalleryItemBuilder().setURL(
-        `attachment://astrix_team_p${pageIdx}.png`
-      );
-      const mediaGallery = new MediaGalleryBuilder().addItems(mediaItem);
-
-      const actionRows = [];
-
-      // Pagination controls if more than 5 members
-      if (totalPages > 1) {
-        const prevBtn = new ButtonBuilder()
-          .setCustomId("dev_prev")
-          .setLabel("◀")
-          .setStyle(ButtonStyle.Secondary)
-          .setDisabled(disableControls || pageIdx === 0);
-
-        const pageIndicator = new ButtonBuilder()
-          .setCustomId("dev_page")
-          .setLabel(`Page ${pageIdx + 1} / ${totalPages}`)
-          .setStyle(ButtonStyle.Secondary)
-          .setDisabled(true);
-
-        const nextBtn = new ButtonBuilder()
-          .setCustomId("dev_next")
-          .setLabel("▶")
-          .setStyle(ButtonStyle.Secondary)
-          .setDisabled(disableControls || pageIdx >= totalPages - 1);
-
-        actionRows.push(new ActionRowBuilder().addComponents(prevBtn, pageIndicator, nextBtn));
+      if (view === "overview") {
+        buffer = await generateDeveloperBoard(fetchedTeam, { page: pageIdx });
+        fileName = `astrix_team_overview_p${pageIdx}.png`;
+      } else {
+        buffer = await generateDeveloperDetailsBoard(fetchedTeam, { page: pageIdx });
+        fileName = `astrix_team_details_p${pageIdx}.png`;
       }
 
-      // External resource buttons
+      const attachment = new AttachmentBuilder(buffer, { name: fileName });
+      const mediaItem = new MediaGalleryItemBuilder().setURL(`attachment://${fileName}`);
+      const mediaGallery = new MediaGalleryBuilder().addItems(mediaItem);
+
+      const container = new ContainerBuilder();
+
+      // Top text header (matching the two views)
+      if (view === "overview") {
+        container.addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `# Hello <@${interaction.user.id}>\n### Here's Our Team Overview`
+          )
+        );
+      } else {
+        container.addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `# Team Details\n### Team Member Details\n-# ${fetchedTeam.length} members • Page ${pageIdx + 1}/${totalPages}`
+          )
+        );
+      }
+
+      // Panoramic Board Canvas
+      container.addMediaGalleryComponents(mediaGallery);
+
+      // Footer branding
+      container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(`**Powered By Astrix Devs**`)
+      );
+
+      // Main Navigation Row
+      const toggleBtn =
+        view === "overview"
+          ? new ButtonBuilder()
+              .setCustomId("dev_slash_view_details")
+              .setLabel("More Info")
+              .setStyle(ButtonStyle.Primary)
+              .setDisabled(disableControls)
+          : new ButtonBuilder()
+              .setCustomId("dev_slash_view_overview")
+              .setLabel("Team Overview")
+              .setStyle(ButtonStyle.Primary)
+              .setDisabled(disableControls);
+
+      const prevBtn = new ButtonBuilder()
+        .setCustomId("dev_slash_prev")
+        .setLabel("Previous")
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(disableControls || pageIdx === 0);
+
+      const nextBtn = new ButtonBuilder()
+        .setCustomId("dev_slash_next")
+        .setLabel("Next")
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(disableControls || pageIdx >= totalPages - 1);
+
+      const mainRow = new ActionRowBuilder().addComponents(toggleBtn, prevBtn, nextBtn);
+
+      // Links Row
       const inviteUrl = `https://discord.com/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot%20applications.commands`;
       const inviteBtn = new ButtonBuilder()
         .setEmoji("🔗")
@@ -153,16 +202,14 @@ module.exports = {
         .setStyle(ButtonStyle.Link)
         .setURL("https://extremez.vercel.app/");
 
-      actionRows.push(new ActionRowBuilder().addComponents(inviteBtn, supportBtn, websiteBtn));
+      const linkRow = new ActionRowBuilder().addComponents(inviteBtn, supportBtn, websiteBtn);
 
-      const container = new ContainerBuilder()
-        .addMediaGalleryComponents(mediaGallery)
-        .addActionRowComponents(...actionRows);
+      container.addActionRowComponents(mainRow, linkRow);
 
       return { container, attachment };
     };
 
-    const { container, attachment } = await buildBoardPayload(currentPage);
+    const { container, attachment } = await buildBoardPayload(currentView, currentPage);
 
     const replyMsg = await interaction.editReply({
       components: [container],
@@ -170,25 +217,27 @@ module.exports = {
       flags: MessageFlags.IsComponentsV2,
     });
 
-    if (totalPages <= 1) return;
-
     const filter = (i) => i.user.id === interaction.user.id;
     const collector = replyMsg.createMessageComponentCollector({
       filter,
-      time: 120000,
+      time: 180000,
     });
 
     collector.on("collect", async (i) => {
       await i.deferUpdate();
 
-      if (i.customId === "dev_prev" && currentPage > 0) {
+      if (i.customId === "dev_slash_view_details") {
+        currentView = "details";
+      } else if (i.customId === "dev_slash_view_overview") {
+        currentView = "overview";
+      } else if (i.customId === "dev_slash_prev" && currentPage > 0) {
         currentPage--;
-      } else if (i.customId === "dev_next" && currentPage < totalPages - 1) {
+      } else if (i.customId === "dev_slash_next" && currentPage < totalPages - 1) {
         currentPage++;
       }
 
       const { container: newContainer, attachment: newAttachment } =
-        await buildBoardPayload(currentPage);
+        await buildBoardPayload(currentView, currentPage);
 
       await i.editReply({
         components: [newContainer],
@@ -199,8 +248,8 @@ module.exports = {
     collector.on("end", async () => {
       try {
         const { container: finalContainer, attachment: finalAttachment } =
-          await buildBoardPayload(currentPage, true);
-        await replyMsg.edit({
+          await buildBoardPayload(currentView, currentPage, true);
+        await interaction.editReply({
           components: [finalContainer],
           files: [finalAttachment],
         });

@@ -93,24 +93,9 @@ function getBestDisplayName(user) {
 }
 
 /**
- * Generates the panoramic 5-slot team directory board matching the modern glassmorphism design
+ * Draws common titanium carbon brushed backdrop
  */
-async function generateDeveloperBoard(teamMembers = [], options = {}) {
-  const baseW = 1320;
-  const baseH = 600;
-  const scale = 1.5; // High-DPI 1980 x 900
-  const width = baseW * scale;
-  const height = baseH * scale;
-
-  const canvas = createCanvas(width, height);
-  const ctx = canvas.getContext("2d");
-  ctx.scale(scale, scale);
-
-  const page = options.page || 0;
-  const pageSize = 5;
-  const totalPages = Math.max(1, Math.ceil(teamMembers.length / pageSize));
-  const pageMembers = teamMembers.slice(page * pageSize, (page + 1) * pageSize);
-
+function drawTitaniumBackdrop(ctx, baseW, baseH) {
   // 1. Sleek Titanium Carbon Backdrop
   const bgGrad = ctx.createLinearGradient(0, 0, baseW, baseH);
   bgGrad.addColorStop(0, "#080b0f");
@@ -153,6 +138,30 @@ async function generateDeveloperBoard(teamMembers = [], options = {}) {
   ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
   ctx.lineWidth = 1;
   drawRoundRect(ctx, 16, 16, baseW - 32, baseH - 32, 16, false, true);
+}
+
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ * VIEW 1: Team Overview (Panoramic 5-Slot Board)
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+async function generateDeveloperBoard(teamMembers = [], options = {}) {
+  const baseW = 1320;
+  const baseH = 600;
+  const scale = 1.5; // High-DPI 1980 x 900
+  const width = baseW * scale;
+  const height = baseH * scale;
+
+  const canvas = createCanvas(width, height);
+  const ctx = canvas.getContext("2d");
+  ctx.scale(scale, scale);
+
+  const page = options.page || 0;
+  const pageSize = 5;
+  const totalPages = Math.max(1, Math.ceil(teamMembers.length / pageSize));
+  const pageMembers = teamMembers.slice(page * pageSize, (page + 1) * pageSize);
+
+  drawTitaniumBackdrop(ctx, baseW, baseH);
 
   // ── Header Section ──────────────────────────────────────────
   const headX = 45;
@@ -241,7 +250,7 @@ async function generateDeveloperBoard(teamMembers = [], options = {}) {
       ctx.fill();
       ctx.shadowBlur = 0;
 
-      // 3. Member Avatar (Centered Circle with thick white ring)
+      // 3. Member Avatar (Centered Circle with silver ring)
       const avRadius = 48;
       const avCenterX = cardX + cardW / 2;
       const avCenterY = cardY + 88;
@@ -343,7 +352,181 @@ async function generateDeveloperBoard(teamMembers = [], options = {}) {
   return canvas.toBuffer("image/png");
 }
 
+/**
+ * ─────────────────────────────────────────────────────────────────────────────
+ * VIEW 2: Team Details (Horizontal Member Capsules)
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+async function generateDeveloperDetailsBoard(teamMembers = [], options = {}) {
+  const baseW = 1320;
+  const baseH = 600;
+  const scale = 1.5;
+  const width = baseW * scale;
+  const height = baseH * scale;
+
+  const canvas = createCanvas(width, height);
+  const ctx = canvas.getContext("2d");
+  ctx.scale(scale, scale);
+
+  const page = options.page || 0;
+  const pageSize = 5;
+  const totalPages = Math.max(1, Math.ceil(teamMembers.length / pageSize));
+  const pageMembers = teamMembers.slice(page * pageSize, (page + 1) * pageSize);
+
+  drawTitaniumBackdrop(ctx, baseW, baseH);
+
+  // ── Header Section ──────────────────────────────────────────
+  const headX = 45;
+  const headY = 48;
+
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `900 38px ${FONT_FAMILY}`;
+  ctx.fillText("TEAM DETAILS", headX, headY + 32);
+
+  ctx.fillStyle = "#94a3b8";
+  ctx.font = `bold 12px ${FONT_FAMILY}`;
+  ctx.fillText("STATUS • ALL RANKS • BIOGRAPHY", headX, headY + 54);
+
+  // Full-width Divider Line
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.22)";
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(headX, headY + 68);
+  ctx.lineTo(baseW - headX, headY + 68);
+  ctx.stroke();
+
+  // ── Member Bars List ────────────────────────────────────────
+  const listStartY = headY + 90;
+  const barW = baseW - headX * 2; // 1230px
+  const barH = 74;
+  const barGap = 14;
+
+  pageMembers.forEach((member, idx) => {
+    const barY = listStartY + idx * (barH + barGap);
+
+    // Bar Glass Background
+    ctx.save();
+    ctx.fillStyle = "rgba(10, 16, 22, 0.88)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+    ctx.lineWidth = 1;
+    drawRoundRect(ctx, headX, barY, barW, barH, 14, true, true);
+
+    // Subtle inner top gloss
+    const gloss = ctx.createLinearGradient(headX, barY, headX, barY + barH * 0.5);
+    gloss.addColorStop(0, "rgba(255, 255, 255, 0.04)");
+    gloss.addColorStop(1, "rgba(255, 255, 255, 0)");
+    ctx.fillStyle = gloss;
+    drawRoundRect(ctx, headX, barY, barW, barH * 0.5, 14, true, false);
+
+    // Left Accent indicator
+    ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
+    drawRoundRect(ctx, headX + 12, barY + 16, 3, barH - 32, 1.5, true, false);
+
+    // Member Avatar
+    const avRadius = 24;
+    const avX = headX + 48;
+    const avY = barY + barH / 2;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(avX, avY, avRadius + 2, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
+    ctx.lineWidth = 1.8;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(avX, avY, avRadius, 0, Math.PI * 2);
+    ctx.clip();
+    if (member.avatarImg) {
+      ctx.drawImage(member.avatarImg, avX - avRadius, avY - avRadius, avRadius * 2, avRadius * 2);
+    } else {
+      ctx.fillStyle = "#1e293b";
+      ctx.fillRect(avX - avRadius, avY - avRadius, avRadius * 2, avRadius * 2);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `bold 16px ${FONT_FAMILY}`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText((member.displayName || "D")[0], avX, avY);
+    }
+    ctx.restore();
+
+    // Member Name
+    const nameX = avX + avRadius + 18;
+    ctx.fillStyle = "#ffffff";
+    ctx.font = `bold 17px ${FONT_FAMILY}`;
+    const nameStr = getBestDisplayName(member);
+    ctx.fillText(truncateText(ctx, nameStr, 220), nameX, barY + 33);
+
+    // Bio
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = `12px ${FONT_FAMILY}`;
+    const bioStr = member.bio || "No bio set.";
+    ctx.fillText(truncateText(ctx, bioStr, 240), nameX, barY + 53);
+
+    // Center Section: All Ranks / Roles
+    const roleX = headX + 400;
+    ctx.fillStyle = "#cbd5e1";
+    ctx.font = `bold 13.5px ${FONT_FAMILY}`;
+    const roleStr = member.role || "Developer";
+    ctx.fillText(truncateText(ctx, roleStr, 480), roleX, barY + 42);
+
+    // Right Section: Status Pill Badge
+    const status = (member.status || "offline").toLowerCase();
+    let statusColor = "#64748b";
+    let statusLabel = "OFFLINE";
+    if (status === "online") {
+      statusColor = "#10b981";
+      statusLabel = "ONLINE";
+    } else if (status === "idle") {
+      statusColor = "#f59e0b";
+      statusLabel = "IDLE";
+    } else if (status === "dnd") {
+      statusColor = "#ef4444";
+      statusLabel = "DND";
+    }
+
+    const pillW = 100;
+    const pillH = 30;
+    const pillX = headX + barW - pillW - 20;
+    const pillY = barY + (barH - pillH) / 2;
+
+    ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
+    ctx.strokeStyle = statusColor;
+    ctx.lineWidth = 1;
+    drawRoundRect(ctx, pillX, pillY, pillW, pillH, 8, true, true);
+
+    // Glowing Dot
+    ctx.beginPath();
+    ctx.arc(pillX + 16, pillY + pillH / 2, 4, 0, Math.PI * 2);
+    ctx.fillStyle = statusColor;
+    ctx.shadowColor = statusColor;
+    ctx.shadowBlur = 6;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Status Label Text
+    ctx.fillStyle = statusColor;
+    ctx.font = `bold 11px ${FONT_FAMILY}`;
+    ctx.fillText(statusLabel, pillX + 28, pillY + 19);
+
+    ctx.restore();
+  });
+
+  // ── Footer ──────────────────────────────────────────────────
+  const footY = baseH - 24;
+  ctx.fillStyle = "#64748b";
+  ctx.font = `bold 11px ${FONT_FAMILY}`;
+  ctx.fillText("ASTRIX • TEAM DIRECTORY", headX, footY);
+
+  ctx.textAlign = "right";
+  ctx.fillText(`PAGE ${page + 1} / ${totalPages}`, baseW - headX, footY);
+  ctx.textAlign = "left";
+
+  return canvas.toBuffer("image/png");
+}
+
 module.exports = {
   generateDeveloperBoard,
+  generateDeveloperDetailsBoard,
   getBestDisplayName,
 };

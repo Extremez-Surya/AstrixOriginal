@@ -85,6 +85,7 @@ function buildShortyDashboard(stats, snapshots, selectedSnapshot = null, disable
       `> ⚡ **Live RAM / Uptime:** \`${stats.ramUsageMb} MB\` • \`${uptimeMins}m ${uptimeSecs}s\`\n` +
       `> 🗄️ **Saved Snapshots:** \`${stats.snapshotCount}\` versions • Latest: ${lastBackupStr}\n` +
       `> 🛑 **Panel Shutdown Hook:** 🟢 **Active** *(Auto-saves when panel stops/restarts)*\n` +
+      `> ⚡ **Auto-Backup Engine:** 🟢 **Active** *(Real-time watcher saves all updates)*\n` +
       `> 🛡️ **Auto-Heal Engine:** 🟢 **Active** *(Auto-restores data if files wiped)*`
     )
   );
@@ -170,7 +171,43 @@ module.exports = {
 
     const sub = args[0]?.toLowerCase();
 
-    // 1. CREATE SNAPSHOT / CLOUD SYNC
+    // 1. AUTO-BACKUP TOGGLE / STATUS / TRIGGER
+    if (sub === "auto" || sub === "autobackup") {
+      const action = args[1]?.toLowerCase();
+      if (action === "on" || action === "enable") {
+        backupManager.enableAutoBackup();
+      } else if (action === "off" || action === "disable") {
+        backupManager.disableAutoBackup();
+      } else if (action === "run" || action === "trigger" || action === "now") {
+        const { snapshot, cloudSuccess } = await backupManager.createSnapshotAsync("Manual Trigger: Auto-Backup Run");
+        const container = new ContainerBuilder().addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `### ⚡ **Auto-Backup Triggered**\n` +
+            `> - **Snapshot ID:** \`snapshot-${snapshot.timestamp}\`\n` +
+            `> - **Modules Protected:** \`${snapshot.stats.totalFiles}\` files • \`${snapshot.stats.totalRecords.toLocaleString()}\` records\n` +
+            `> - **Cloud Sync:** ${cloudSuccess ? "🟢 Synced to MongoDB Atlas" : "🟡 Local saved"}\n\n` +
+            `✅ All data, updates, categories, configurations, and command data backed up successfully!`
+          )
+        );
+        return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      }
+
+      const isEnabled = backupManager.isAutoBackupEnabled();
+      const container = new ContainerBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `### ⚡ **Real-Time Auto-Backup Engine**\n` +
+          `-# *Monitors and saves every update to bot configurations and command data automatically.*\n\n` +
+          `> - **Status:** ${isEnabled ? "🟢 **Active & Watching**" : "🔴 **Disabled**"}\n` +
+          `> - **Debounce Window:** \`4 seconds\` *(prevents disk thrashing during rapid updates)*\n` +
+          `> - **Cloud Sync:** 🟢 **MongoDB Atlas Auto-Push Active**\n` +
+          `> - **Tracked Modules:** NoPrefix, AntiNuke, AutoMod, AntiRaid, Welcome, JoinDM, Goodbye, Configurations, Custom Roles, All Categories, & Commands Data\n\n` +
+          `*Commands:* \`.backup auto on\` • \`.backup auto off\` • \`.backup auto run\``
+        )
+      );
+      return message.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    }
+
+    // 2. CREATE SNAPSHOT / CLOUD SYNC
     if (sub === "create" || sub === "save" || sub === "sync" || sub === "cloud") {
       const isCloudPull = args[1]?.toLowerCase() === "restore" || args[1]?.toLowerCase() === "pull";
       if (isCloudPull) {
@@ -204,7 +241,7 @@ module.exports = {
           `> - **Cloud Backup:** ${cloudStatusText}\n` +
           `> - **Database:** \`Astrix\` (Cluster: \`alone.g42tkzg.mongodb.net\`)\n` +
           `> - **Saved At:** <t:${Math.floor(snapshot.timestamp / 1000)}:R>\n\n` +
-          `✅ AntiNuke, Welcome, AutoMod, Triggers, Custom Roles, Leveling & all settings protected!`
+          `✅ **Protected Data:** NoPrefix, AntiNuke, AutoMod, AntiRaid, Welcome, JoinDM, Goodbye, Configurations, Custom Roles, All Categories, & Commands Data!`
         )
       );
 

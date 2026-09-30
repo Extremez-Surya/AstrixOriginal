@@ -84,6 +84,7 @@ function buildShortyDashboard(stats, snapshots, selectedSnapshot = null, disable
       `> ⚡ **Live RAM / Uptime:** \`${stats.ramUsageMb} MB\` • \`${uptimeMins}m ${uptimeSecs}s\`\n` +
       `> 🗄️ **Saved Snapshots:** \`${stats.snapshotCount}\` versions • Latest: ${lastBackupStr}\n` +
       `> 🛑 **Panel Shutdown Hook:** 🟢 **Active** *(Auto-saves when panel stops/restarts)*\n` +
+      `> ⚡ **Auto-Backup Engine:** 🟢 **Active** *(Real-time watcher saves all updates)*\n` +
       `> 🛡️ **Auto-Heal Engine:** 🟢 **Active** *(Auto-restores data if files wiped)*`
     )
   );
@@ -267,6 +268,25 @@ module.exports = {
       description: "List stored historical backup snapshots.",
       type: ApplicationCommandOptionType.Subcommand,
     },
+    {
+      name: "auto",
+      description: "Manage real-time reactive auto-backup engine.",
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: "action",
+          description: "Action to perform (status, enable, disable, run).",
+          type: ApplicationCommandOptionType.String,
+          required: false,
+          choices: [
+            { name: "Status", value: "status" },
+            { name: "Enable", value: "enable" },
+            { name: "Disable", value: "disable" },
+            { name: "Run Now", value: "run" },
+          ],
+        },
+      ],
+    },
   ],
 
   async execute(client, interaction) {
@@ -280,6 +300,42 @@ module.exports = {
     }
 
     const subcommand = interaction.options.getSubcommand();
+
+    // 0. AUTO-BACKUP
+    if (subcommand === "auto") {
+      const action = interaction.options.getString("action") || "status";
+      if (action === "enable") {
+        backupManager.enableAutoBackup();
+      } else if (action === "disable") {
+        backupManager.disableAutoBackup();
+      } else if (action === "run") {
+        const { snapshot, cloudSuccess } = await backupManager.createSnapshotAsync("Slash Trigger: Auto-Backup Run");
+        const container = new ContainerBuilder().addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `### ⚡ **Auto-Backup Triggered**\n` +
+            `> - **Snapshot ID:** \`snapshot-${snapshot.timestamp}\`\n` +
+            `> - **Modules Protected:** \`${snapshot.stats.totalFiles}\` files • \`${snapshot.stats.totalRecords.toLocaleString()}\` records\n` +
+            `> - **Cloud Sync:** ${cloudSuccess ? "🟢 Synced to MongoDB Atlas" : "🟡 Local saved"}\n\n` +
+            `✅ All data, updates, categories, configurations, and command data backed up successfully!`
+          )
+        );
+        return interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+      }
+
+      const isEnabled = backupManager.isAutoBackupEnabled();
+      const container = new ContainerBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `### ⚡ **Real-Time Auto-Backup Engine**\n` +
+          `-# *Monitors and saves every update to bot configurations and command data automatically.*\n\n` +
+          `> - **Status:** ${isEnabled ? "🟢 **Active & Watching**" : "🔴 **Disabled**"}\n` +
+          `> - **Debounce Window:** \`4 seconds\` *(prevents disk thrashing during rapid updates)*\n` +
+          `> - **Cloud Sync:** 🟢 **MongoDB Atlas Auto-Push Active**\n` +
+          `> - **Tracked Modules:** NoPrefix, AntiNuke, AutoMod, AntiRaid, Welcome, JoinDM, Goodbye, Configurations, Custom Roles, All Categories, & Commands Data\n\n` +
+          `*Options: `/backup auto action:enable`, `/backup auto action:disable`, `/backup auto action:run`*`
+        )
+      );
+      return interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
+    }
 
     // 1. CREATE
     if (subcommand === "create") {
@@ -296,7 +352,7 @@ module.exports = {
           `> - **Cloud Backup:** ${cloudStatusText}\n` +
           `> - **Database:** \`Astrix\` (Cluster: \`alone.g42tkzg.mongodb.net\`)\n` +
           `> - **Saved At:** <t:${Math.floor(snapshot.timestamp / 1000)}:R>\n\n` +
-          `✅ AntiNuke, Welcome, AutoMod, Triggers, Custom Roles, Leveling & all settings protected!`
+          `✅ **Protected Data:** NoPrefix, AntiNuke, AutoMod, AntiRaid, Welcome, JoinDM, Goodbye, Configurations, Custom Roles, All Categories, & Commands Data!`
         )
       );
 
