@@ -128,28 +128,8 @@ module.exports = {
 
       const container = new ContainerBuilder();
 
-      // Top text header (matching the two views)
-      if (view === "overview") {
-        container.addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `# Hello <@${message.author.id}>\n### Here's Our Team Overview`
-          )
-        );
-      } else {
-        container.addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            `# Team Details\n### Team Member Details\n-# ${fetchedTeam.length} members • Page ${pageIdx + 1}/${totalPages}`
-          )
-        );
-      }
-
       // Panoramic Board Canvas
       container.addMediaGalleryComponents(mediaGallery);
-
-      // Footer branding
-      container.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(`**Powered By Astrix Devs**`)
-      );
 
       // Main Navigation Row
       const toggleBtn =
@@ -179,29 +159,7 @@ module.exports = {
 
       const mainRow = new ActionRowBuilder().addComponents(toggleBtn, prevBtn, nextBtn);
 
-      // Links Row
-      const inviteUrl = `https://discord.com/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=bot%20applications.commands`;
-      const inviteBtn = new ButtonBuilder()
-        .setEmoji("🔗")
-        .setLabel("Invite")
-        .setStyle(ButtonStyle.Link)
-        .setURL(inviteUrl);
-
-      const supportBtn = new ButtonBuilder()
-        .setEmoji("💬")
-        .setLabel("Support Server")
-        .setStyle(ButtonStyle.Link)
-        .setURL("https://discord.gg/FR9pXG2Mwb");
-
-      const websiteBtn = new ButtonBuilder()
-        .setEmoji("🌐")
-        .setLabel("Website")
-        .setStyle(ButtonStyle.Link)
-        .setURL("https://extremez.vercel.app/");
-
-      const linkRow = new ActionRowBuilder().addComponents(inviteBtn, supportBtn, websiteBtn);
-
-      container.addActionRowComponents(mainRow, linkRow);
+      container.addActionRowComponents(mainRow);
 
       return { container, attachment };
     };
