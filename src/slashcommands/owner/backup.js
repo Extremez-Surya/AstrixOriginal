@@ -331,7 +331,7 @@ module.exports = {
           `> - **Debounce Window:** \`4 seconds\` *(prevents disk thrashing during rapid updates)*\n` +
           `> - **Cloud Sync:** 🟢 **MongoDB Atlas Auto-Push Active**\n` +
           `> - **Tracked Modules:** NoPrefix, AntiNuke, AutoMod, AntiRaid, Welcome, JoinDM, Goodbye, Configurations, Custom Roles, All Categories, & Commands Data\n\n` +
-          `*Options: `/backup auto action:enable`, `/backup auto action:disable`, `/backup auto action:run`*`
+          `*Options:* \`/backup auto action:enable\` • \`/backup auto action:disable\` • \`/backup auto action:run\``
         )
       );
       return interaction.reply({ components: [container], flags: MessageFlags.IsComponentsV2 }).catch(() => null);
