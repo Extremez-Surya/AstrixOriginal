@@ -21,10 +21,15 @@ function buildShortyDashboard(stats, snapshots, selectedSnapshot = null, disable
 
   if (selectedSnapshot) {
     const sizeKb = (selectedSnapshot.sizeBytes / 1024).toFixed(1);
+    const isManual = selectedSnapshot.type === "manual";
+    const typeLabel = isManual ? "⭐ Manual (Developer)" : "📅 Daily Auto-Backup";
     container.addTextDisplayComponents(
       new TextDisplayBuilder().setContent(
         `### 🗄️ **Snapshot Details: \`${selectedSnapshot.id}\`**\n` +
+        `> - **Type:** \`${typeLabel}\`\n` +
         `> - **Note / Label:** \`${selectedSnapshot.label}\`\n` +
+        (selectedSnapshot.guildName ? `> - **Server:** \`${selectedSnapshot.guildName}\` (\`${selectedSnapshot.guildId}\`)\n` : "") +
+        (selectedSnapshot.creatorTag ? `> - **Recorded By:** \`${selectedSnapshot.creatorTag}\`\n` : "") +
         `> - **Recorded:** <t:${Math.floor(selectedSnapshot.timestamp / 1000)}:F> (<t:${Math.floor(selectedSnapshot.timestamp / 1000)}:R>)\n` +
         `> - **Modules / Entries:** \`${selectedSnapshot.totalFiles}\` files • \`${selectedSnapshot.totalRecords.toLocaleString()}\` records\n` +
         `> - **File Size:** \`${sizeKb} KB\`\n\n` +
@@ -75,17 +80,20 @@ function buildShortyDashboard(stats, snapshots, selectedSnapshot = null, disable
     ? `🟢 **Connected** (\`${mongoStatus.host || "alone.g42tkzg.mongodb.net"}\`)`
     : `🟡 **Connecting / Ready**`;
 
+  const scopeText = stats.filterGuildId ? `Server Backups (\`${stats.filterGuildId}\`)` : `Global System Vault`;
+
   container.addTextDisplayComponents(
     new TextDisplayBuilder().setContent(
       `### 🛡️ **Astrix Master Data Vault & Live Backup**\n` +
-      `-# *Zero-overhead state protection with auto pre-shutdown snapshot engine.*\n\n` +
+      `-# *Server-scoped data preservation with daily auto-backup cycle.*\n\n` +
+      `> 🏛️ **Active Scope:** \`${scopeText}\`\n` +
       `> 📊 **Live Records:** \`${stats.totalDiskRecords.toLocaleString()}\` active configurations\n` +
       `> 📁 **Protected Files:** \`${stats.activeFilesOnDisk}\` / \`${stats.trackedFilesCount}\` modules (\`${(stats.totalDiskBytes / 1024).toFixed(1)} KB\`)\n` +
       `> ☁️ **Cloud Database:** ${mongoText}\n` +
       `> ⚡ **Live RAM / Uptime:** \`${stats.ramUsageMb} MB\` • \`${uptimeMins}m ${uptimeSecs}s\`\n` +
-      `> 🗄️ **Saved Snapshots:** \`${stats.snapshotCount}\` versions • Latest: ${lastBackupStr}\n` +
-      `> 🛑 **Panel Shutdown Hook:** 🟢 **Active** *(Auto-saves when panel stops/restarts)*\n` +
-      `> ⚡ **Auto-Backup Engine:** 🟢 **Active** *(Real-time watcher saves all updates)*\n` +
+      `> 💾 **Snapshots on Record:** \`${stats.manualCount || 0}\` Manual • \`${stats.dailyCount || 0}\` Daily\n` +
+      `> 📅 **Auto-Backup Schedule:** 🟢 **Daily (Every 24 Hours)**\n` +
+      `> 🛑 **Panel Shutdown Hook:** 🟢 **Active** *(Auto-saves on panel restart)*\n` +
       `> 🛡️ **Auto-Heal Engine:** 🟢 **Active** *(Auto-restores data if files wiped)*`
     )
   );
@@ -99,7 +107,9 @@ function buildShortyDashboard(stats, snapshots, selectedSnapshot = null, disable
 
     const displaySnapshots = snapshots.slice(0, 25);
     for (const snap of displaySnapshots) {
-      const snapLabel = (snap.label || "Snapshot").slice(0, 50);
+      const isManual = snap.type === "manual";
+      const tag = isManual ? "[Manual]" : "[Daily]";
+      const snapLabel = `${tag} ${(snap.label || "Snapshot").slice(0, 38)}`;
       const dateStr = new Date(snap.timestamp).toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
@@ -111,7 +121,7 @@ function buildShortyDashboard(stats, snapshots, selectedSnapshot = null, disable
           .setLabel(snapLabel)
           .setDescription(`${snap.id} • ${dateStr} • ${(snap.sizeBytes / 1024).toFixed(1)} KB`)
           .setValue(snap.id)
-          .setEmoji("💾")
+          .setEmoji(isManual ? "💾" : "📅")
       );
     }
 
@@ -179,11 +189,15 @@ module.exports = {
       } else if (action === "off" || action === "disable") {
         backupManager.disableAutoBackup();
       } else if (action === "run" || action === "trigger" || action === "now") {
-        const { snapshot, cloudSuccess } = await backupManager.createSnapshotAsync("Manual Trigger: Auto-Backup Run");
+        const { snapshot, cloudSuccess } = await backupManager.createSnapshotAsync({
+          label: `Daily Auto-Backup (${new Date().toLocaleDateString("en-US")})`,
+          type: "daily",
+        });
         const container = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
-            `### ⚡ **Auto-Backup Triggered**\n` +
+            `### ⚡ **Daily Auto-Backup Triggered**\n` +
             `> - **Snapshot ID:** \`snapshot-${snapshot.timestamp}\`\n` +
+            `> - **Type:** \`Daily (Scheduled)\`\n` +
             `> - **Modules Protected:** \`${snapshot.stats.totalFiles}\` files • \`${snapshot.stats.totalRecords.toLocaleString()}\` records\n` +
             `> - **Cloud Sync:** ${cloudSuccess ? "🟢 Synced to MongoDB Atlas" : "🟡 Local saved"}\n\n` +
             `✅ All data, updates, categories, configurations, and command data backed up successfully!`
@@ -195,11 +209,12 @@ module.exports = {
       const isEnabled = backupManager.isAutoBackupEnabled();
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### ⚡ **Real-Time Auto-Backup Engine**\n` +
-          `-# *Monitors and saves every update to bot configurations and command data automatically.*\n\n` +
-          `> - **Status:** ${isEnabled ? "🟢 **Active & Watching**" : "🔴 **Disabled**"}\n` +
-          `> - **Debounce Window:** \`4 seconds\` *(prevents disk thrashing during rapid updates)*\n` +
+          `### 📅 **Daily Auto-Backup Engine**\n` +
+          `-# *Runs once every 24 hours to create a clean daily snapshot with zero bot load.*\n\n` +
+          `> - **Status:** ${isEnabled ? "🟢 **Active (24h Cycle)**" : "🔴 **Disabled**"}\n` +
+          `> - **Schedule:** \`Once per day\` *(prevents redundant writes & high CPU/disk load)*\n` +
           `> - **Cloud Sync:** 🟢 **MongoDB Atlas Auto-Push Active**\n` +
+          `> - **Server Scoped:** 🟢 **Active** *(Server-specific backups isolated)*\n` +
           `> - **Tracked Modules:** NoPrefix, AntiNuke, AutoMod, AntiRaid, Welcome, JoinDM, Goodbye, Configurations, Custom Roles, All Categories, & Commands Data\n\n` +
           `*Commands:* \`.backup auto on\` • \`.backup auto off\` • \`.backup auto run\``
         )
@@ -229,13 +244,24 @@ module.exports = {
       }
 
       const label = args.slice(1).join(" ") || `Manual Backup by ${message.author.username}`;
-      const { snapshot, cloudSuccess } = await backupManager.createSnapshotAsync(label);
+      const backupOptions = {
+        label,
+        type: "manual",
+        guildId: message.guild ? message.guild.id : null,
+        guildName: message.guild ? message.guild.name : "Direct / Global",
+        creatorId: message.author.id,
+        creatorTag: message.author.tag,
+      };
+      const { snapshot, cloudSuccess } = await backupManager.createSnapshotAsync(backupOptions);
       const cloudStatusText = cloudSuccess ? "🟢 **Synced to MongoDB Atlas**" : "🟡 **Saved locally (Cloud pending)**";
 
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### 💾 **Snapshot Created & Backed Up**\n` +
+          `### 💾 **Manual Developer Backup Created**\n` +
           `> - **Label:** \`${snapshot.label}\`\n` +
+          `> - **Type:** \`⭐ Manual (Developer)\`\n` +
+          (snapshot.guildName ? `> - **Server:** \`${snapshot.guildName}\` (\`${snapshot.guildId}\`)\n` : "") +
+          `> - **Recorded By:** <@${message.author.id}>\n` +
           `> - **ID:** \`snapshot-${snapshot.timestamp}\`\n` +
           `> - **Data:** \`${snapshot.stats.totalFiles}\` modules • \`${snapshot.stats.totalRecords.toLocaleString()}\` records\n` +
           `> - **Cloud Backup:** ${cloudStatusText}\n` +
@@ -330,7 +356,14 @@ module.exports = {
         filePath = target.filePath;
         exportLabel = target.label;
       } else {
-        backupManager.createSnapshot("Pre-Export Fresh Snapshot");
+        backupManager.createSnapshot({
+          label: "Pre-Export Fresh Snapshot",
+          type: "manual",
+          guildId: message.guild ? message.guild.id : null,
+          guildName: message.guild ? message.guild.name : "Direct / Global",
+          creatorId: message.author.id,
+          creatorTag: message.author.tag,
+        });
       }
 
       if (!fs.existsSync(filePath)) {
@@ -440,24 +473,30 @@ module.exports = {
       }
     }
 
+    const guildId = message.guild?.id || null;
+
     // 8. LIST COMMAND
     if (sub === "list" || sub === "history") {
-      const snapshots = backupManager.listSnapshots();
+      const snapshots = backupManager.listSnapshots(guildId);
       if (snapshots.length === 0) {
-        return message.reply("ℹ️ No historical snapshots found yet. Run `.backup create` to create one.").catch(() => null);
+        return message.reply("ℹ️ No historical snapshots found yet for this server. Run `.backup create` to create one.").catch(() => null);
       }
 
       let listText = snapshots
         .slice(0, 10)
         .map((s, idx) => {
           const sizeKb = (s.sizeBytes / 1024).toFixed(1);
-          return `> \`${idx + 1}.\` **${s.id}** — *${s.label}*\n> -# <t:${Math.floor(s.timestamp / 1000)}:R> • \`${s.totalFiles}\` files • \`${s.totalRecords}\` records • \`${sizeKb} KB\``;
+          const isManual = s.type === "manual";
+          const tag = isManual ? "⭐ `[Manual]`" : "📅 `[Daily]`";
+          const creator = s.creatorTag ? ` • by **${s.creatorTag}**` : "";
+          return `> \`${idx + 1}.\` **${s.id}** — *${s.label}*\n> -# ${tag} • <t:${Math.floor(s.timestamp / 1000)}:R> • \`${s.totalFiles}\` files • \`${s.totalRecords}\` records • \`${sizeKb} KB\`${creator}`;
         })
         .join("\n\n");
 
+      const scopeInfo = guildId ? ` for **${message.guild?.name || guildId}**` : " (Global System Vault)";
       const container = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `### 🗄️ **Saved Backup Snapshots (${snapshots.length})**\n\n` +
+          `### 🗄️ **Saved Backup Snapshots (${snapshots.length})**${scopeInfo}\n\n` +
           listText +
           `\n\n-# Quick Actions: \`.backup restore <id>\` • \`.backup delete <id>\` • \`.backup edit <id> <label>\``
         )
@@ -467,8 +506,8 @@ module.exports = {
     }
 
     // 9. DEFAULT SHORTY UI WITH BUTTONS & DROPDOWN (Interactive)
-    let stats = backupManager.getRealtimeStats();
-    let snapshots = backupManager.listSnapshots();
+    let stats = backupManager.getRealtimeStats(guildId);
+    let snapshots = backupManager.listSnapshots(guildId);
     let selectedSnapshot = null;
 
     const initialContainer = buildShortyDashboard(stats, snapshots, selectedSnapshot, false);
@@ -492,7 +531,7 @@ module.exports = {
         if (customId === "backup_select_snapshot") {
           await i.deferUpdate();
           const targetId = i.values[0];
-          snapshots = backupManager.listSnapshots();
+          snapshots = backupManager.listSnapshots(guildId);
           selectedSnapshot = snapshots.find((s) => s.id === targetId) || null;
           const updated = buildShortyDashboard(stats, snapshots, selectedSnapshot, false);
           return i.editReply({ components: [updated] });
@@ -502,8 +541,8 @@ module.exports = {
         if (customId === "backup_act_back") {
           await i.deferUpdate();
           selectedSnapshot = null;
-          stats = backupManager.getRealtimeStats();
-          snapshots = backupManager.listSnapshots();
+          stats = backupManager.getRealtimeStats(guildId);
+          snapshots = backupManager.listSnapshots(guildId);
           const updated = buildShortyDashboard(stats, snapshots, null, false);
           return i.editReply({ components: [updated] });
         }
@@ -517,8 +556,8 @@ module.exports = {
             backupManager.restoreFromSnapshot(target.filePath);
           }
           selectedSnapshot = null;
-          stats = backupManager.getRealtimeStats();
-          snapshots = backupManager.listSnapshots();
+          stats = backupManager.getRealtimeStats(guildId);
+          snapshots = backupManager.listSnapshots(guildId);
           const updated = buildShortyDashboard(stats, snapshots, null, false);
           return i.followUp({ content: `✅ Snapshot \`${targetId}\` restored successfully!`, flags: MessageFlags.Ephemeral });
         }
@@ -547,8 +586,8 @@ module.exports = {
             backupManager.deleteSnapshot(targetId);
           } catch (_) {}
           selectedSnapshot = null;
-          stats = backupManager.getRealtimeStats();
-          snapshots = backupManager.listSnapshots();
+          stats = backupManager.getRealtimeStats(guildId);
+          snapshots = backupManager.listSnapshots(guildId);
           const updated = buildShortyDashboard(stats, snapshots, null, false);
           await i.editReply({ components: [updated] });
           return i.followUp({ content: `🗑️ Snapshot \`${targetId}\` deleted.`, flags: MessageFlags.Ephemeral });
@@ -557,21 +596,35 @@ module.exports = {
         // Button: Create snapshot
         if (customId === "backup_btn_create") {
           await i.deferUpdate();
-          backupManager.createSnapshot(`Manual Snapshot (${message.author.username})`);
-          stats = backupManager.getRealtimeStats();
-          snapshots = backupManager.listSnapshots();
+          backupManager.createSnapshot({
+            label: `Manual Snapshot (${message.author.username})`,
+            type: "manual",
+            guildId: guildId,
+            guildName: message.guild?.name || "Direct / Global",
+            creatorId: message.author.id,
+            creatorTag: message.author.tag,
+          });
+          stats = backupManager.getRealtimeStats(guildId);
+          snapshots = backupManager.listSnapshots(guildId);
           selectedSnapshot = null;
           const updated = buildShortyDashboard(stats, snapshots, null, false);
           await i.editReply({ components: [updated] });
-          return i.followUp({ content: `💾 New backup snapshot created successfully!`, flags: MessageFlags.Ephemeral });
+          return i.followUp({ content: `💾 New manual developer backup recorded and saved!`, flags: MessageFlags.Ephemeral });
         }
 
         // Button: Cloud Sync
         if (customId === "backup_btn_cloudsync") {
           await i.deferUpdate();
-          const { snapshot, cloudSuccess } = await backupManager.createSnapshotAsync(`Cloud Sync (${message.author.username})`);
-          stats = backupManager.getRealtimeStats();
-          snapshots = backupManager.listSnapshots();
+          const { snapshot, cloudSuccess } = await backupManager.createSnapshotAsync({
+            label: `Cloud Sync (${message.author.username})`,
+            type: "manual",
+            guildId: guildId,
+            guildName: message.guild?.name || "Direct / Global",
+            creatorId: message.author.id,
+            creatorTag: message.author.tag,
+          });
+          stats = backupManager.getRealtimeStats(guildId);
+          snapshots = backupManager.listSnapshots(guildId);
           selectedSnapshot = null;
           const updated = buildShortyDashboard(stats, snapshots, null, false);
           await i.editReply({ components: [updated] });
@@ -584,7 +637,14 @@ module.exports = {
 
         // Button: Export Master Vault
         if (customId === "backup_btn_export") {
-          backupManager.createSnapshot("Pre-Export Fresh Snapshot");
+          backupManager.createSnapshot({
+            label: "Pre-Export Fresh Snapshot",
+            type: "manual",
+            guildId: guildId,
+            guildName: message.guild?.name || "Direct / Global",
+            creatorId: message.author.id,
+            creatorTag: message.author.tag,
+          });
           if (!fs.existsSync(backupManager.VAULT_FILE)) {
             return i.reply({ content: "❌ No vault file found on disk.", flags: MessageFlags.Ephemeral });
           }
@@ -600,8 +660,8 @@ module.exports = {
         // Button: Refresh stats
         if (customId === "backup_btn_refresh") {
           await i.deferUpdate();
-          stats = backupManager.getRealtimeStats();
-          snapshots = backupManager.listSnapshots();
+          stats = backupManager.getRealtimeStats(guildId);
+          snapshots = backupManager.listSnapshots(guildId);
           selectedSnapshot = null;
           const updated = buildShortyDashboard(stats, snapshots, null, false);
           return i.editReply({ components: [updated] });
@@ -611,8 +671,8 @@ module.exports = {
         if (customId === "backup_btn_clear") {
           await i.deferUpdate();
           const res = backupManager.clearAllSnapshots();
-          stats = backupManager.getRealtimeStats();
-          snapshots = backupManager.listSnapshots();
+          stats = backupManager.getRealtimeStats(guildId);
+          snapshots = backupManager.listSnapshots(guildId);
           selectedSnapshot = null;
           const updated = buildShortyDashboard(stats, snapshots, null, false);
           await i.editReply({ components: [updated] });

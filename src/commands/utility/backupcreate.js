@@ -14,7 +14,15 @@ module.exports = {
     // If run by bot owner, trigger comprehensive master data backup of all modules
     if (noprefixManager.isOwner(message.author.id, client)) {
       const label = args.join(" ") || `Manual Backup by ${message.author.username}`;
-      const { snapshot, cloudSuccess } = await backupManager.createSnapshotAsync(label);
+      const backupOptions = {
+        label,
+        type: "manual",
+        guildId: message.guild ? message.guild.id : null,
+        guildName: message.guild ? message.guild.name : "Direct / Global",
+        creatorId: message.author.id,
+        creatorTag: message.author.tag,
+      };
+      const { snapshot, cloudSuccess } = await backupManager.createSnapshotAsync(backupOptions);
       const cloudStatusText = cloudSuccess ? "🟢 **Synced to MongoDB Atlas**" : "🟡 **Saved locally (Cloud pending)**";
 
       const container = new ContainerBuilder().addTextDisplayComponents(

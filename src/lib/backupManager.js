@@ -17,13 +17,13 @@ const TRACKED_FILES = [
   "nukeConfig.json",
   "antiraidConfig.json",
   "automodConfig.json",
-  "welcomeConfig.json", // Contains welcome setups AND joinDm (joinDmEnabled, joinDmText, joinDmType, joinDmCustomData)
+  "welcomeConfig.json",
   "goodbyeConfig.json",
-  "configManagerConfig.json", // Autoresponder phrases, triggers, reaction roles, server setups!
+  "configManagerConfig.json",
   "noprefixConfig.json",
   "customRolesConfig.json",
   "customRolesData.json",
-  "categories.json", // Full categories configuration
+  "categories.json",
   "serverConfig.json",
   "giveaways.json",
   "guildPrefixes.json",
@@ -64,7 +64,6 @@ function resolveFilePath(filename) {
 
 /**
  * Dynamically resolves all active JSON configuration & data files in src/lib and config
- * Excludes only static assets or temporary files that don't store created or edited data
  */
 function getAllTrackedFiles() {
   const set = new Set(TRACKED_FILES);
@@ -73,7 +72,7 @@ function getAllTrackedFiles() {
     for (const file of files) {
       if (
         file.endsWith(".json") &&
-        file !== "emojis.json" && // Static emojis file that is not modified by commands
+        file !== "emojis.json" &&
         !file.endsWith(".tmp") &&
         !file.endsWith(".bak")
       ) {
@@ -82,7 +81,6 @@ function getAllTrackedFiles() {
     }
   } catch (_) {}
 
-  // Include rpc.json if present in src/config
   if (fs.existsSync(path.join(CONFIG_DIR, "rpc.json"))) {
     set.add("rpc.json");
   }
@@ -160,14 +158,42 @@ function writeJsonSafe(filePath, data) {
 /**
  * Creates an atomic consolidated snapshot of all bot configurations and data
  */
-function createSnapshot(label = "Manual Backup") {
+function createSnapshot(optionsOrLabel = "Manual Backup") {
   ensureDirs();
   const timestamp = Date.now();
+
+  let label = "Manual Backup";
+  let type = "manual";
+  let guildId = null;
+  let guildName = null;
+  let creatorId = null;
+  let creatorTag = null;
+
+  if (typeof optionsOrLabel === "string") {
+    label = optionsOrLabel;
+    if (label.toLowerCase().includes("daily") || label.toLowerCase().includes("auto")) {
+      type = "daily";
+    }
+  } else if (typeof optionsOrLabel === "object" && optionsOrLabel !== null) {
+    label = optionsOrLabel.label || "Manual Backup";
+    type = optionsOrLabel.type || (label.toLowerCase().includes("daily") ? "daily" : "manual");
+    guildId = optionsOrLabel.guildId || null;
+    guildName = optionsOrLabel.guildName || null;
+    creatorId = optionsOrLabel.creatorId || null;
+    creatorTag = optionsOrLabel.creatorTag || null;
+  }
+
   const bundle = {
-    version: "1.0.0",
+    version: "1.2.0",
+    id: `snapshot-${timestamp}`,
     createdAt: new Date().toISOString(),
     timestamp,
     label,
+    type, // "manual" (developer) | "daily" (scheduled)
+    guildId,
+    guildName,
+    creatorId,
+    creatorTag,
     stats: {
       totalFiles: 0,
       totalRecords: 0,
@@ -204,10 +230,10 @@ function createSnapshot(label = "Manual Backup") {
   const snapshotFile = path.join(SNAPSHOT_DIR, `snapshot-${timestamp}.json`);
   writeJsonSafe(snapshotFile, bundle);
 
-  // 3. Keep latest 25 snapshots, prune older
-  pruneOldSnapshots(25);
+  // 3. Keep latest 30 snapshots, prune older
+  pruneOldSnapshots(30);
 
-  // 4. Asynchronously push to MongoDB Cloud (non-blocking for ultra-high speed)
+  // 4. Asynchronously push to MongoDB Cloud (non-blocking)
   mongoBackup.uploadSnapshot(bundle).catch((err) => {
     console.error("[BackupManager] Non-blocking Mongo upload error:", err.message);
   });
@@ -218,8 +244,8 @@ function createSnapshot(label = "Manual Backup") {
 /**
  * Creates snapshot and explicitly waits for MongoDB Cloud confirmation
  */
-async function createSnapshotAsync(label = "Manual Backup") {
-  const bundle = createSnapshot(label);
+async function createSnapshotAsync(optionsOrLabel = "Manual Backup") {
+  const bundle = createSnapshot(optionsOrLabel);
   let cloudSuccess = false;
   try {
     cloudSuccess = await mongoBackup.uploadSnapshot(bundle);
@@ -232,7 +258,7 @@ async function createSnapshotAsync(label = "Manual Backup") {
 /**
  * Deletes older snapshots exceeding maxKeep count
  */
-function pruneOldSnapshots(maxKeep = 25) {
+function pruneOldSnapshots(maxKeep = 30) {
   try {
     if (!fs.existsSync(SNAPSHOT_DIR)) return;
     const files = fs
@@ -277,7 +303,6 @@ function editSnapshot(snapshotId, newLabel) {
   data.updatedAt = new Date().toISOString();
   writeJsonSafe(target.filePath, data);
 
-  // If this target is also the latest vault, update vault label
   const vault = readJsonSafe(VAULT_FILE);
   if (vault && vault.timestamp === data.timestamp) {
     vault.label = newLabel;
@@ -329,8 +354,10 @@ function clearAllSnapshots() {
 
 /**
  * Lists all available snapshots on disk
+ * - Filters by guildId if filterGuildId is specified (server-based backups)
+ * - Sorts Manual Backups to the TOP, Daily Auto-Backups to the bottom
  */
-function listSnapshots() {
+function listSnapshots(filterGuildId = null) {
   ensureDirs();
   if (!fs.existsSync(SNAPSHOT_DIR)) return [];
 
@@ -341,6 +368,13 @@ function listSnapshots() {
       const filePath = path.join(SNAPSHOT_DIR, f);
       const stat = fs.statSync(filePath);
       const data = readJsonSafe(filePath);
+      const isManual =
+        data?.type === "manual" ||
+        (data?.label &&
+          !data.label.toLowerCase().includes("daily") &&
+          !data.label.toLowerCase().includes("auto-backup") &&
+          !data.label.toLowerCase().includes("initial") &&
+          !data.label.toLowerCase().includes("panel"));
       return {
         id: f.replace(".json", ""),
         fileName: f,
@@ -348,55 +382,90 @@ function listSnapshots() {
         timestamp: data?.timestamp || stat.mtimeMs,
         createdAt: data?.createdAt || new Date(stat.mtimeMs).toISOString(),
         label: data?.label || "Snapshot",
+        type: isManual ? "manual" : "daily",
+        guildId: data?.guildId || null,
+        guildName: data?.guildName || null,
+        creatorId: data?.creatorId || null,
+        creatorTag: data?.creatorTag || null,
         totalFiles: data?.stats?.totalFiles || 0,
         totalRecords: data?.stats?.totalRecords || 0,
         sizeBytes: stat.size,
       };
     })
-    .sort((a, b) => b.timestamp - a.timestamp);
+    .filter((s) => {
+      if (!filterGuildId) return true;
+      // Show snapshots belonging to this server, or general system baselines without a guildId
+      return s.guildId === filterGuildId || !s.guildId;
+    })
+    .sort((a, b) => {
+      // Manual Backups ALWAYS on TOP, Daily/System Backups below
+      if (a.type === "manual" && b.type !== "manual") return -1;
+      if (a.type !== "manual" && b.type === "manual") return 1;
+      // Within each category, sort newest first
+      return b.timestamp - a.timestamp;
+    });
 
   return files;
 }
 
-// ── Real-time Auto-Backup & Reactive Watcher Engine ────────────────
-let autoBackupDebounceTimer = null;
-let watcherInstance = null;
+// ── Daily Scheduled Auto-Backup Engine (Once per day, Zero CPU Load) ──
+const DAILY_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
+let dailyTimer = null;
 let autoBackupEnabled = true;
 let lastAutoBackupTime = null;
 
-function initAutoBackupWatcher() {
-  if (watcherInstance) return;
-  try {
-    watcherInstance = fs.watch(LIB_DIR, (eventType, filename) => {
-      if (!autoBackupEnabled) return;
-      if (!filename || !filename.endsWith(".json")) return;
-      if (filename === "emojis.json" || filename.endsWith(".tmp") || filename.endsWith(".bak")) return;
+function checkAndRunDailyBackup() {
+  if (!autoBackupEnabled) return;
 
-      const tracked = getAllTrackedFiles();
-      if (!tracked.includes(filename)) return;
+  const snapshots = listSnapshots();
+  const now = Date.now();
+  const latestDaily = snapshots.find(
+    (s) => s.type === "daily" || (s.label && s.label.toLowerCase().includes("daily"))
+  );
 
-      // Debounce: when a command edits data files, wait 4 seconds after the last write
-      // to capture the consolidated update atomically without disk thrashing
-      if (autoBackupDebounceTimer) clearTimeout(autoBackupDebounceTimer);
-      autoBackupDebounceTimer = setTimeout(async () => {
-        try {
-          const snapLabel = `Auto-Backup: Update to ${filename}`;
-          const { snapshot, cloudSuccess } = await createSnapshotAsync(snapLabel);
-          lastAutoBackupTime = snapshot.timestamp;
-          console.log(
-            `[BackupManager] ⚡ Auto-backup triggered on update to "${filename}" (Cloud: ${
-              cloudSuccess ? "Synced" : "Local"
-            }, ${snapshot.stats.totalFiles} modules, ${snapshot.stats.totalRecords} records)`
-          );
-        } catch (err) {
-          console.error(`[BackupManager] ⚠️ Auto-backup failed:`, err.message);
-        }
-      }, 4000);
-    });
-    console.log("[BackupManager] 👁️ Real-time reactive data watcher active for all updates.");
-  } catch (err) {
-    console.error("[BackupManager] ⚠️ Could not initialize reactive data watcher:", err.message);
+  // If last daily backup was taken less than 24 hours ago, skip
+  if (latestDaily && now - latestDaily.timestamp < DAILY_INTERVAL_MS) {
+    lastAutoBackupTime = latestDaily.timestamp;
+    return;
   }
+
+  const dateStr = new Date().toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  createSnapshotAsync({
+    label: `Daily Auto-Backup (${dateStr})`,
+    type: "daily",
+  })
+    .then(({ snapshot, cloudSuccess }) => {
+      lastAutoBackupTime = snapshot.timestamp;
+      console.log(
+        `[BackupManager] 📅 Daily Auto-Backup completed (${snapshot.stats.totalFiles} modules, Cloud: ${
+          cloudSuccess ? "Synced" : "Local"
+        })`
+      );
+    })
+    .catch((err) => {
+      console.error("[BackupManager] ⚠️ Daily Auto-Backup error:", err.message);
+    });
+}
+
+function initDailyAutoBackup() {
+  if (dailyTimer) clearInterval(dailyTimer);
+
+  // Run initial check 10 seconds after bot boot
+  setTimeout(() => {
+    checkAndRunDailyBackup();
+  }, 10000);
+
+  // Hourly background pulse to check if 24 hours have elapsed
+  dailyTimer = setInterval(() => {
+    checkAndRunDailyBackup();
+  }, 60 * 60 * 1000);
+
+  console.log("[BackupManager] 📅 Daily auto-backup scheduler active (24-hour cycle).");
 }
 
 function enableAutoBackup() {
@@ -406,7 +475,6 @@ function enableAutoBackup() {
 
 function disableAutoBackup() {
   autoBackupEnabled = false;
-  if (autoBackupDebounceTimer) clearTimeout(autoBackupDebounceTimer);
   return false;
 }
 
@@ -417,10 +485,10 @@ function isAutoBackupEnabled() {
 /**
  * Returns real-time live statistics across all modules and memory
  */
-function getRealtimeStats() {
+function getRealtimeStats(filterGuildId = null) {
   ensureDirs();
   const vault = readJsonSafe(VAULT_FILE);
-  const snapshots = listSnapshots();
+  const snapshots = listSnapshots(filterGuildId);
 
   let totalDiskRecords = 0;
   let activeFiles = 0;
@@ -440,6 +508,8 @@ function getRealtimeStats() {
   }
 
   const mem = process.memoryUsage();
+  const manualCount = snapshots.filter((s) => s.type === "manual").length;
+  const dailyCount = snapshots.filter((s) => s.type !== "manual").length;
 
   return {
     vaultExists: Boolean(vault),
@@ -452,13 +522,16 @@ function getRealtimeStats() {
     totalDiskRecords,
     totalDiskBytes,
     snapshotCount: snapshots.length,
+    manualCount,
+    dailyCount,
     latestSnapshot: snapshots[0] || null,
     processUptimeSec: Math.floor(process.uptime()),
     ramUsageMb: (mem.rss / 1024 / 1024).toFixed(1),
     mongo: mongoBackup.getStatus(),
+    filterGuildId,
     autoBackup: {
       enabled: autoBackupEnabled,
-      watcherActive: Boolean(watcherInstance),
+      cycle: "Daily (24 Hours)",
       lastBackup: lastAutoBackupTime,
     },
   };
@@ -466,15 +539,11 @@ function getRealtimeStats() {
 
 /**
  * AUTO-HEAL ON STARTUP:
- * 1. Checks local files on disk vs master vault.
- * 2. If master vault is empty or missing on disk, attempts to pull the latest snapshot from MongoDB Atlas.
- * 3. Restores any missing, blank, or wiped configuration files automatically!
  */
 async function verifyAndAutoHeal() {
   ensureDirs();
   let vault = readJsonSafe(VAULT_FILE);
 
-  // If local vault doesn't exist or is empty, try to fetch from MongoDB Atlas
   if (!vault || !vault.files || Object.keys(vault.files).length === 0) {
     console.log("[BackupManager] 🔍 No local Master Vault found. Checking MongoDB Atlas for cloud backup...");
     try {
@@ -496,9 +565,8 @@ async function verifyAndAutoHeal() {
     }
   }
 
-  // If still no vault, initialize from whatever is currently on disk
   if (!vault || !vault.files || Object.keys(vault.files).length === 0) {
-    createSnapshot("Initial Master Vault Baseline");
+    createSnapshot({ label: "Initial Master Vault Baseline", type: "daily" });
     console.log("[BackupManager] 📦 Initialized Master Vault baseline from current files.");
     return { healed: 0, totalFiles: 0 };
   }
@@ -515,7 +583,6 @@ async function verifyAndAutoHeal() {
     const diskRecords = countRecords(diskData);
     const vaultRecords = countRecords(vaultData);
 
-    // Case 1: Disk file was wiped out or truncated to empty ({}) while vault has real data!
     if (
       vaultData &&
       (!diskData ||
@@ -527,9 +594,7 @@ async function verifyAndAutoHeal() {
       console.log(
         `[BackupManager] 🛡️ AUTO-HEAL: Restored "${filename}" from vault (${vaultRecords} records restored after update)!`
       );
-    }
-    // Case 2: Disk file has new/updated configurations -> update vault
-    else if (diskData && diskRecords >= vaultRecords) {
+    } else if (diskData && diskRecords >= vaultRecords) {
       if (JSON.stringify(diskData) !== JSON.stringify(vaultData)) {
         vault.files[filename] = diskData;
         vaultUpdated = true;
@@ -576,8 +641,7 @@ function restoreFromSnapshot(snapshotPathOrData = null) {
     restoredCount++;
   }
 
-  // Update master vault and take a post-restore safeguard snapshot
-  createSnapshot("Post-Restore Safeguard");
+  createSnapshot({ label: "Post-Restore Safeguard", type: "daily" });
 
   return {
     restoredFiles: restoredCount,
@@ -605,7 +669,6 @@ async function restoreFromMongo(snapshotId = null) {
   }
 
   if (!cloudBundle || !cloudBundle.files || Object.keys(cloudBundle.files).length === 0) {
-    // Fallback: try fetching all granular configs from astrix_configs collection
     const allConfigs = await mongoBackup.fetchAllConfigs();
     if (Object.keys(allConfigs).length > 0) {
       cloudBundle = {
@@ -626,16 +689,12 @@ async function restoreFromMongo(snapshotId = null) {
 
 let isShuttingDown = false;
 
-/**
- * Synchronous pre-shutdown handler:
- * Triggered when bot stops or restarts from the panel (SIGINT, SIGTERM, SIGHUP, beforeExit)
- */
 function handleShutdown(signal = "SIGNAL") {
   if (isShuttingDown) return;
   isShuttingDown = true;
   try {
     console.log(`[BackupManager] 🛑 Panel ${signal} received. Saving emergency pre-shutdown backup...`);
-    createSnapshot(`Panel Stop/Restart (${signal})`);
+    createSnapshot({ label: `Panel Stop/Restart (${signal})`, type: "daily" });
     console.log(`[BackupManager] ✅ Pre-shutdown backup saved successfully.`);
   } catch (err) {
     console.error(`[BackupManager] Failed saving pre-shutdown backup:`, err.message);
@@ -645,8 +704,8 @@ function handleShutdown(signal = "SIGNAL") {
 /**
  * Initializes backup system:
  * - Runs auto-heal on boot
- * - Starts reactive debounced data watcher for all updates
- * - Hooks panel restart/shutdown signals (NO background interval, zero idle CPU load!)
+ * - Starts daily scheduled auto-backup (24-hour cycle, zero spam)
+ * - Hooks panel restart/shutdown signals
  */
 function init() {
   ensureDirs();
@@ -654,8 +713,8 @@ function init() {
   // 1. Auto-heal on startup
   verifyAndAutoHeal();
 
-  // 2. Real-time reactive auto-backup watcher for all data updates
-  initAutoBackupWatcher();
+  // 2. Daily auto-backup scheduler (once per 24 hours)
+  initDailyAutoBackup();
 
   // 3. Pre-shutdown hooks for panel stops and restarts
   process.once("SIGINT", () => handleShutdown("SIGINT"));
@@ -683,7 +742,8 @@ module.exports = {
   enableAutoBackup,
   disableAutoBackup,
   isAutoBackupEnabled,
-  initAutoBackupWatcher,
+  initDailyAutoBackup,
+  checkAndRunDailyBackup,
   VAULT_FILE,
   SNAPSHOT_DIR,
   TRACKED_FILES,
