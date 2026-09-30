@@ -8,6 +8,7 @@ const {
   ButtonBuilder,
   ButtonStyle,
 } = require("discord.js");
+const emojis = require("../lib/emojis");
 
 async function confirmAction({
   client,
@@ -29,23 +30,23 @@ async function confirmAction({
     if (status === "pending") {
       title = `Confirm Proposed ${actionName}`;
       desc = `Review details before executing the action.`;
-      emoji = "<:Warn_red:1539875499147399218>";
+      emoji = emojis[actionName.toLowerCase()] || emojis.warn;
     } else if (status === "confirmed") {
       title = `${actionName} Executed Successfully`;
       desc = `The action has been processed and logged.`;
-      emoji = "<:online:1539875424144859239>";
+      emoji = emojis.green_dot;
     } else if (status === "cancelled") {
       title = `Action Aborted`;
       desc = `The proposed action was cancelled by the moderator.`;
-      emoji = "<:offline:1539875436690153474>";
+      emoji = emojis.red_point;
     } else if (status === "failed") {
       title = `${actionName} Failed`;
       desc = `An error occurred during execution:\n> \`${errorMsg}\``;
-      emoji = "<:offline:1539875436690153474>";
+      emoji = emojis.red_point;
     } else if (status === "timeout") {
       title = `Action Expired`;
       desc = `The confirmation request timed out.`;
-      emoji = "<:offline:1539875436690153474>";
+      emoji = emojis["2179offlinestatus"] || emojis.offline;
     }
 
     const content = [
@@ -81,7 +82,7 @@ async function confirmAction({
       )
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `-# *<:astrix:1539875362945900574> Moderation Subsystem • Powered by ASTRIXCODE™ • © 2026*`
+          `-# *Moderation Subsystem • Powered by Astrix • © 2026*`
         )
       )
       .addActionRowComponents(row);

@@ -2,15 +2,7 @@ const { createCanvas, loadImage, GlobalFonts } = require("@napi-rs/canvas");
 const path = require("path");
 const fs = require("fs");
 
-// Register Hogwarts Font for high-fantasy wizardry typography
-const hogwartsFontPath = path.join(__dirname, "../assets/fonts/hogwarts/Hogwarts.ttf");
-if (fs.existsSync(hogwartsFontPath)) {
-  try {
-    GlobalFonts.registerFromPath(hogwartsFontPath, "Hogwarts");
-  } catch (_) {}
-}
-
-// Register GoogleSans for razor-sharp, modern technical body typography
+// Register GoogleSans for razor-sharp, modern typography
 const fontPath = path.join(__dirname, "../fonts/GoogleSans.ttf");
 if (fs.existsSync(fontPath)) {
   try {
@@ -18,9 +10,7 @@ if (fs.existsSync(fontPath)) {
   } catch (_) {}
 }
 
-const FONT_HOGWARTS = "Hogwarts, 'Cinzel Decorative', 'Georgia', serif";
-const FONT_SERIF = "'Georgia', 'Times New Roman', serif";
-const FONT_BODY = "GoogleSans, 'Segoe UI', Arial, sans-serif";
+const FONT_FAMILY = "GoogleSans, Arial, sans-serif";
 
 // In-memory caches to make response times instantaneous (<10ms on repeat)
 const mainCardCache = new Map();
@@ -124,221 +114,97 @@ const CATEGORY_EMOJIS = {
 };
 
 /**
- * Draws iconic Harry Potter lightning scar motif
+ * Loads background image (prefers helpmenu.png, falls back to mention_bg.png)
  */
-function drawLightningBolt(ctx, x, y, scale = 1, color = "#fde047") {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.scale(scale, scale);
-  ctx.beginPath();
-  ctx.moveTo(7, 0);
-  ctx.lineTo(2, 8);
-  ctx.lineTo(6, 8);
-  ctx.lineTo(1, 16);
-  ctx.lineTo(9, 7);
-  ctx.lineTo(5, 7);
-  ctx.closePath();
-  ctx.fillStyle = color;
-  ctx.shadowColor = "#f59e0b";
-  ctx.shadowBlur = 6;
-  ctx.fill();
-  ctx.restore();
+let cachedBgImg = null;
+async function getBackgroundImage() {
+  if (cachedBgImg) return cachedBgImg;
+  const paths = [
+    path.join(__dirname, "../assets/help_anime.jpg"),
+    path.join(__dirname, "../assets/help_bg.png"),
+    path.join(__dirname, "../assets/helpmenu.png"),
+    path.join(__dirname, "../assets/mention_bg.png"),
+    path.join(__dirname, "../assets/developer_bg.png"),
+  ];
+  for (const p of paths) {
+    if (fs.existsSync(p)) {
+      try {
+        cachedBgImg = await loadImage(p);
+        return cachedBgImg;
+      } catch (_) {}
+    }
+  }
+  return null;
 }
 
 /**
- * Draws an authentic Hogwarts Great Hall floating candle with warm ambient glow
+ * Draws common cinematic monochrome dark gradient backdrop (Black, White & Grey)
  */
-function drawFloatingCandle(ctx, x, y, candleH = 22) {
-  ctx.save();
-  // Candle wax body
-  const candleGrad = ctx.createLinearGradient(x - 3, y, x + 3, y);
-  candleGrad.addColorStop(0, "rgba(240, 230, 205, 0.45)");
-  candleGrad.addColorStop(0.5, "rgba(255, 250, 230, 0.65)");
-  candleGrad.addColorStop(1, "rgba(210, 195, 170, 0.45)");
-  ctx.fillStyle = candleGrad;
-  drawRoundRect(ctx, x - 2.5, y, 5, candleH, 2, true, false);
-
-  // Wick
-  ctx.strokeStyle = "rgba(40, 30, 20, 0.8)";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(x, y);
-  ctx.lineTo(x, y - 3);
-  ctx.stroke();
-
-  // Outer ambient flame glow
-  const flameGlow = ctx.createRadialGradient(x, y - 6, 2, x, y - 6, 18);
-  flameGlow.addColorStop(0, "rgba(255, 215, 80, 0.55)");
-  flameGlow.addColorStop(0.5, "rgba(245, 150, 30, 0.2)");
-  flameGlow.addColorStop(1, "rgba(0, 0, 0, 0)");
-  ctx.fillStyle = flameGlow;
-  ctx.beginPath();
-  ctx.arc(x, y - 6, 18, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Flame teardrop
-  ctx.beginPath();
-  ctx.moveTo(x, y - 10);
-  ctx.bezierCurveTo(x + 3, y - 6, x + 3, y - 3, x, y - 3);
-  ctx.bezierCurveTo(x - 3, y - 3, x - 3, y - 6, x, y - 10);
-  ctx.fillStyle = "#fff4d0";
-  ctx.shadowColor = "#f59e0b";
-  ctx.shadowBlur = 8;
-  ctx.fill();
-
-  ctx.restore();
-}
-
-/**
- * Draws antique gold corner flourishes and diamond studs
- */
-function drawOrnateCorner(ctx, x, y, size, flipX = false, flipY = false) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
-  ctx.strokeStyle = "#d4af37";
-  ctx.lineWidth = 1.5;
-
-  // Outer corner L
-  ctx.beginPath();
-  ctx.moveTo(0, size);
-  ctx.lineTo(0, 0);
-  ctx.lineTo(size, 0);
-  ctx.stroke();
-
-  // Inner decorative flourish dot
-  ctx.beginPath();
-  ctx.arc(6, 6, 3, 0, Math.PI * 2);
-  ctx.fillStyle = "#e5c158";
-  ctx.fill();
-
-  // Diamond accent
-  ctx.beginPath();
-  ctx.moveTo(size - 4, 0);
-  ctx.lineTo(size, 4);
-  ctx.lineTo(size - 4, 8);
-  ctx.lineTo(size - 8, 4);
-  ctx.closePath();
-  ctx.fillStyle = "rgba(212, 175, 55, 0.8)";
-  ctx.fill();
-
-  ctx.restore();
-}
-
-/**
- * Draws common Hogwarts enchanted castle backdrop with celestial night sky, Lumos radiance & floating candles
- */
-function drawHogwartsBackdrop(ctx, baseW, baseH) {
-  // 1. Midnight Gothic Castle Atmosphere
+function drawCinematicBackdrop(ctx, baseW, baseH) {
+  // 1. Deep Obsidian to Charcoal & Slate Grey Gradient
   const baseGrad = ctx.createLinearGradient(0, 0, baseW, baseH);
-  baseGrad.addColorStop(0, "#08060f");     // Deep midnight shadow
-  baseGrad.addColorStop(0.3, "#0e0d1f");   // Royal astral navy
-  baseGrad.addColorStop(0.65, "#15102a");  // Mystic violet parchment
-  baseGrad.addColorStop(1, "#07050d");     // Antique obsidian
+  baseGrad.addColorStop(0, "#08090c");
+  baseGrad.addColorStop(0.3, "#0e1117");
+  baseGrad.addColorStop(0.65, "#141722");
+  baseGrad.addColorStop(1, "#07080a");
   ctx.fillStyle = baseGrad;
   ctx.fillRect(0, 0, baseW, baseH);
 
-  // 2. Warm Candlelight / Lumos Radiance Glow
-  const lumosTop = ctx.createRadialGradient(baseW * 0.5, 0, 10, baseW * 0.5, 0, 500);
-  lumosTop.addColorStop(0, "rgba(245, 185, 65, 0.16)");
-  lumosTop.addColorStop(0.4, "rgba(212, 145, 40, 0.05)");
-  lumosTop.addColorStop(1, "rgba(0, 0, 0, 0)");
-  ctx.fillStyle = lumosTop;
+  // 2. Ambient Platinum & Silver Specular Blooms (Soft Lighting Sheen)
+  const topGlow = ctx.createRadialGradient(baseW * 0.22, 0, 10, baseW * 0.22, 0, 480);
+  topGlow.addColorStop(0, "rgba(255, 255, 255, 0.08)");
+  topGlow.addColorStop(0.5, "rgba(255, 255, 255, 0.02)");
+  topGlow.addColorStop(1, "rgba(0, 0, 0, 0)");
+  ctx.fillStyle = topGlow;
   ctx.fillRect(0, 0, baseW, baseH);
 
-  const ambientViolet = ctx.createRadialGradient(baseW * 0.85, baseH * 0.3, 20, baseW * 0.85, baseH * 0.3, 450);
-  ambientViolet.addColorStop(0, "rgba(138, 75, 255, 0.08)");
-  ambientViolet.addColorStop(1, "rgba(0, 0, 0, 0)");
-  ctx.fillStyle = ambientViolet;
+  const bottomGlow = ctx.createRadialGradient(baseW * 0.82, baseH, 10, baseW * 0.82, baseH, 420);
+  bottomGlow.addColorStop(0, "rgba(255, 255, 255, 0.04)");
+  bottomGlow.addColorStop(1, "rgba(0, 0, 0, 0)");
+  ctx.fillStyle = bottomGlow;
   ctx.fillRect(0, 0, baseW, baseH);
 
-  // 3. Magical Starry Celestial Field & Golden Embers
-  const stars = [
-    { x: 90, y: 70, r: 1.5, a: 0.6 },
-    { x: 180, y: 130, r: 1.2, a: 0.5 },
-    { x: 310, y: 45, r: 2.0, a: 0.8 },
-    { x: 440, y: 110, r: 1.0, a: 0.4 },
-    { x: 580, y: 65, r: 2.2, a: 0.9 },
-    { x: 720, y: 140, r: 1.2, a: 0.5 },
-    { x: 860, y: 80, r: 1.8, a: 0.7 },
-    { x: 930, y: 160, r: 1.0, a: 0.5 },
-    { x: 120, y: 480, r: 1.4, a: 0.5 },
-    { x: 260, y: 530, r: 1.0, a: 0.4 },
-    { x: 780, y: 500, r: 1.8, a: 0.6 },
-    { x: 890, y: 460, r: 1.2, a: 0.5 },
-  ];
+  // 3. Diagonal Specular Lighting Beam
+  const beamX = baseW * 0.48;
+  const beamGrad = ctx.createLinearGradient(beamX - 180, 0, beamX + 180, 0);
+  beamGrad.addColorStop(0, "rgba(255, 255, 255, 0)");
+  beamGrad.addColorStop(0.5, "rgba(255, 255, 255, 0.025)");
+  beamGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
+  ctx.fillStyle = beamGrad;
+  ctx.fillRect(0, 0, baseW, baseH);
 
+  // 4. Clean Carbon Micro-Grid
   ctx.save();
-  for (const s of stars) {
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.02)";
+  ctx.lineWidth = 1;
+  const gridSize = 24;
+  for (let x = 0; x < baseW; x += gridSize) {
     ctx.beginPath();
-    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255, 235, 170, ${s.a})`;
-    ctx.shadowColor = "#f5d061";
-    ctx.shadowBlur = 6;
-    ctx.fill();
-
-    // 4-point sparkle cross on brighter stars
-    if (s.r >= 1.8) {
-      ctx.strokeStyle = `rgba(255, 240, 190, ${s.a * 0.75})`;
-      ctx.lineWidth = 0.8;
-      ctx.beginPath();
-      ctx.moveTo(s.x - 5, s.y);
-      ctx.lineTo(s.x + 5, s.y);
-      ctx.moveTo(s.x, s.y - 5);
-      ctx.lineTo(s.x, s.y + 5);
-      ctx.stroke();
-    }
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, baseH);
+    ctx.stroke();
+  }
+  for (let y = 0; y < baseH; y += gridSize) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(baseW, y);
+    ctx.stroke();
   }
   ctx.restore();
 
-  // 4. Subtle Gothic Arch / Filigree Silhouette in Background
-  ctx.save();
-  ctx.strokeStyle = "rgba(212, 175, 55, 0.04)";
-  ctx.lineWidth = 1.2;
-  // Arch left
-  ctx.beginPath();
-  ctx.arc(200, 290, 140, Math.PI, 0);
-  ctx.stroke();
-  // Arch right
-  ctx.beginPath();
-  ctx.arc(800, 290, 140, Math.PI, 0);
-  ctx.stroke();
-  ctx.restore();
+  // 5. Outer Frame & Hairline Borders
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+  ctx.lineWidth = 1.5;
+  drawRoundRect(ctx, 12, 12, baseW - 24, baseH - 24, 20, false, true);
 
-  // Floating Candles (Great Hall Atmosphere)
-  drawFloatingCandle(ctx, 65, 175, 22);
-  drawFloatingCandle(ctx, 240, 95, 26);
-  drawFloatingCandle(ctx, 520, 48, 20);
-  drawFloatingCandle(ctx, 760, 110, 24);
-  drawFloatingCandle(ctx, 925, 195, 22);
-  drawFloatingCandle(ctx, 480, 525, 20);
-
-  // 5. Regal Double Gold Borders
-  ctx.save();
-  const goldBorderGrad = ctx.createLinearGradient(0, 0, baseW, baseH);
-  goldBorderGrad.addColorStop(0, "rgba(212, 175, 55, 0.65)");
-  goldBorderGrad.addColorStop(0.5, "rgba(245, 215, 110, 0.85)");
-  goldBorderGrad.addColorStop(1, "rgba(165, 125, 35, 0.65)");
-  ctx.strokeStyle = goldBorderGrad;
-  ctx.lineWidth = 1.8;
-  drawRoundRect(ctx, 12, 12, baseW - 24, baseH - 24, 18, false, true);
-
-  // Inner hairline border
-  ctx.strokeStyle = "rgba(212, 175, 55, 0.22)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.04)";
   ctx.lineWidth = 1;
-  drawRoundRect(ctx, 17, 17, baseW - 34, baseH - 34, 14, false, true);
-
-  // Ornate Corner Flourishes
-  drawOrnateCorner(ctx, 22, 22, 18, false, false);
-  drawOrnateCorner(ctx, baseW - 22, 22, 18, true, false);
-  drawOrnateCorner(ctx, 22, baseH - 22, 18, false, true);
-  drawOrnateCorner(ctx, baseW - 22, baseH - 22, 18, true, true);
-  ctx.restore();
+  drawRoundRect(ctx, 14, 14, baseW - 28, baseH - 28, 18, false, true);
 }
 
 /**
  * ─────────────────────────────────────────────────────────────────────────────
- * 1. GENERATE MAIN HELP CARD (Hogwarts Edition Overview)
+ * 1. GENERATE MAIN HELP CARD (Ultra-Aesthetic Dynamic Home Overview)
  * ─────────────────────────────────────────────────────────────────────────────
  */
 async function generateMainHelpCard(options = {}) {
@@ -358,7 +224,7 @@ async function generateMainHelpCard(options = {}) {
     latency = options.latency !== undefined ? options.latency : 24;
   }
 
-  const cacheKey = `main_hogwarts_${prefix}_${totalCommands}_${totalCategories}_${guild?.id || "dm"}`;
+  const cacheKey = `main_${prefix}_${totalCommands}_${totalCategories}_${guild?.id || "dm"}`;
   if (mainCardCache.has(cacheKey)) {
     return mainCardCache.get(cacheKey);
   }
@@ -376,11 +242,11 @@ async function generateMainHelpCard(options = {}) {
   // Clip Container
   ctx.save();
   ctx.beginPath();
-  ctx.roundRect(0, 0, baseW, baseH, 18);
+  ctx.roundRect(0, 0, baseW, baseH, 20);
   ctx.clip();
 
-  // Draw Hogwarts Castle Backdrop
-  drawHogwartsBackdrop(ctx, baseW, baseH);
+  // Draw clean monochrome Black, White & Grey Backdrop
+  drawCinematicBackdrop(ctx, baseW, baseH);
 
   // Fetch Bot Avatar / Logo
   let avatarImg = null;
@@ -399,22 +265,15 @@ async function generateMainHelpCard(options = {}) {
 
   // ── Top Header Bar ──────────────────────────────────────────
   const headY = 26;
-  const avatarSize = 64;
-  const avatarX = 38;
+  const avatarSize = 60;
+  const avatarX = 36;
 
   if (avatarImg) {
     ctx.save();
-    // Antique Gold Medallion Ring
     ctx.beginPath();
-    ctx.arc(avatarX + avatarSize / 2, headY + avatarSize / 2, avatarSize / 2 + 4, 0, Math.PI * 2);
-    ctx.strokeStyle = "#d4af37";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.arc(avatarX + avatarSize / 2, headY + avatarSize / 2, avatarSize / 2 + 1, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(245, 215, 110, 0.4)";
-    ctx.lineWidth = 1;
+    ctx.arc(avatarX + avatarSize / 2, headY + avatarSize / 2, avatarSize / 2 + 2, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+    ctx.lineWidth = 1.5;
     ctx.stroke();
 
     ctx.beginPath();
@@ -423,291 +282,293 @@ async function generateMainHelpCard(options = {}) {
     ctx.drawImage(avatarImg, avatarX, headY, avatarSize, avatarSize);
     ctx.restore();
   } else {
+    // Elegant Monogram Fallback
     ctx.save();
     ctx.beginPath();
-    ctx.arc(avatarX + avatarSize / 2, headY + avatarSize / 2, avatarSize / 2 + 3, 0, Math.PI * 2);
-    ctx.strokeStyle = "#d4af37";
-    ctx.lineWidth = 2;
+    ctx.arc(avatarX + avatarSize / 2, headY + avatarSize / 2, avatarSize / 2 + 2, 0, Math.PI * 2);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+    ctx.lineWidth = 1.5;
     ctx.stroke();
 
-    ctx.fillStyle = "#161224";
+    ctx.beginPath();
+    ctx.arc(avatarX + avatarSize / 2, headY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+    ctx.fillStyle = "#121620";
     ctx.fill();
 
-    ctx.fillStyle = "#f5d061";
-    ctx.font = `34px ${FONT_HOGWARTS}`;
+    ctx.fillStyle = "#ffffff";
+    ctx.font = `bold 28px ${FONT_FAMILY}`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("A", avatarX + avatarSize / 2, headY + avatarSize / 2 + 2);
+    ctx.fillText("A", avatarX + avatarSize / 2, headY + avatarSize / 2);
     ctx.restore();
   }
 
-  const textX = avatarX + avatarSize + 18;
+  const textX = avatarX + avatarSize + 16;
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold 26px ${FONT_FAMILY}`;
+  ctx.fillText("ASTRIX COMMAND CENTER", textX, headY + 24);
 
-  // Main Title in Hogwarts Font with Gold Shimmer
-  const goldTextGrad = ctx.createLinearGradient(textX, headY, textX + 450, headY);
-  goldTextGrad.addColorStop(0, "#fce881");
-  goldTextGrad.addColorStop(0.5, "#e5c158");
-  goldTextGrad.addColorStop(1, "#c59b27");
-
-  ctx.fillStyle = goldTextGrad;
-  ctx.font = `32px ${FONT_HOGWARTS}`;
-  ctx.fillText("ASTRIX COMMAND CENTER", textX, headY + 28);
-
-  // Hogwarts Edition Seal Badge with Lightning Bolt
+  // Verified Badge next to title
   const titleW = ctx.measureText("ASTRIX COMMAND CENTER").width;
-  const sealX = textX + titleW + 16;
-  ctx.fillStyle = "rgba(212, 175, 55, 0.12)";
-  ctx.strokeStyle = "#d4af37";
+  const badgeX = textX + titleW + 12;
+  ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
   ctx.lineWidth = 1;
-  drawRoundRect(ctx, sealX, headY + 9, 116, 22, 6, true, true);
-
-  drawLightningBolt(ctx, sealX + 9, headY + 12, 0.75, "#fde047");
-
-  ctx.fillStyle = "#fde047";
-  ctx.font = `14px ${FONT_HOGWARTS}`;
-  ctx.fillText("HOGWARTS", sealX + 23, headY + 25);
-
-  // Subtitle in antique parchment silver
+  drawRoundRect(ctx, badgeX, headY + 7, 76, 20, 5, true, true);
   ctx.fillStyle = "#cbd5e1";
-  ctx.font = `13px ${FONT_SERIF}`;
-  ctx.fillText("HOGWARTS ARCHIVES • DISCORD DEFENSE, WITCHCRAFT & AUDITORY SUITE", textX, headY + 47);
+  ctx.font = `bold 10px ${FONT_FAMILY}`;
+  ctx.fillText("✓ VERIFIED", badgeX + 8, headY + 21);
 
   ctx.fillStyle = "#94a3b8";
-  ctx.font = `11.5px ${FONT_BODY}`;
-  ctx.fillText("Enchanted for rapid execution, autonomous realm warding and seamless guild governance.", textX, headY + 63);
+  ctx.font = `bold 12px ${FONT_FAMILY}`;
+  ctx.fillText("DISCORD SECURITY, MODERATION & HIGH-FIDELITY AUDIO SUITE", textX, headY + 42);
 
-  // Status Pill on top right: LUMOS ACTIVE
-  const statusW = 152;
-  const statusH = 34;
-  const statusPillX = baseW - 38 - statusW;
-  const statusPillY = headY + 14;
+  ctx.fillStyle = "#64748b";
+  ctx.font = `12px ${FONT_FAMILY}`;
+  ctx.fillText("Engineered for low latency, autonomous guild protection and seamless server management.", textX, headY + 58);
 
-  ctx.fillStyle = "rgba(20, 16, 32, 0.85)";
-  ctx.strokeStyle = "rgba(212, 175, 55, 0.4)";
-  ctx.lineWidth = 1.2;
-  drawRoundRect(ctx, statusPillX, statusPillY, statusW, statusH, 17, true, true);
+  // Status Pill on top right
+  const statusW = 142;
+  const statusH = 32;
+  const statusPillX = baseW - 36 - statusW;
+  const statusPillY = headY + 12;
 
-  // Glowing Magical Golden Orb
+  ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+  ctx.lineWidth = 1;
+  drawRoundRect(ctx, statusPillX, statusPillY, statusW, statusH, 16, true, true);
+
   ctx.beginPath();
-  ctx.arc(statusPillX + 18, statusPillY + statusH / 2, 5, 0, Math.PI * 2);
-  ctx.fillStyle = "#fbbf24";
-  ctx.shadowColor = "#f59e0b";
-  ctx.shadowBlur = 10;
+  ctx.arc(statusPillX + 16, statusPillY + statusH / 2, 4, 0, Math.PI * 2);
+  ctx.fillStyle = "#10b981";
+  ctx.shadowColor = "#10b981";
+  ctx.shadowBlur = 8;
   ctx.fill();
   ctx.shadowBlur = 0;
 
-  ctx.fillStyle = "#fde68a";
-  ctx.font = `14px ${FONT_HOGWARTS}`;
-  ctx.fillText("LUMOS ACTIVE", statusPillX + 32, statusPillY + 22);
+  ctx.fillStyle = "#10b981";
+  ctx.font = `bold 11px ${FONT_FAMILY}`;
+  ctx.fillText("SYSTEM ACTIVE", statusPillX + 28, statusPillY + 20);
 
-  // ── Stats Row (4 Antique Golden Parchment Metrics Cards) ─────
-  const statY = 106;
-  const statW = (baseW - 76 - 36) / 4;
-  const statH = 74;
+  // ── Stats Row (4 Glassmorphic Metrics Cards) ─────────────────
+  const statY = 104;
+  const statW = (baseW - 72 - 36) / 4; // ~218px
+  const statH = 72;
   const statGap = 12;
 
   const statsData = [
-    { label: "GUILD INCANTATION", val: `${prefix}`, sub: "Server Prefix" },
-    { label: "REGISTERED SPELLS", val: `${totalCommands}`, sub: "Ready To Cast" },
-    { label: "MAGICAL HOUSES", val: `${totalCategories}`, sub: "Organized Suites" },
-    { label: "OWL DISPATCH", val: `${latency}ms`, sub: "Gateway Latency" },
+    { label: "GUILD PREFIX", val: `${prefix}`, sub: "Server Custom" },
+    { label: "ALL COMMANDS", val: `${totalCommands}`, sub: "Active & Ready" },
+    { label: "SYSTEM MODULES", val: `${totalCategories}`, sub: "Organized Suites" },
+    { label: "GATEWAY PING", val: `${latency}ms`, sub: "Global Latency" },
   ];
 
   statsData.forEach((st, idx) => {
-    const x = 38 + idx * (statW + statGap);
+    const x = 36 + idx * (statW + statGap);
 
-    ctx.fillStyle = "rgba(18, 14, 30, 0.8)";
-    ctx.strokeStyle = "rgba(212, 175, 55, 0.3)";
+    ctx.fillStyle = "rgba(255, 255, 255, 0.035)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.09)";
     ctx.lineWidth = 1;
-    drawRoundRect(ctx, x, statY, statW, statH, 10, true, true);
+    drawRoundRect(ctx, x, statY, statW, statH, 12, true, true);
 
-    ctx.fillStyle = "rgba(212, 175, 55, 0.5)";
-    ctx.fillRect(x + 12, statY, statW - 24, 1.5);
+    // Accent top hairline
+    ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
+    ctx.fillRect(x + 14, statY, statW - 28, 1);
 
-    ctx.fillStyle = "#d4af37";
-    ctx.font = `14px ${FONT_HOGWARTS}`;
-    ctx.fillText(st.label, x + 14, statY + 21);
-
-    ctx.fillStyle = "#ffffff";
-    ctx.font = `bold 22px ${FONT_BODY}`;
-    ctx.fillText(st.val, x + 14, statY + 47);
-
+    // Label
     ctx.fillStyle = "#94a3b8";
-    ctx.font = `11px ${FONT_BODY}`;
-    ctx.fillText(st.sub, x + 14, statY + 63);
+    ctx.font = `bold 11px ${FONT_FAMILY}`;
+    ctx.fillText(`// ${st.label}`, x + 16, statY + 20);
+
+    // Value
+    ctx.fillStyle = "#ffffff";
+    ctx.font = `bold 22px ${FONT_FAMILY}`;
+    ctx.fillText(st.val, x + 16, statY + 46);
+
+    // Subtitle
+    ctx.fillStyle = "#64748b";
+    ctx.font = `11px ${FONT_FAMILY}`;
+    ctx.fillText(st.sub, x + 16, statY + 62);
   });
 
-  // ── Central Feature UI (2 Hogwarts Grimoire Panels) ─────────
-  const panelY = 196;
-  const panelH = 316;
-  const panelW = (baseW - 76 - 16) / 2;
+  // ── Central Feature UI (2 Modern Panels, NO redundant categories) ──
+  const panelY = 192;
+  const panelH = 320;
+  const panelW = (baseW - 72 - 16) / 2; // 456px
 
-  // ── LEFT PANEL: Defense & Magical Disciplines ────────────────
-  const leftX = 38;
-  ctx.fillStyle = "rgba(16, 13, 28, 0.85)";
-  ctx.strokeStyle = "rgba(212, 175, 55, 0.35)";
-  ctx.lineWidth = 1.2;
-  drawRoundRect(ctx, leftX, panelY, panelW, panelH, 12, true, true);
+  // ── LEFT PANEL: Core System Capabilities ─────────────────────
+  const leftX = 36;
+  ctx.fillStyle = "rgba(14, 18, 26, 0.75)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.09)";
+  ctx.lineWidth = 1;
+  drawRoundRect(ctx, leftX, panelY, panelW, panelH, 14, true, true);
 
-  // Golden header accent ribbon
-  ctx.fillStyle = "#d4af37";
-  drawRoundRect(ctx, leftX + 16, panelY + 16, 3, 18, 1.5, true, false);
+  // Panel Header
+  ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+  drawRoundRect(ctx, leftX + 18, panelY + 18, 3, 16, 2, true, false);
 
-  ctx.fillStyle = "#fce881";
-  ctx.font = `18px ${FONT_HOGWARTS}`;
-  ctx.fillText("DEFENSE & MAGICAL DISCIPLINES", leftX + 26, panelY + 31);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold 14px ${FONT_FAMILY}`;
+  ctx.fillText("CORE SYSTEM CAPABILITIES", leftX + 28, panelY + 31);
 
-  ctx.fillStyle = "rgba(212, 175, 55, 0.18)";
-  ctx.fillRect(leftX + 16, panelY + 44, panelW - 32, 1);
+  ctx.fillStyle = "rgba(255, 255, 255, 0.06)";
+  ctx.fillRect(leftX + 18, panelY + 44, panelW - 36, 1);
 
   const capabilities = [
     {
-      badge: "AUR",
-      title: "Autonomous Antinuke & Wards",
-      desc: "Real-time whitelist, anti-bot, anti-banish, channel & role shields.",
+      badge: "SEC",
+      title: "Autonomous Security & Antinuke",
+      desc: "Real-time whitelist, anti-bot, anti-ban, channel/role protection.",
     },
     {
       badge: "MOD",
-      title: "Disciplinary Moderation Hexes",
-      desc: "Multi-purge, hex timeouts, banish, silence & automod charms.",
+      title: "Advanced Moderation Engine",
+      desc: "Multi-purge, timed bans, mute, lock, warns and automod filters.",
     },
     {
       badge: "AUD",
-      title: "Bardic 4K Lossless Symphony",
-      desc: "High-fidelity orchestral music, magical audio filters & live lyrics.",
+      title: "Lossless 4K Audio Experience",
+      desc: "High-bitrate music playback, custom audio filters & live lyrics.",
     },
     {
-      badge: "ENCH",
-      title: "Enchantments & Guild Utilities",
-      desc: "Magical parchment welcomes, tickets, house leveling & role sorcery.",
+      badge: "UTL",
+      title: "Full Automation & Utilities",
+      desc: "Custom welcome cards, tickets, leveling, giveaways & role managers.",
     },
   ];
 
   capabilities.forEach((cap, idx) => {
-    const rowY = panelY + 56 + idx * 63;
+    const rowY = panelY + 56 + idx * 64;
 
-    ctx.fillStyle = "rgba(212, 175, 55, 0.1)";
-    ctx.strokeStyle = "rgba(212, 175, 55, 0.4)";
+    // Mini Pill Badge
+    ctx.fillStyle = "rgba(255, 255, 255, 0.06)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
     ctx.lineWidth = 1;
-    drawRoundRect(ctx, leftX + 16, rowY + 3, 40, 22, 5, true, true);
+    drawRoundRect(ctx, leftX + 18, rowY + 4, 38, 22, 6, true, true);
 
-    ctx.fillStyle = "#fde047";
-    ctx.font = `13px ${FONT_HOGWARTS}`;
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = `bold 10px monospace, ${FONT_FAMILY}`;
     ctx.textAlign = "center";
-    ctx.fillText(cap.badge, leftX + 16 + 20, rowY + 18);
+    ctx.fillText(cap.badge, leftX + 18 + 19, rowY + 19);
     ctx.textAlign = "left";
 
+    // Feature Title
     ctx.fillStyle = "#ffffff";
-    ctx.font = `bold 13.5px ${FONT_SERIF}`;
+    ctx.font = `bold 13px ${FONT_FAMILY}`;
     ctx.fillText(cap.title, leftX + 66, rowY + 16);
 
-    ctx.fillStyle = "#cbd5e1";
-    ctx.font = `11.5px ${FONT_BODY}`;
+    // Feature Desc
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = `11.5px ${FONT_FAMILY}`;
     ctx.fillText(truncateText(ctx, cap.desc, panelW - 84), leftX + 66, rowY + 32);
 
     if (idx < capabilities.length - 1) {
-      ctx.fillStyle = "rgba(212, 175, 55, 0.08)";
-      ctx.fillRect(leftX + 20, rowY + 47, panelW - 40, 1);
+      ctx.fillStyle = "rgba(255, 255, 255, 0.035)";
+      ctx.fillRect(leftX + 24, rowY + 48, panelW - 48, 1);
     }
   });
 
-  // ── RIGHT PANEL: Grimoire Navigation & Spell Guide ──────────
+  // ── RIGHT PANEL: Navigation & Quick Start Guide ──────────────
   const rightX = leftX + panelW + 16;
-  ctx.fillStyle = "rgba(16, 13, 28, 0.85)";
-  ctx.strokeStyle = "rgba(212, 175, 55, 0.35)";
-  ctx.lineWidth = 1.2;
-  drawRoundRect(ctx, rightX, panelY, panelW, panelH, 12, true, true);
+  ctx.fillStyle = "rgba(14, 18, 26, 0.75)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.09)";
+  ctx.lineWidth = 1;
+  drawRoundRect(ctx, rightX, panelY, panelW, panelH, 14, true, true);
 
-  ctx.fillStyle = "#d4af37";
-  drawRoundRect(ctx, rightX + 16, panelY + 16, 3, 18, 1.5, true, false);
+  // Panel Header
+  ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+  drawRoundRect(ctx, rightX + 18, panelY + 18, 3, 16, 2, true, false);
 
-  ctx.fillStyle = "#fce881";
-  ctx.font = `18px ${FONT_HOGWARTS}`;
-  ctx.fillText("GRIMOIRE NAVIGATION & SPELL GUIDE", rightX + 26, panelY + 31);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold 14px ${FONT_FAMILY}`;
+  ctx.fillText("QUICK NAVIGATION & SHORTCUTS", rightX + 28, panelY + 31);
 
-  ctx.fillStyle = "rgba(212, 175, 55, 0.18)";
-  ctx.fillRect(rightX + 16, panelY + 44, panelW - 32, 1);
+  ctx.fillStyle = "rgba(255, 255, 255, 0.06)";
+  ctx.fillRect(rightX + 18, panelY + 44, panelW - 36, 1);
 
   const steps = [
     {
       num: "01",
-      title: "Consult The Sorting Dropdown",
-      desc: "Select any magical discipline below to view its registered spells.",
+      title: "Select A Module Category",
+      desc: "Open the dropdown below to view all commands in any module.",
     },
     {
       num: "02",
-      title: "Study Wand Movements & Syntax",
-      desc: "Inspect required reagents, privileges & incantation examples.",
+      title: "Inspect Syntax & Examples",
+      desc: "Pick any command to inspect required arguments & usage permissions.",
     },
     {
       num: "03",
-      title: "Cast With Prefix Or Slash",
-      desc: `Execute directly with prefix (${prefix}spell) or standard slash command (/).`,
+      title: "Prefix & Slash Commands",
+      desc: `Execute directly with prefix (${prefix}command) or slash command (/).`,
     },
   ];
 
   steps.forEach((step, idx) => {
-    const rowY = panelY + 56 + idx * 63;
+    const rowY = panelY + 56 + idx * 64;
 
-    ctx.fillStyle = "rgba(212, 175, 55, 0.1)";
-    ctx.strokeStyle = "rgba(212, 175, 55, 0.4)";
+    // Step Number Badge
+    ctx.fillStyle = "rgba(255, 255, 255, 0.06)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
     ctx.lineWidth = 1;
-    drawRoundRect(ctx, rightX + 16, rowY + 3, 34, 22, 5, true, true);
-
-    ctx.fillStyle = "#fde047";
-    ctx.font = `13px ${FONT_HOGWARTS}`;
-    ctx.textAlign = "center";
-    ctx.fillText(step.num, rightX + 16 + 17, rowY + 18);
-    ctx.textAlign = "left";
+    drawRoundRect(ctx, rightX + 18, rowY + 4, 32, 22, 6, true, true);
 
     ctx.fillStyle = "#ffffff";
-    ctx.font = `bold 13.5px ${FONT_SERIF}`;
+    ctx.font = `bold 11px monospace, ${FONT_FAMILY}`;
+    ctx.textAlign = "center";
+    ctx.fillText(step.num, rightX + 18 + 16, rowY + 19);
+    ctx.textAlign = "left";
+
+    // Step Title
+    ctx.fillStyle = "#ffffff";
+    ctx.font = `bold 13px ${FONT_FAMILY}`;
     ctx.fillText(step.title, rightX + 60, rowY + 16);
 
-    ctx.fillStyle = "#cbd5e1";
-    ctx.font = `11.5px ${FONT_BODY}`;
+    // Step Desc
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = `11.5px ${FONT_FAMILY}`;
     ctx.fillText(truncateText(ctx, step.desc, panelW - 78), rightX + 60, rowY + 32);
 
-    ctx.fillStyle = "rgba(212, 175, 55, 0.08)";
-    ctx.fillRect(rightX + 20, rowY + 47, panelW - 40, 1);
+    ctx.fillStyle = "rgba(255, 255, 255, 0.035)";
+    ctx.fillRect(rightX + 24, rowY + 48, panelW - 48, 1);
   });
 
-  // Tip Box
-  const tipY = panelY + 248;
-  ctx.fillStyle = "rgba(212, 175, 55, 0.06)";
-  ctx.strokeStyle = "rgba(212, 175, 55, 0.25)";
-  drawRoundRect(ctx, rightX + 16, tipY, panelW - 32, 48, 8, true, true);
+  // Bottom Tip Card inside right panel
+  const tipY = panelY + 252;
+  ctx.fillStyle = "rgba(255, 255, 255, 0.035)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+  drawRoundRect(ctx, rightX + 18, tipY, panelW - 36, 48, 8, true, true);
 
-  ctx.fillStyle = "#fce881";
-  ctx.font = `15px ${FONT_HOGWARTS}`;
-  ctx.fillText("» INSTANT SPELL CODEX", rightX + 28, tipY + 19);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold 11px ${FONT_FAMILY}`;
+  ctx.fillText("» QUICK LOOKUP SHORTCUT", rightX + 30, tipY + 19);
 
-  ctx.fillStyle = "#cbd5e1";
-  ctx.font = `11.5px ${FONT_BODY}`;
-  ctx.fillText(`Cast ${prefix}help <spell> in any channel for instantaneous scroll documentation.`, rightX + 28, tipY + 36);
+  ctx.fillStyle = "#94a3b8";
+  ctx.font = `11px ${FONT_FAMILY}`;
+  ctx.fillText(`Type ${prefix}help <command> in chat for instant documentation.`, rightX + 30, tipY + 35);
 
   // ── Bottom Instruction Bar ──────────────────────────────────
   const footerY = baseH - 42;
-  ctx.fillStyle = "rgba(16, 13, 28, 0.9)";
-  ctx.strokeStyle = "rgba(212, 175, 55, 0.35)";
-  drawRoundRect(ctx, 38, footerY, baseW - 76, 30, 8, true, true);
+  ctx.fillStyle = "rgba(14, 18, 26, 0.78)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+  drawRoundRect(ctx, 36, footerY, baseW - 72, 30, 8, true, true);
 
-  ctx.fillStyle = "#fce881";
-  ctx.font = `15px ${FONT_HOGWARTS}`;
-  ctx.fillText("» HOGWARTS INSTRUCTION:", 50, footerY + 20);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold 11px ${FONT_FAMILY}`;
+  ctx.fillText("» QUICK INSTRUCTION:", 48, footerY + 19);
 
   ctx.fillStyle = "#cbd5e1";
-  ctx.font = `11.5px ${FONT_BODY}`;
+  ctx.font = `11px ${FONT_FAMILY}`;
   ctx.fillText(
-    "Choose a discipline from the enchanted menus below to unfurl all spells, charms & permissions",
-    245,
+    "Select any module from the dropdown menus below to view all commands & permissions",
+    180,
     footerY + 19
   );
 
-  ctx.fillStyle = "#d4af37";
-  ctx.font = `13px ${FONT_HOGWARTS}`;
+  ctx.fillStyle = "#64748b";
+  ctx.font = `11px ${FONT_FAMILY}`;
   ctx.textAlign = "right";
-  ctx.fillText("ASTRIX WIZARDRY 2026", baseW - 50, footerY + 20);
+  ctx.fillText("ASTRIXCODE™ 2026", baseW - 48, footerY + 19);
   ctx.textAlign = "left";
 
   ctx.restore(); // unclip
@@ -719,7 +580,7 @@ async function generateMainHelpCard(options = {}) {
 
 /**
  * ─────────────────────────────────────────────────────────────────────────────
- * 2. GENERATE CATEGORY CARD (Hogwarts Grimoire Command Grid)
+ * 2. GENERATE CATEGORY CARD (High-Capacity Glassmorphic Command Grid)
  * ─────────────────────────────────────────────────────────────────────────────
  */
 async function generateCategoryCard(
@@ -730,7 +591,7 @@ async function generateCategoryCard(
   page = 0,
   totalPages = 1
 ) {
-  const cacheKey = `cat_hogwarts_${categoryName}_${commands.length}_${prefix}_p${page}`;
+  const cacheKey = `cat_${categoryName}_${commands.length}_${prefix}_p${page}`;
   if (categoryCardCache.has(cacheKey)) {
     return categoryCardCache.get(cacheKey);
   }
@@ -745,61 +606,64 @@ async function generateCategoryCard(
   const ctx = canvas.getContext("2d");
   ctx.scale(scale, scale);
 
+  const bgImg = await getBackgroundImage();
+
   // Clip Container
   ctx.save();
   ctx.beginPath();
-  ctx.roundRect(0, 0, baseW, baseH, 18);
+  ctx.roundRect(0, 0, baseW, baseH, 20);
   ctx.clip();
 
   // Backdrop
-  drawHogwartsBackdrop(ctx, baseW, baseH);
+  drawCinematicBackdrop(ctx, baseW, baseH);
 
   // ── Header Box ──────────────────────────────────────────────
   const headY = 24;
   const headH = 68;
 
-  ctx.fillStyle = "rgba(16, 13, 28, 0.85)";
-  ctx.strokeStyle = "rgba(212, 175, 55, 0.35)";
+  ctx.fillStyle = "rgba(14, 18, 26, 0.78)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
   ctx.lineWidth = 1.2;
-  drawRoundRect(ctx, 38, headY, baseW - 76, headH, 12, true, true);
+  drawRoundRect(ctx, 36, headY, baseW - 72, headH, 14, true, true);
 
-  // Accent line
-  const accentGrad = ctx.createLinearGradient(38, 0, baseW - 38, 0);
-  accentGrad.addColorStop(0, "rgba(212, 175, 55, 0.8)");
-  accentGrad.addColorStop(0.5, "rgba(245, 215, 110, 0.3)");
-  accentGrad.addColorStop(1, "rgba(212, 175, 55, 0.05)");
+  // Subtle top accent line
+  const accentGrad = ctx.createLinearGradient(36, 0, baseW - 36, 0);
+  accentGrad.addColorStop(0, "rgba(255, 255, 255, 0.6)");
+  accentGrad.addColorStop(0.5, "rgba(255, 255, 255, 0.2)");
+  accentGrad.addColorStop(1, "rgba(255, 255, 255, 0.02)");
   ctx.fillStyle = accentGrad;
-  ctx.fillRect(38, headY + headH - 2, baseW - 76, 2);
+  ctx.fillRect(36, headY + headH - 2, baseW - 72, 2);
 
-  ctx.fillStyle = "#fce881";
-  ctx.font = `28px ${FONT_HOGWARTS}`;
-  ctx.fillText(`»  ${categoryName.toUpperCase()} DISCIPLINE`, 56, headY + 34);
+  // Title & Subtitle with clean tech symbol
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold 25px ${FONT_FAMILY}`;
+  ctx.fillText(`»  ${categoryName.toUpperCase()} MODULE`, 54, headY + 33);
 
-  ctx.fillStyle = "#cbd5e1";
-  ctx.font = `13px ${FONT_SERIF}`;
-  ctx.fillText(`Explore all available wards, incantations, and guild charms in this discipline.`, 56, headY + 54);
+  ctx.fillStyle = "#94a3b8";
+  ctx.font = `13px ${FONT_FAMILY}`;
+  ctx.fillText(`Explore all available commands, aliases and syntax options in this category.`, 54, headY + 54);
 
   // Badges on Header Right
-  const badgeText = `${commands.length} Spells`;
-  ctx.font = `16px ${FONT_HOGWARTS}`;
+  const badgeText = `${commands.length} Commands`;
+  ctx.font = `bold 13px ${FONT_FAMILY}`;
   const badgeW = ctx.measureText(badgeText).width + 24;
-  const badgeX = baseW - 56 - badgeW;
+  const badgeX = baseW - 54 - badgeW;
 
-  ctx.fillStyle = "rgba(212, 175, 55, 0.12)";
-  ctx.strokeStyle = "rgba(212, 175, 55, 0.4)";
+  ctx.fillStyle = "rgba(255, 255, 255, 0.06)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.18)";
   ctx.lineWidth = 1;
   drawRoundRect(ctx, badgeX, headY + 18, badgeW, 32, 8, true, true);
 
-  ctx.fillStyle = "#fde047";
+  ctx.fillStyle = "#ffffff";
   ctx.fillText(badgeText, badgeX + 12, headY + 39);
 
   if (totalPages > 1) {
-    const pageBadgeText = `Scroll ${page + 1}/${totalPages}`;
+    const pageBadgeText = `Page ${page + 1}/${totalPages}`;
     const pageBadgeW = ctx.measureText(pageBadgeText).width + 20;
     const pageBadgeX = badgeX - pageBadgeW - 10;
 
-    ctx.fillStyle = "rgba(212, 175, 55, 0.12)";
-    ctx.strokeStyle = "rgba(212, 175, 55, 0.4)";
+    ctx.fillStyle = "rgba(255, 255, 255, 0.06)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.18)";
     ctx.lineWidth = 1;
     drawRoundRect(ctx, pageBadgeX, headY + 18, pageBadgeW, 32, 8, true, true);
 
@@ -809,11 +673,11 @@ async function generateCategoryCard(
 
   // ── High-Legibility Command Grid (3 Columns × 6 Rows = 18 per page) ──
   const cols = 3;
-  const startX = 38;
+  const startX = 36;
   const startY = headY + headH + 16;
   const gapX = 14;
   const gapY = 12;
-  const cardW = (baseW - 76 - gapX * (cols - 1)) / cols;
+  const cardW = (baseW - 72 - gapX * (cols - 1)) / cols; // (1000 - 72 - 28) / 3 = 300px
   const cardH = 54;
   const pageSize = 18;
 
@@ -827,44 +691,52 @@ async function generateCategoryCard(
 
     const primaryName = cmd.alias?.[0] || cmd.name;
 
-    ctx.fillStyle = "rgba(16, 13, 28, 0.85)";
-    ctx.strokeStyle = "rgba(212, 175, 55, 0.28)";
+    // Command Item Glass Card Background
+    ctx.fillStyle = "rgba(14, 18, 26, 0.78)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.09)";
     ctx.lineWidth = 1;
-    drawRoundRect(ctx, x, y, cardW, cardH, 9, true, true);
+    drawRoundRect(ctx, x, y, cardW, cardH, 10, true, true);
 
-    // Left gold accent bar
-    ctx.fillStyle = "#d4af37";
-    drawRoundRect(ctx, x + 7, y + 11, 2.5, cardH - 22, 1.2, true, false);
+    // Subtle top inner gloss
+    const cardGloss = ctx.createLinearGradient(x, y, x, y + cardH);
+    cardGloss.addColorStop(0, "rgba(255, 255, 255, 0.06)");
+    cardGloss.addColorStop(1, "rgba(255, 255, 255, 0.01)");
+    ctx.fillStyle = cardGloss;
+    drawRoundRect(ctx, x, y, cardW, cardH, 10, true, false);
 
-    // Command Name in Hogwarts Font
-    ctx.fillStyle = "#fce881";
-    ctx.font = `18px ${FONT_HOGWARTS}`;
+    // Left silver accent bar
+    ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+    drawRoundRect(ctx, x + 8, y + 12, 3, cardH - 24, 1.5, true, false);
+
+    // Command Name: Noticeably larger, bold and clear (16px bold)
+    ctx.fillStyle = "#ffffff";
+    ctx.font = `bold 16px ${FONT_FAMILY}`;
     const nameText = `${prefix}${primaryName}`;
-    ctx.fillText(truncateText(ctx, nameText, 250), x + 18, y + 24);
+    ctx.fillText(truncateText(ctx, nameText, 250), x + 20, y + 23);
 
-    // Snippet description
-    const rawDesc = cmd.desc || cmd.description || "Incantation syntax & usage details";
+    // Snippet description: Larger, crisp silver tone (12.5px)
+    const rawDesc = cmd.desc || cmd.description || "Command syntax & usage details";
     ctx.fillStyle = "#94a3b8";
-    ctx.font = `12px ${FONT_BODY}`;
-    const descText = truncateText(ctx, rawDesc, cardW - 28);
-    ctx.fillText(descText, x + 18, y + 43);
+    ctx.font = `12.5px ${FONT_FAMILY}`;
+    const descText = truncateText(ctx, rawDesc, cardW - 32);
+    ctx.fillText(descText, x + 20, y + 43);
   });
 
   // ── Footer Bar ──────────────────────────────────────────────
   const footerY = baseH - 42;
-  ctx.fillStyle = "rgba(16, 13, 28, 0.9)";
-  ctx.strokeStyle = "rgba(212, 175, 55, 0.35)";
-  drawRoundRect(ctx, 38, footerY, baseW - 76, 30, 8, true, true);
+  ctx.fillStyle = "rgba(14, 18, 26, 0.78)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+  drawRoundRect(ctx, 36, footerY, baseW - 72, 30, 8, true, true);
 
-  ctx.fillStyle = "#fce881";
-  ctx.font = `15px ${FONT_HOGWARTS}`;
-  ctx.fillText("» HOGWARTS HINT:", 50, footerY + 20);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold 11px ${FONT_FAMILY}`;
+  ctx.fillText("» QUICK HINT:", 48, footerY + 19);
 
   ctx.fillStyle = "#cbd5e1";
-  ctx.font = `11.5px ${FONT_BODY}`;
+  ctx.font = `11px ${FONT_FAMILY}`;
   ctx.fillText(
-    "Select any spell from the dropdown below to study exact incantation, permissions & examples",
-    190,
+    "Select any command from the dropdown below to view syntax, permissions & examples",
+    140,
     footerY + 19
   );
 
@@ -877,12 +749,12 @@ async function generateCategoryCard(
 
 /**
  * ─────────────────────────────────────────────────────────────────────────────
- * 3. GENERATE COMMAND DETAIL CARD (Hogwarts Spell Codex)
+ * 3. GENERATE COMMAND DETAIL CARD (Cinematic Deep-Dive Syntax View)
  * ─────────────────────────────────────────────────────────────────────────────
  */
 async function generateCommandDetailCard(cmd, prefix = ".", slashCmd = null) {
   const primaryName = cmd.alias?.[0] || cmd.name;
-  const cacheKey = `cmd_hogwarts_${primaryName}_${prefix}`;
+  const cacheKey = `cmd_${primaryName}_${prefix}`;
   if (commandCardCache.has(cacheKey)) {
     return commandCardCache.get(cacheKey);
   }
@@ -900,81 +772,83 @@ async function generateCommandDetailCard(cmd, prefix = ".", slashCmd = null) {
   // Clip Container
   ctx.save();
   ctx.beginPath();
-  ctx.roundRect(0, 0, baseW, baseH, 18);
+  ctx.roundRect(0, 0, baseW, baseH, 20);
   ctx.clip();
 
   // Backdrop
-  drawHogwartsBackdrop(ctx, baseW, baseH);
+  drawCinematicBackdrop(ctx, baseW, baseH);
 
   // ── Header Box ──────────────────────────────────────────────
   const headY = 26;
   const headH = 70;
 
-  ctx.fillStyle = "rgba(16, 13, 28, 0.85)";
-  ctx.strokeStyle = "rgba(212, 175, 55, 0.35)";
-  drawRoundRect(ctx, 38, headY, baseW - 76, headH, 12, true, true);
+  ctx.fillStyle = "rgba(14, 18, 26, 0.78)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+  drawRoundRect(ctx, 36, headY, baseW - 72, headH, 14, true, true);
 
-  const accentGrad = ctx.createLinearGradient(38, 0, baseW - 38, 0);
-  accentGrad.addColorStop(0, "rgba(212, 175, 55, 0.8)");
-  accentGrad.addColorStop(0.5, "rgba(245, 215, 110, 0.3)");
-  accentGrad.addColorStop(1, "rgba(212, 175, 55, 0.05)");
+  const accentGrad = ctx.createLinearGradient(36, 0, baseW - 36, 0);
+  accentGrad.addColorStop(0, "rgba(255, 255, 255, 0.6)");
+  accentGrad.addColorStop(0.5, "rgba(255, 255, 255, 0.2)");
+  accentGrad.addColorStop(1, "rgba(255, 255, 255, 0.02)");
   ctx.fillStyle = accentGrad;
-  ctx.fillRect(38, headY + headH - 2, baseW - 76, 2);
+  ctx.fillRect(36, headY + headH - 2, baseW - 72, 2);
 
-  // Command Title in Hogwarts Font
-  ctx.fillStyle = "#fce881";
-  ctx.font = `28px ${FONT_HOGWARTS}`;
-  ctx.fillText(`»  SPELL CODEX ── ${prefix}${primaryName.toUpperCase()}`, 56, headY + 34);
+  // Command Title
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold 25px ${FONT_FAMILY}`;
+  ctx.fillText(`»  COMMAND DETAILS ── ${prefix}${primaryName}`, 54, headY + 34);
 
-  ctx.fillStyle = "#cbd5e1";
-  ctx.font = `12.5px ${FONT_SERIF}`;
-  ctx.fillText(`Sacred configuration, incantation execution, and required magical authority.`, 56, headY + 54);
+  ctx.fillStyle = "#94a3b8";
+  ctx.font = `12px ${FONT_FAMILY}`;
+  ctx.fillText(`Full configuration, syntax execution, and permission documentation.`, 54, headY + 54);
 
   // Category & Cooldown Badges on right
   const category = cmd.category || "General";
   const cooldown = cmd.cooldown ? `${cmd.cooldown}s` : "3s";
 
-  ctx.font = `15px ${FONT_HOGWARTS}`;
+  ctx.font = `bold 13px ${FONT_FAMILY}`;
   const catBadgeText = category;
   const cdBadgeText = `${cooldown}`;
 
   const cdW = ctx.measureText(cdBadgeText).width + 24;
   const catW = ctx.measureText(catBadgeText).width + 24;
 
-  const cdX = baseW - 56 - cdW;
+  const cdX = baseW - 54 - cdW;
   const catX = cdX - 10 - catW;
 
   // Draw Category Badge
-  ctx.fillStyle = "rgba(212, 175, 55, 0.12)";
-  ctx.strokeStyle = "rgba(212, 175, 55, 0.4)";
+  ctx.fillStyle = "rgba(255, 255, 255, 0.06)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.18)";
   drawRoundRect(ctx, catX, headY + 18, catW, 32, 8, true, true);
-  ctx.fillStyle = "#fde047";
+  ctx.fillStyle = "#ced6e0";
   ctx.fillText(catBadgeText, catX + 12, headY + 39);
 
   // Draw Cooldown Badge
+  ctx.fillStyle = "rgba(255, 255, 255, 0.06)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.18)";
   drawRoundRect(ctx, cdX, headY + 18, cdW, 32, 8, true, true);
   ctx.fillStyle = "#ffffff";
   ctx.fillText(cdBadgeText, cdX + 12, headY + 39);
 
   // ── Left Column (Main Specs) ─────────────────────────────────
-  const leftX = 38;
+  const leftX = 36;
   const leftW = 510;
 
-  // 1. Description Box
-  const desc = cmd.desc || cmd.description || "Executes incantation functionality.";
-  ctx.font = `13px ${FONT_SERIF}`;
+  // 1. Description Box (Multi-line wrap support)
+  const desc = cmd.desc || cmd.description || "Executes command functionality.";
+  ctx.font = `14px ${FONT_FAMILY}`;
   const descLines = wrapText(ctx, desc, leftW - 32, 2);
 
-  ctx.fillStyle = "rgba(16, 13, 28, 0.85)";
-  ctx.strokeStyle = "rgba(212, 175, 55, 0.28)";
+  ctx.fillStyle = "rgba(14, 18, 26, 0.78)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
   drawRoundRect(ctx, leftX, 116, leftW, 76, 10, true, true);
 
-  ctx.fillStyle = "#fce881";
-  ctx.font = `16px ${FONT_HOGWARTS}`;
-  ctx.fillText("INCANTATION DESCRIPTION", leftX + 16, 137);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold 12px ${FONT_FAMILY}`;
+  ctx.fillText("DESCRIPTION", leftX + 16, 136);
 
   ctx.fillStyle = "#cbd5e1";
-  ctx.font = `13px ${FONT_SERIF}`;
+  ctx.font = `13.5px ${FONT_FAMILY}`;
   if (descLines.length === 1) {
     ctx.fillText(descLines[0], leftX + 16, 162);
   } else {
@@ -993,16 +867,16 @@ async function generateCommandDetailCard(cmd, prefix = ".", slashCmd = null) {
     }
   }
 
-  ctx.fillStyle = "rgba(16, 13, 28, 0.85)";
-  ctx.strokeStyle = "rgba(212, 175, 55, 0.28)";
+  ctx.fillStyle = "rgba(14, 18, 26, 0.78)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
   drawRoundRect(ctx, leftX, 206, leftW, 70, 10, true, true);
 
-  ctx.fillStyle = "#fce881";
-  ctx.font = `16px ${FONT_HOGWARTS}`;
-  ctx.fillText("INCANTATION SYNTAX", leftX + 16, 228);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold 12px ${FONT_FAMILY}`;
+  ctx.fillText("USAGE SYNTAX", leftX + 16, 228);
 
-  ctx.fillStyle = "#fbbf24";
-  ctx.font = `bold 15px monospace`;
+  ctx.fillStyle = "#10b981";
+  ctx.font = `bold 15px monospace, ${FONT_FAMILY}`;
   ctx.fillText(`${prefix}${usage}`, leftX + 16, 254);
 
   // 3. Aliases Box
@@ -1011,47 +885,47 @@ async function generateCommandDetailCard(cmd, prefix = ".", slashCmd = null) {
       ? cmd.alias.filter((a) => a.toLowerCase() !== primaryName.toLowerCase()).map((a) => `${prefix}${a}`).join(", ")
       : "None";
 
-  ctx.fillStyle = "rgba(16, 13, 28, 0.85)";
-  ctx.strokeStyle = "rgba(212, 175, 55, 0.28)";
+  ctx.fillStyle = "rgba(14, 18, 26, 0.78)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
   drawRoundRect(ctx, leftX, 290, leftW, 62, 10, true, true);
 
-  ctx.fillStyle = "#fce881";
-  ctx.font = `16px ${FONT_HOGWARTS}`;
-  ctx.fillText("ANCIENT ALIASES", leftX + 16, 310);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold 12px ${FONT_FAMILY}`;
+  ctx.fillText("COMMAND ALIASES", leftX + 16, 310);
 
   ctx.fillStyle = "#cbd5e1";
-  ctx.font = `13px monospace`;
+  ctx.font = `13px monospace, ${FONT_FAMILY}`;
   ctx.fillText(truncateText(ctx, aliases, leftW - 32), leftX + 16, 333);
 
   // 4. Permissions Box
   const botPerms = cmd.botPermissions?.length > 0 ? cmd.botPermissions.join(", ") : "SendMessages";
   const userPerms = cmd.userPermissions?.length > 0 ? cmd.userPermissions.join(", ") : "None";
 
-  ctx.fillStyle = "rgba(16, 13, 28, 0.85)";
-  ctx.strokeStyle = "rgba(212, 175, 55, 0.28)";
+  ctx.fillStyle = "rgba(14, 18, 26, 0.78)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
   drawRoundRect(ctx, leftX, 366, leftW, 64, 10, true, true);
 
-  ctx.fillStyle = "#fce881";
-  ctx.font = `16px ${FONT_HOGWARTS}`;
-  ctx.fillText("REQUIRED MAGICAL AUTHORITY", leftX + 16, 388);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold 12px ${FONT_FAMILY}`;
+  ctx.fillText("REQUIRED PERMISSIONS", leftX + 16, 388);
 
-  ctx.fillStyle = "#cbd5e1";
-  ctx.font = `12px ${FONT_BODY}`;
-  ctx.fillText(`Bot: ${botPerms}   •   Wizard: ${userPerms}`, leftX + 16, 411);
+  ctx.fillStyle = "#94a3b8";
+  ctx.font = `12px ${FONT_FAMILY}`;
+  ctx.fillText(`Bot: ${botPerms}   •   User: ${userPerms}`, leftX + 16, 411);
 
   // ── Right Column (Examples & Live Execution) ─────────────────
   const rightX = leftX + leftW + 18;
-  const rightW = baseW - rightX - 38;
+  const rightW = baseW - rightX - 36;
 
-  ctx.fillStyle = "rgba(16, 13, 28, 0.85)";
-  ctx.strokeStyle = "rgba(212, 175, 55, 0.28)";
+  ctx.fillStyle = "rgba(14, 18, 26, 0.78)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
   drawRoundRect(ctx, rightX, 116, rightW, 314, 12, true, true);
 
-  ctx.fillStyle = "#fce881";
-  ctx.font = `17px ${FONT_HOGWARTS}`;
-  ctx.fillText("EXAMPLE INCANTATIONS", rightX + 18, 142);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold 13px ${FONT_FAMILY}`;
+  ctx.fillText("EXAMPLES & EXECUTION", rightX + 18, 142);
 
-  ctx.fillStyle = "rgba(212, 175, 55, 0.18)";
+  ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
   ctx.fillRect(rightX + 18, 154, rightW - 36, 1);
 
   let examples = [];
@@ -1069,37 +943,37 @@ async function generateCommandDetailCard(cmd, prefix = ".", slashCmd = null) {
 
   let currY = 188;
   examples.slice(0, 5).forEach((ex, idx) => {
-    ctx.fillStyle = "rgba(212, 175, 55, 0.06)";
-    ctx.strokeStyle = "rgba(212, 175, 55, 0.2)";
+    ctx.fillStyle = "rgba(255, 255, 255, 0.035)";
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.06)";
     drawRoundRect(ctx, rightX + 18, currY - 18, rightW - 36, 36, 6, true, true);
 
-    ctx.fillStyle = "#fde047";
-    ctx.font = `13px ${FONT_HOGWARTS}`;
-    ctx.fillText(`0${idx + 1}`, rightX + 28, currY + 4);
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = `bold 12px monospace`;
+    ctx.fillText(`0${idx + 1}`, rightX + 28, currY + 5);
 
     ctx.fillStyle = "#ffffff";
-    ctx.font = `13px monospace`;
+    ctx.font = `13px monospace, ${FONT_FAMILY}`;
     const exText = ex.startsWith(prefix) ? ex : `${prefix}${ex}`;
-    ctx.fillText(truncateText(ctx, exText, rightW - 85), rightX + 58, currY + 4);
+    ctx.fillText(truncateText(ctx, exText, rightW - 85), rightX + 58, currY + 5);
 
     currY += 46;
   });
 
   // ── Footer Bar ──────────────────────────────────────────────
   const footerY = baseH - 42;
-  ctx.fillStyle = "rgba(16, 13, 28, 0.9)";
-  ctx.strokeStyle = "rgba(212, 175, 55, 0.35)";
-  drawRoundRect(ctx, 38, footerY, baseW - 76, 30, 8, true, true);
+  ctx.fillStyle = "rgba(14, 18, 26, 0.78)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+  drawRoundRect(ctx, 36, footerY, baseW - 72, 30, 8, true, true);
 
-  ctx.fillStyle = "#fce881";
-  ctx.font = `15px ${FONT_HOGWARTS}`;
-  ctx.fillText("» HOGWARTS ARCHIVES:", 50, footerY + 20);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = `bold 11px ${FONT_FAMILY}`;
+  ctx.fillText("» INFORMATION:", 48, footerY + 19);
 
   ctx.fillStyle = "#cbd5e1";
-  ctx.font = `11.5px ${FONT_BODY}`;
+  ctx.font = `11px ${FONT_FAMILY}`;
   ctx.fillText(
-    "Astrix High Grimoire • Use buttons below to return to the discipline list or summon slash parameters",
-    215,
+    "Astrix Multi-Purpose Engine • Use action buttons below to return to the category list or view slash info",
+    150,
     footerY + 19
   );
 

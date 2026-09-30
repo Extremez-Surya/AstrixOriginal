@@ -1,74 +1,67 @@
 const fs = require("fs");
 const path = require("path");
 
-// Default aesthetic fallback Unicode emojis for every known key
-const FALLBACKS = {
-  Loading: "⏳",
-  astrix: "✨",
-  invite: "🔗",
-  discord: "💬",
-  website: "🌐",
-  prefix: "⚡",
-  signal: "📶",
-  members: "👥",
-  servers: "🏛️",
-  clock: "⏰",
-  Red_heart: "❤️",
-  list: "📋",
-  home: "🏠",
-  stats: "📊",
-  online: "🟢",
-  idle: "🟡",
-  DoNotDisturb: "🔴",
-  offline: "⚪",
-  calender: "📅",
-  Servericon: "🖼️",
-  games: "🎮",
-  badge: "🎖️",
-  channel: "💬",
-  rmicrophone: "🎙️",
-  rshield: "🛡️",
-  rspeaker: "🔊",
-  red_boost: "🚀",
-  red_star: "⭐",
-  rmessage: "✉️",
-  assetemoji: "💎",
-  Warn_red: "⚠️",
-  RedGear: "⚙️",
-  RedMail: "📬",
-  bote: "🤖",
-  linkRed: "🔗",
-  Sleepy: "💤",
-  antinuke: "🔒",
-  minecraft: "⛏️",
-  Valorant: "🎯",
-  roblox_op: "🕹️",
-  github: "🐙",
-  chatgpt: "🧠",
-  owner3: "👑",
-  developers: "💻",
-  Artist: "🎨",
-  vip: "🌟",
-  EarlySupporter: "⭐",
-  bug_hunter: "🐛",
-  staff: "🛡️",
-  red_circle: "🔴",
-  ticky_red: "✅",
-  tick: "✅",
-  cross: "❌",
-  tada2: "🎉",
-  Trophy: "🏆",
-  red_yellow_gift: "🎁",
-};
-
 // In-memory dynamic cache for Developer Portal Application Emojis
 const dynamicCache = new Map();
+
+// Canonical mappings and aliases for Developer Portal Application Emojis
+const ALIASES = {
+  // Moderation
+  ban: "ban",
+  kick: "kick",
+  mute: "mute",
+  unmute: "unmute",
+  warn: "warn",
+  Warn_red: "warn",
+  timeout: "timeout",
+  clear: "clear",
+  lock: "lock",
+  unlock: "unlock",
+  nick: "nick",
+  slowmode: "slowmode",
+
+  // Status indicators & actions
+  online: "green_dot",
+  idle: "green_dot",
+  DoNotDisturb: "red_point",
+  dnd: "red_point",
+  offline: "2179offlinestatus",
+  "2179offlinestatus": "2179offlinestatus",
+
+  // Success / Failure / Notices
+  tick: "green_dot",
+  success: "green_dot",
+  ticky_red: "green_dot",
+  check: "green_dot",
+  cross: "red_point",
+  error: "red_point",
+  red_circle: "red_point",
+  alert: "warn",
+  caution: "warn",
+  info: "green_dot",
+};
 
 // Helper to normalize strings for fuzzy matching
 function normalizeKey(str) {
   if (!str) return "";
   return str.toLowerCase().replace(/[^a-z0-9]/g, "");
 }
+
+// Initial load from emojis.json if present
+function loadJsonMap() {
+  try {
+    const jsonPath = path.join(__dirname, "emojis.json");
+    if (fs.existsSync(jsonPath)) {
+      const parsed = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+      for (const [k, v] of Object.entries(parsed)) {
+        dynamicCache.set(k, v);
+        dynamicCache.set(normalizeKey(k), v);
+      }
+    }
+  } catch (_) {}
+}
+
+loadJsonMap();
 
 /**
  * Fetch and synchronize all Application Emojis from Discord Developer Portal
@@ -85,7 +78,6 @@ async function syncFromClient(client) {
     }
 
     if (!appEmojis || appEmojis.size === 0) {
-      // Also check client.emojis.cache across guilds bot is in
       if (client.emojis?.cache?.size > 0) {
         client.emojis.cache.forEach((e) => {
           const formatted = `<${e.animated ? "a" : ""}:${e.name}:${e.id}>`;
@@ -117,53 +109,54 @@ async function syncFromClient(client) {
   }
 }
 
-// Initial load from emojis.json if present
-try {
-  const jsonPath = path.join(__dirname, "emojis.json");
-  if (fs.existsSync(jsonPath)) {
-    const parsed = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
-    for (const [k, v] of Object.entries(parsed)) {
-      dynamicCache.set(k, v);
-      dynamicCache.set(normalizeKey(k), v);
-    }
-  }
-} catch (_) {}
-
 /**
- * Resolve an emoji by name or key
+ * Resolve an emoji by name or key, prioritizing Developer Portal Application Emojis
  */
 function resolveEmoji(prop) {
   if (typeof prop !== "string") return "✨";
 
-  // 1. Direct match in dynamic cache
+  // 1. Direct match in dynamic cache (Application Emojis)
   if (dynamicCache.has(prop)) {
     return dynamicCache.get(prop);
   }
 
-  // 2. Normalized match in dynamic cache
+  // 2. Alias match in dynamic cache
+  if (ALIASES[prop] && dynamicCache.has(ALIASES[prop])) {
+    return dynamicCache.get(ALIASES[prop]);
+  }
+
+  // 3. Normalized alias match
   const norm = normalizeKey(prop);
+  if (ALIASES[norm] && dynamicCache.has(ALIASES[norm])) {
+    return dynamicCache.get(ALIASES[norm]);
+  }
+
+  // 4. Normalized match in dynamic cache
   if (dynamicCache.has(norm)) {
     return dynamicCache.get(norm);
   }
 
-  // 3. Match in default fallbacks
-  if (FALLBACKS[prop]) {
-    return FALLBACKS[prop];
+  // 5. Fallbacks for status / common keys
+  if (prop.toLowerCase().includes("online") || prop.toLowerCase().includes("success") || prop.toLowerCase().includes("tick")) {
+    return dynamicCache.get("green_dot") || "🟢";
   }
-  const normFallback = Object.keys(FALLBACKS).find((k) => normalizeKey(k) === norm);
-  if (normFallback) {
-    return FALLBACKS[normFallback];
+  if (prop.toLowerCase().includes("dnd") || prop.toLowerCase().includes("error") || prop.toLowerCase().includes("cross")) {
+    return dynamicCache.get("red_point") || "🔴";
+  }
+  if (prop.toLowerCase().includes("offline")) {
+    return dynamicCache.get("2179offlinestatus") || "⚪";
   }
 
   return "✨";
 }
 
 // Smart Proxy that never returns broken undefined or raw invalid text
-const emojisProxy = new Proxy(FALLBACKS, {
+const emojisProxy = new Proxy({}, {
   get(target, prop) {
     if (prop === "syncFromClient") return syncFromClient;
     if (prop === "resolveEmoji") return resolveEmoji;
     if (prop === "dynamicCache") return dynamicCache;
+    if (prop === "loadJsonMap") return loadJsonMap;
     if (typeof prop !== "string") return Reflect.get(target, prop);
     return resolveEmoji(prop);
   },
